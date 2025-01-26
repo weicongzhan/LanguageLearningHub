@@ -8,9 +8,12 @@ import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 
-// Configure multer for audio file uploads
+// Configure multer for both audio and image uploads
 const storage = multer.diskStorage({
-  destination: "./uploads/audio",
+  destination: (req, file, cb) => {
+    const uploadDir = file.mimetype.startsWith('audio/') ? './uploads/audio' : './uploads/images';
+    cb(null, uploadDir);
+  },
   filename: (req, file, cb) => {
     const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
@@ -20,13 +23,19 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/')) {
+    if (file.mimetype.startsWith('audio/') || file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only audio files are allowed.'));
+      cb(new Error('Invalid file type. Only audio and image files are allowed.'));
     }
   }
 });
+
+// Middleware to handle multiple file uploads
+const uploadFiles = upload.fields([
+  { name: 'audio', maxCount: 1 },
+  { name: 'images', maxCount: 4 }
+]);
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -63,15 +72,31 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Flashcard routes
-  app.post("/api/flashcards", requireAdmin, upload.single("audio"), async (req, res) => {
+  app.post("/api/flashcards", requireAdmin, uploadFiles, async (req, res) => {
     try {
-      const audioUrl = req.file ? `/uploads/audio/${req.file.filename}` : undefined;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const audioFile = files.audio?.[0];
+      const imageFiles = files.images || [];
+
+      if (!audioFile) {
+        return res.status(400).json({ error: "Audio file is required" });
+      }
+
+      if (imageFiles.length < 2) {
+        return res.status(400).json({ error: "At least 2 images are required" });
+      }
+
+      const audioUrl = `/uploads/audio/${audioFile.filename}`;
+      const imageUrls = imageFiles.map(file => `/uploads/images/${file.filename}`);
+      const correctImageIndex = parseInt(req.body.correctImageIndex);
+
       const [newFlashcard] = await db.insert(flashcards).values({
         lessonId: parseInt(req.body.lessonId),
-        front: req.body.front,
-        back: req.body.back,
-        audioUrl
+        audioUrl,
+        imageChoices: imageUrls,
+        correctImageIndex
       }).returning();
+
       res.json(newFlashcard);
     } catch (error) {
       res.status(500).json({ error: "Failed to create flashcard" });

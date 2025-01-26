@@ -3,7 +3,7 @@ import { useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Volume2, RotateCw, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Loader2, Volume2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations, Progress } from "@db/schema";
@@ -12,9 +12,9 @@ export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
   const { user } = useUser();
   const queryClient = useQueryClient();
-  const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showRating, setShowRating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
 
@@ -98,33 +98,25 @@ export default function FlashcardPage() {
   // Event handlers
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
-      setFlipped(false);
-      setShowRating(false);
+      setSelectedImage(null);
+      setShowResult(false);
       setCurrentIndex((prev) => prev + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setFlipped(false);
-      setShowRating(false);
+      setSelectedImage(null);
+      setShowResult(false);
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
-  const handleFlip = () => {
-    setFlipped((prev) => !prev);
-    if (!flipped) {
-      setShowRating(true);
-      if (currentCard?.audioUrl && audioRef.current) {
-        audioRef.current.play();
-      }
-    }
-  };
+  const handleImageSelection = (index: number) => {
+    setSelectedImage(index);
+    setShowResult(true);
 
-  const handleRating = async (successful: boolean) => {
-    if (!userLesson) return;
-
+    const isCorrect = index === currentCard.correctImageIndex;
     const progress = userLesson.progress as Progress || {
       total: flashcards.length,
       completed: 0,
@@ -134,7 +126,7 @@ export default function FlashcardPage() {
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
-      successful
+      successful: isCorrect
     });
 
     // Update completed count if this is first time seeing the card
@@ -142,12 +134,10 @@ export default function FlashcardPage() {
       progress.completed++;
     }
 
-    await updateProgressMutation.mutateAsync({
+    updateProgressMutation.mutate({
       progress,
       totalStudyTime: userLesson.totalStudyTime || 0
     });
-
-    handleNext();
   };
 
   return (
@@ -159,97 +149,69 @@ export default function FlashcardPage() {
         </p>
       </div>
 
-      <div className="relative perspective-1000">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex + (flipped ? "-flipped" : "")}
-            initial={{ rotateY: flipped ? -180 : 0 }}
-            animate={{ rotateY: flipped ? 0 : 180 }}
-            transition={{ duration: 0.6 }}
-            className="relative preserve-3d"
-          >
-            <Card
-              className={`w-full min-h-[300px] cursor-pointer ${
-                flipped ? "backface-hidden" : ""
-              }`}
-              onClick={handleFlip}
+      <div className="space-y-6">
+        {/* Audio Section */}
+        <Card>
+          <CardContent className="flex items-center justify-center py-6">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => audioRef.current?.play()}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-6">
-                <div className="text-2xl font-medium text-center">
-                  {flipped ? currentCard?.back : currentCard?.front}
-                </div>
-                {flipped && currentCard?.audioUrl && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="mt-4"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (audioRef.current) {
-                        audioRef.current.play();
-                      }
-                    }}
-                  >
-                    <Volume2 className="h-4 w-4" />
-                  </Button>
-                )}
+              <Volume2 className="h-6 w-6" />
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Image Choices */}
+        <div className="grid grid-cols-2 gap-4">
+          {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
+            <Card
+              key={index}
+              className={`cursor-pointer transition-all ${
+                selectedImage === index
+                  ? showResult
+                    ? index === currentCard.correctImageIndex
+                      ? "ring-4 ring-green-500"
+                      : "ring-4 ring-red-500"
+                    : "ring-4 ring-primary"
+                  : "hover:ring-2 hover:ring-primary"
+              }`}
+              onClick={() => !showResult && handleImageSelection(index)}
+            >
+              <CardContent className="p-2">
+                <img
+                  src={imageUrl}
+                  alt={`Choice ${index + 1}`}
+                  className="w-full h-48 object-cover rounded"
+                />
               </CardContent>
             </Card>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+          ))}
+        </div>
 
-      <div className="flex justify-between mt-6">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentIndex === 0}
-        >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
-
-        {showRating ? (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleRating(false)}
-              className="text-red-500"
-            >
-              <ThumbsDown className="h-4 w-4 mr-2" />
-              Incorrect
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleRating(true)}
-              className="text-green-500"
-            >
-              <ThumbsUp className="h-4 w-4 mr-2" />
-              Correct
-            </Button>
-          </div>
-        ) : (
+        {/* Navigation */}
+        <div className="flex justify-between mt-6">
           <Button
             variant="outline"
-            onClick={handleFlip}
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
           >
-            <RotateCw className="h-4 w-4 mr-2" />
-            Flip
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Previous
           </Button>
-        )}
 
-        <Button
-          onClick={handleNext}
-          disabled={currentIndex === flashcards.length - 1}
-        >
-          Next
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
-      </div>
+          <Button
+            onClick={handleNext}
+            disabled={currentIndex === flashcards.length - 1}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
 
-      {currentCard?.audioUrl && (
         <audio ref={audioRef} src={currentCard.audioUrl} />
-      )}
+      </div>
     </div>
   );
 }

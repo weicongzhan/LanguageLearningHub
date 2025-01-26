@@ -21,13 +21,13 @@ export const lessons = pgTable("lessons", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
-// Flashcards table
+// Flashcards table with multiple choice support
 export const flashcards = pgTable("flashcards", {
   id: serial("id").primaryKey(),
   lessonId: integer("lesson_id").references(() => lessons.id, { onDelete: "cascade" }).notNull(),
-  front: text("front").notNull(),
-  back: text("back").notNull(),
-  audioUrl: text("audio_url"),
+  audioUrl: text("audio_url").notNull(),
+  imageChoices: jsonb("image_choices").default([]).notNull(), // Array of image URLs
+  correctImageIndex: integer("correct_image_index").notNull(), // Index of the correct image in choices
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });

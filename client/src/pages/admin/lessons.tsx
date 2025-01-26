@@ -11,10 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Loader2, Plus, Trash } from "lucide-react";
-import type { Lesson, Flashcard } from "@db/schema";
+import type { Lesson } from "@db/schema";
 
 type LessonFormData = {
   title: string;
@@ -23,9 +25,9 @@ type LessonFormData = {
 };
 
 type FlashcardFormData = {
-  front: string;
-  back: string;
   audio: FileList;
+  images: FileList;
+  correctIndex: string;
 };
 
 export default function AdminLessons() {
@@ -60,12 +62,20 @@ export default function AdminLessons() {
   const createFlashcardMutation = useMutation({
     mutationFn: async (data: FlashcardFormData) => {
       const formData = new FormData();
-      formData.append("front", data.front);
-      formData.append("back", data.back);
       formData.append("lessonId", selectedLesson!.id.toString());
+
+      // Add audio file
       if (data.audio[0]) {
         formData.append("audio", data.audio[0]);
       }
+
+      // Add image files
+      for (let i = 0; i < data.images.length; i++) {
+        formData.append("images", data.images[i]);
+      }
+
+      // Add correct image index
+      formData.append("correctImageIndex", data.correctIndex);
 
       const response = await fetch("/api/flashcards", {
         method: "POST",
@@ -95,6 +105,27 @@ export default function AdminLessons() {
 
   const handleCreateFlashcard = async (data: FlashcardFormData) => {
     if (!selectedLesson) return;
+    if (!data.audio?.length) {
+      return toast({
+        variant: "destructive",
+        title: "Audio required",
+        description: "Please upload an audio file",
+      });
+    }
+    if (!data.images?.length) {
+      return toast({
+        variant: "destructive",
+        title: "Images required",
+        description: "Please upload at least 2 images",
+      });
+    }
+    if (!data.correctIndex) {
+      return toast({
+        variant: "destructive",
+        title: "Correct answer required",
+        description: "Please select the correct image",
+      });
+    }
     try {
       await createFlashcardMutation.mutateAsync(data);
     } catch (error: any) {
@@ -180,19 +211,46 @@ export default function AdminLessons() {
                       onSubmit={flashcardForm.handleSubmit(handleCreateFlashcard)}
                       className="space-y-4"
                     >
-                      <Input
-                        placeholder="Front Text"
-                        {...flashcardForm.register("front", { required: true })}
-                      />
-                      <Input
-                        placeholder="Back Text"
-                        {...flashcardForm.register("back", { required: true })}
-                      />
-                      <Input
-                        type="file"
-                        accept="audio/*"
-                        {...flashcardForm.register("audio")}
-                      />
+                      <div className="space-y-2">
+                        <Label>Audio Recording (required)</Label>
+                        <Input
+                          type="file"
+                          accept="audio/*"
+                          {...flashcardForm.register("audio", { required: true })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Images (at least 2)</Label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          {...flashcardForm.register("images", { required: true })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Select Correct Image</Label>
+                        <RadioGroup 
+                          onValueChange={(value) => flashcardForm.setValue("correctIndex", value)}
+                          className="flex flex-col space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="0" id="image-0" />
+                            <Label htmlFor="image-0">First Image</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id="image-1" />
+                            <Label htmlFor="image-1">Second Image</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="2" id="image-2" />
+                            <Label htmlFor="image-2">Third Image</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
                       <Button
                         type="submit"
                         disabled={createFlashcardMutation.isPending}
