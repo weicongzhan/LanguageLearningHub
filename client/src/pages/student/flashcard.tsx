@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Volume2, RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
-import type { Flashcard, UserLesson } from "@db/schema";
+import type { UserLessonWithRelations } from "@db/schema";
 
 export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
@@ -16,7 +16,7 @@ export default function FlashcardPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const { data: userLesson, isLoading } = useQuery<UserLesson>({
+  const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
     queryKey: [`/api/user-lessons/${user?.id}`, params?.id],
     enabled: !!user && !!params?.id,
   });

@@ -52,6 +52,17 @@ export const userRelations = relations(users, ({ many }) => ({
   userLessons: many(userLessons)
 }));
 
+export const userLessonsRelations = relations(userLessons, ({ one }) => ({
+  user: one(users, {
+    fields: [userLessons.userId],
+    references: [users.id]
+  }),
+  lesson: one(lessons, {
+    fields: [userLessons.lessonId],
+    references: [lessons.id]
+  })
+}));
+
 export const flashcardRelations = relations(flashcards, ({ one }) => ({
   lesson: one(lessons, {
     fields: [flashcards.lessonId],
@@ -78,3 +89,9 @@ export type Flashcard = typeof flashcards.$inferSelect;
 export type InsertFlashcard = typeof flashcards.$inferInsert;
 export type UserLesson = typeof userLessons.$inferSelect;
 export type InsertUserLesson = typeof userLessons.$inferInsert;
+
+export type UserLessonWithRelations = UserLesson & {
+  lesson: Lesson & {
+    flashcards: Flashcard[]
+  }
+};

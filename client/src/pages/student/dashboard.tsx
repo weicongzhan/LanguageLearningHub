@@ -5,17 +5,17 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Loader2, BookOpen } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import type { UserLesson } from "@db/schema";
+import type { UserLessonWithRelations } from "@db/schema";
 
 export default function StudentDashboard() {
   const { user } = useUser();
 
-  const { data: userLessons, isLoading } = useQuery<UserLesson[]>({
+  const { data: userLessons, isLoading } = useQuery<UserLessonWithRelations[]>({
     queryKey: [`/api/user-lessons/${user?.id}`],
     enabled: !!user,
   });
 
-  const calculateProgress = (progress: any) => {
+  const calculateProgress = (progress: Record<string, any>) => {
     if (!progress || Object.keys(progress).length === 0) return 0;
     const total = progress.total || 0;
     const completed = progress.completed || 0;
