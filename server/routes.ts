@@ -67,7 +67,9 @@ export function registerRoutes(app: Express): Server {
     try {
       const audioUrl = req.file ? `/uploads/audio/${req.file.filename}` : undefined;
       const [newFlashcard] = await db.insert(flashcards).values({
-        ...req.body,
+        lessonId: parseInt(req.body.lessonId),
+        front: req.body.front,
+        back: req.body.back,
         audioUrl
       }).returning();
       res.json(newFlashcard);
