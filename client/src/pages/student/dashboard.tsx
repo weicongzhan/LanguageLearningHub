@@ -3,23 +3,12 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Loader2, BookOpen } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import { useState } from "react";
-import { useTranslation, type Language } from "@/lib/translations";
 import type { UserLessonWithRelations } from "@db/schema";
 
 export default function StudentDashboard() {
   const { user } = useUser();
-  const [language, setLanguage] = useState<Language>('en');
-  const { t, languages } = useTranslation(language);
 
   const { data: userLessons, isLoading } = useQuery<UserLessonWithRelations[]>({
     queryKey: [`/api/user-lessons/${user?.id}`],
@@ -35,25 +24,9 @@ export default function StudentDashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">
-            {t('welcome')}, {user?.username}!
-          </h1>
-          <p className="text-muted-foreground">{t('assignedLessons')}</p>
-        </div>
-        <Select value={language} onValueChange={(value) => setLanguage(value as Language)}>
-          <SelectTrigger className="w-24">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {languages.map((lang) => (
-              <SelectItem key={lang} value={lang}>
-                {lang.toUpperCase()}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Welcome, {user?.username}!</h1>
+        <p className="text-muted-foreground">Your assigned lessons are below</p>
       </div>
 
       {isLoading ? (
@@ -76,7 +49,7 @@ export default function StudentDashboard() {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>{t('progress')}</span>
+                    <span>Progress</span>
                     <span>
                       {Math.round(calculateProgress(userLesson.progress))}%
                     </span>
@@ -87,14 +60,14 @@ export default function StudentDashboard() {
                   />
                 </div>
                 <Link href={`/lesson/${userLesson.lessonId}`}>
-                  <Button className="w-full mt-4">{t('continueButton')}</Button>
+                  <Button className="w-full mt-4">Continue Learning</Button>
                 </Link>
               </CardContent>
             </Card>
           ))}
           {userLessons?.length === 0 && (
             <p className="text-muted-foreground col-span-full text-center">
-              {t('noLessons')}
+              No lessons assigned yet
             </p>
           )}
         </div>
