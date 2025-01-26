@@ -86,10 +86,12 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.get("/api/user-lessons/:userId", async (req, res) => {
+  // Get user lessons with flashcards
+  app.get("/api/user-lessons/:userId/:lessonId?", async (req, res) => {
     try {
-      const userLessonsList = await db.query.userLessons.findMany({
-        where: eq(userLessons.userId, parseInt(req.params.userId)),
+      const { userId, lessonId } = req.params;
+      let query = db.query.userLessons.findMany({
+        where: eq(userLessons.userId, parseInt(userId)),
         with: {
           lesson: {
             with: {
@@ -98,7 +100,26 @@ export function registerRoutes(app: Express): Server {
           }
         }
       });
-      res.json(userLessonsList);
+
+      // If lessonId is provided, filter for specific lesson
+      if (lessonId) {
+        query = db.query.userLessons.findMany({
+          where: and(
+            eq(userLessons.userId, parseInt(userId)),
+            eq(userLessons.lessonId, parseInt(lessonId))
+          ),
+          with: {
+            lesson: {
+              with: {
+                flashcards: true
+              }
+            }
+          }
+        });
+      }
+
+      const userLessonsList = await query;
+      res.json(lessonId ? userLessonsList[0] : userLessonsList);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user lessons" });
     }
@@ -109,7 +130,11 @@ export function registerRoutes(app: Express): Server {
     try {
       const [updated] = await db
         .update(userLessons)
-        .set({ progress: req.body.progress })
+        .set({ 
+          progress: req.body.progress,
+          totalStudyTime: req.body.totalStudyTime,
+          lastStudyDate: new Date()
+        })
         .where(eq(userLessons.id, parseInt(req.params.id)))
         .returning();
       res.json(updated);

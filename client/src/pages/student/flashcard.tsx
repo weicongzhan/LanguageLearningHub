@@ -19,24 +19,25 @@ export default function FlashcardPage() {
   const [showRating, setShowRating] = useState(false);
 
   const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
-    queryKey: [`/api/user-lessons/${user?.id}`, params?.id],
+    queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
 
   const updateProgressMutation = useMutation({
-    mutationFn: async (data: { progress: Progress, totalStudyTime: number }) => {
+    mutationFn: async (data: { progress: Progress; totalStudyTime: number }) => {
       if (!userLesson?.id) return;
       const response = await fetch(`/api/user-lessons/${userLesson.id}/progress`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [`/api/user-lessons/${user?.id}`, params?.id],
+        queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
       });
     },
   });
@@ -140,7 +141,6 @@ export default function FlashcardPage() {
 
     handleNext();
   };
-
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
