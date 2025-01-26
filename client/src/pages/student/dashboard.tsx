@@ -15,10 +15,10 @@ export default function StudentDashboard() {
     enabled: !!user,
   });
 
-  const calculateProgress = (progress: Record<string, any>) => {
-    if (!progress || Object.keys(progress).length === 0) return 0;
-    const total = progress.total || 0;
-    const completed = progress.completed || 0;
+  const calculateProgress = (progress: Record<string, unknown>) => {
+    if (!progress || typeof progress !== 'object') return 0;
+    const total = typeof progress.total === 'number' ? progress.total : 0;
+    const completed = typeof progress.completed === 'number' ? progress.completed : 0;
     return total > 0 ? (completed / total) * 100 : 0;
   };
 
@@ -65,7 +65,7 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
           ))}
-          {userLessons?.length === 0 && (
+          {(!userLessons || userLessons.length === 0) && (
             <p className="text-muted-foreground col-span-full text-center">
               No lessons assigned yet
             </p>
