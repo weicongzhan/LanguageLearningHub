@@ -32,12 +32,18 @@ export const flashcards = pgTable("flashcards", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
-// User lesson access table
+// Enhanced user lesson progress tracking
 export const userLessons = pgTable("user_lessons", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   lessonId: integer("lesson_id").references(() => lessons.id, { onDelete: "cascade" }).notNull(),
-  progress: jsonb("progress").default({}).notNull(),
+  totalStudyTime: integer("total_study_time").default(0).notNull(), // in seconds
+  lastStudyDate: timestamp("last_study_date"),
+  progress: jsonb("progress").default({
+    total: 0,
+    completed: 0,
+    reviews: [] // Array of review records with timestamp and success rate
+  }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
@@ -89,6 +95,18 @@ export type Flashcard = typeof flashcards.$inferSelect;
 export type InsertFlashcard = typeof flashcards.$inferInsert;
 export type UserLesson = typeof userLessons.$inferSelect;
 export type InsertUserLesson = typeof userLessons.$inferInsert;
+
+export type Review = {
+  timestamp: string;
+  flashcardId: number;
+  successful: boolean;
+};
+
+export type Progress = {
+  total: number;
+  completed: number;
+  reviews: Review[];
+};
 
 export type UserLessonWithRelations = UserLesson & {
   lesson: Lesson & {

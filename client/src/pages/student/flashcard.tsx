@@ -3,10 +3,10 @@ import { useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Volume2, RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Volume2, RotateCw, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
-import type { UserLessonWithRelations } from "@db/schema";
+import type { UserLessonWithRelations, Progress } from "@db/schema";
 
 export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
@@ -15,6 +15,8 @@ export default function FlashcardPage() {
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const studyStartTimeRef = useRef<Date>(new Date());
+  const [showRating, setShowRating] = useState(false);
 
   const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
     queryKey: [`/api/user-lessons/${user?.id}`, params?.id],
@@ -22,11 +24,11 @@ export default function FlashcardPage() {
   });
 
   const updateProgressMutation = useMutation({
-    mutationFn: async (progress: any) => {
+    mutationFn: async (data: { progress: Progress, totalStudyTime: number }) => {
       const response = await fetch(`/api/user-lessons/${userLesson?.id}/progress`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progress }),
+        body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
@@ -43,15 +45,33 @@ export default function FlashcardPage() {
 
   useEffect(() => {
     if (userLesson && flashcards.length > 0) {
-      const progress = userLesson.progress || {};
+      const progress = userLesson.progress as Progress || {
+        total: flashcards.length,
+        completed: 0,
+        reviews: []
+      };
       progress.total = flashcards.length;
-      updateProgressMutation.mutate(progress);
+      updateProgressMutation.mutate({
+        progress,
+        totalStudyTime: userLesson.totalStudyTime || 0
+      });
     }
+    return () => {
+      // Update study time when component unmounts
+      if (userLesson) {
+        const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
+        updateProgressMutation.mutate({
+          progress: userLesson.progress as Progress,
+          totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
+        });
+      }
+    };
   }, [userLesson, flashcards.length]);
 
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setFlipped(false);
+      setShowRating(false);
       setCurrentIndex((prev) => prev + 1);
     }
   };
@@ -59,15 +79,47 @@ export default function FlashcardPage() {
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setFlipped(false);
+      setShowRating(false);
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
   const handleFlip = () => {
     setFlipped((prev) => !prev);
-    if (!flipped && currentCard.audioUrl && audioRef.current) {
-      audioRef.current.play();
+    if (!flipped) {
+      setShowRating(true);
+      if (currentCard.audioUrl && audioRef.current) {
+        audioRef.current.play();
+      }
     }
+  };
+
+  const handleRating = async (successful: boolean) => {
+    if (!userLesson) return;
+
+    const progress = userLesson.progress as Progress || {
+      total: flashcards.length,
+      completed: 0,
+      reviews: []
+    };
+
+    progress.reviews.push({
+      timestamp: new Date().toISOString(),
+      flashcardId: currentCard.id,
+      successful
+    });
+
+    // Update completed count if this is first time seeing the card
+    if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
+      progress.completed++;
+    }
+
+    await updateProgressMutation.mutateAsync({
+      progress,
+      totalStudyTime: userLesson.totalStudyTime || 0
+    });
+
+    handleNext();
   };
 
   if (isLoading) {
@@ -136,13 +188,36 @@ export default function FlashcardPage() {
           <ChevronLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => setFlipped((prev) => !prev)}
-        >
-          <RotateCw className="h-4 w-4 mr-2" />
-          Flip
-        </Button>
+
+        {showRating ? (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleRating(false)}
+              className="text-red-500"
+            >
+              <ThumbsDown className="h-4 w-4 mr-2" />
+              Incorrect
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleRating(true)}
+              className="text-green-500"
+            >
+              <ThumbsUp className="h-4 w-4 mr-2" />
+              Correct
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => setFlipped((prev) => !prev)}
+          >
+            <RotateCw className="h-4 w-4 mr-2" />
+            Flip
+          </Button>
+        )}
+
         <Button
           onClick={handleNext}
           disabled={currentIndex === flashcards.length - 1}

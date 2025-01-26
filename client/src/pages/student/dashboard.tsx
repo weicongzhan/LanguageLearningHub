@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Loader2, BookOpen } from "lucide-react";
+import { Loader2, BookOpen, Clock, Target } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations } from "@db/schema";
+import type { Progress as ProgressType } from "@db/schema";
 
 export default function StudentDashboard() {
   const { user } = useUser();
@@ -15,11 +16,23 @@ export default function StudentDashboard() {
     enabled: !!user,
   });
 
-  const calculateProgress = (progress: Record<string, unknown>) => {
-    if (!progress || typeof progress !== 'object') return 0;
-    const total = typeof progress.total === 'number' ? progress.total : 0;
-    const completed = typeof progress.completed === 'number' ? progress.completed : 0;
-    return total > 0 ? (completed / total) * 100 : 0;
+  const calculateProgress = (progress: ProgressType | null) => {
+    if (!progress) return { percent: 0, success: 0 };
+    const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+    const reviews = progress.reviews || [];
+    const success = reviews.length > 0 
+      ? (reviews.filter(review => review.successful).length / reviews.length) * 100 
+      : 0;
+    return { percent, success };
+  };
+
+  const formatStudyTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   return (
@@ -35,36 +48,51 @@ export default function StudentDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {userLessons?.map((userLesson) => (
-            <Card key={userLesson.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  {userLesson.lesson.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {userLesson.lesson.description}
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>
-                      {Math.round(calculateProgress(userLesson.progress))}%
-                    </span>
+          {userLessons?.map((userLesson) => {
+            const { percent, success } = calculateProgress(userLesson.progress as ProgressType);
+            return (
+              <Card key={userLesson.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    {userLesson.lesson.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {userLesson.lesson.description}
+                  </p>
+
+                  <div className="space-y-4">
+                    {/* Progress */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{Math.round(percent)}%</span>
+                      </div>
+                      <ProgressBar value={percent} className="h-2" />
+                    </div>
+
+                    {/* Study Stats */}
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{formatStudyTime(userLesson.totalStudyTime || 0)}</span>
+                      </div>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <span>{Math.round(success)}% correct</span>
+                      </div>
+                    </div>
+
+                    <Link href={`/lesson/${userLesson.lessonId}`}>
+                      <Button className="w-full">Continue Learning</Button>
+                    </Link>
                   </div>
-                  <Progress
-                    value={calculateProgress(userLesson.progress)}
-                    className="h-2"
-                  />
-                </div>
-                <Link href={`/lesson/${userLesson.lessonId}`}>
-                  <Button className="w-full mt-4">Continue Learning</Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
           {(!userLessons || userLessons.length === 0) && (
             <p className="text-muted-foreground col-span-full text-center">
               No lessons assigned yet
