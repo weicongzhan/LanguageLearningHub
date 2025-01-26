@@ -25,7 +25,8 @@ export default function FlashcardPage() {
 
   const updateProgressMutation = useMutation({
     mutationFn: async (data: { progress: Progress, totalStudyTime: number }) => {
-      const response = await fetch(`/api/user-lessons/${userLesson?.id}/progress`, {
+      if (!userLesson?.id) return;
+      const response = await fetch(`/api/user-lessons/${userLesson.id}/progress`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -40,7 +41,25 @@ export default function FlashcardPage() {
     },
   });
 
-  const flashcards = userLesson?.lesson.flashcards || [];
+  // Ensure we have lesson data loaded
+  if (isLoading || !userLesson?.lesson) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const flashcards = userLesson.lesson.flashcards || [];
+  if (flashcards.length === 0) {
+    return (
+      <div className="container mx-auto p-6 text-center">
+        <h1 className="text-3xl font-bold mb-4">{userLesson.lesson.title}</h1>
+        <p className="text-muted-foreground">No flashcards available for this lesson.</p>
+      </div>
+    );
+  }
+
   const currentCard = flashcards[currentIndex];
 
   useEffect(() => {
@@ -88,7 +107,7 @@ export default function FlashcardPage() {
     setFlipped((prev) => !prev);
     if (!flipped) {
       setShowRating(true);
-      if (currentCard.audioUrl && audioRef.current) {
+      if (currentCard?.audioUrl && audioRef.current) {
         audioRef.current.play();
       }
     }
@@ -122,18 +141,11 @@ export default function FlashcardPage() {
     handleNext();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">{userLesson?.lesson.title}</h1>
+        <h1 className="text-3xl font-bold">{userLesson.lesson.title}</h1>
         <p className="text-muted-foreground">
           Card {currentIndex + 1} of {flashcards.length}
         </p>
