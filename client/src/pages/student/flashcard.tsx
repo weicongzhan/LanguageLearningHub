@@ -14,15 +14,17 @@ export default function FlashcardPage() {
   const queryClient = useQueryClient();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showRating, setShowRating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
-  const [showRating, setShowRating] = useState(false);
 
+  // Query for lesson data
   const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
 
+  // Progress mutation
   const updateProgressMutation = useMutation({
     mutationFn: async (data: { progress: Progress; totalStudyTime: number }) => {
       if (!userLesson?.id) return;
@@ -42,7 +44,35 @@ export default function FlashcardPage() {
     },
   });
 
-  // Ensure we have lesson data loaded
+  // Effects
+  useEffect(() => {
+    // Initialize progress when lesson loads
+    if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
+      const progress = userLesson.progress as Progress || {
+        total: userLesson.lesson.flashcards.length,
+        completed: 0,
+        reviews: []
+      };
+      progress.total = userLesson.lesson.flashcards.length;
+      updateProgressMutation.mutate({
+        progress,
+        totalStudyTime: userLesson.totalStudyTime || 0
+      });
+    }
+
+    // Cleanup - update study time
+    return () => {
+      if (userLesson) {
+        const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
+        updateProgressMutation.mutate({
+          progress: userLesson.progress as Progress,
+          totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
+        });
+      }
+    };
+  }, [userLesson?.lesson?.flashcards?.length]);
+
+  // Loading state
   if (isLoading || !userLesson?.lesson) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -52,6 +82,8 @@ export default function FlashcardPage() {
   }
 
   const flashcards = userLesson.lesson.flashcards || [];
+
+  // No flashcards state
   if (flashcards.length === 0) {
     return (
       <div className="container mx-auto p-6 text-center">
@@ -63,31 +95,7 @@ export default function FlashcardPage() {
 
   const currentCard = flashcards[currentIndex];
 
-  useEffect(() => {
-    if (userLesson && flashcards.length > 0) {
-      const progress = userLesson.progress as Progress || {
-        total: flashcards.length,
-        completed: 0,
-        reviews: []
-      };
-      progress.total = flashcards.length;
-      updateProgressMutation.mutate({
-        progress,
-        totalStudyTime: userLesson.totalStudyTime || 0
-      });
-    }
-    return () => {
-      // Update study time when component unmounts
-      if (userLesson) {
-        const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
-        updateProgressMutation.mutate({
-          progress: userLesson.progress as Progress,
-          totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
-        });
-      }
-    };
-  }, [userLesson, flashcards.length]);
-
+  // Event handlers
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setFlipped(false);
@@ -223,7 +231,7 @@ export default function FlashcardPage() {
         ) : (
           <Button
             variant="outline"
-            onClick={() => setFlipped((prev) => !prev)}
+            onClick={handleFlip}
           >
             <RotateCw className="h-4 w-4 mr-2" />
             Flip
