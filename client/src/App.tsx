@@ -22,10 +22,12 @@ function Router() {
     );
   }
 
+  // If not logged in, show auth page
   if (!user) {
     return <AuthPage />;
   }
 
+  // Show admin or student routes based on user role
   return (
     <Switch>
       {user.isAdmin ? (
