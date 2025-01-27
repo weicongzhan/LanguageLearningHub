@@ -71,6 +71,19 @@ export default function AdminLessons() {
     mutationFn: async ({ data, isEdit = false }: { data: FlashcardFormData, isEdit?: boolean }) => {
       if (!selectedLesson) throw new Error("No lesson selected");
 
+      // Step 1: Initialize flashcard creation
+      const initResponse = await fetch("/api/flashcards/init", {
+        method: "POST",
+        credentials: 'include'
+      });
+
+      if (!initResponse.ok) {
+        throw new Error(await initResponse.text());
+      }
+
+      const { flashcardId } = await initResponse.json();
+
+      // Step 2: Upload files
       const formData = new FormData();
       formData.append("lessonId", selectedLesson.id.toString());
 
@@ -86,22 +99,18 @@ export default function AdminLessons() {
 
       formData.append("correctImageIndex", data.correctIndex);
 
-      if (isEdit && selectedFlashcard) {
-        formData.append("flashcardId", selectedFlashcard.id.toString());
-      }
-
-      const response = await fetch("/api/flashcards", {
-        method: isEdit ? "PUT" : "POST",
+      const uploadResponse = await fetch(`/api/flashcards/${flashcardId}/upload`, {
+        method: "POST",
         body: formData,
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
         throw new Error(errorText);
       }
 
-      return response.json();
+      return uploadResponse.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
@@ -355,7 +364,7 @@ export default function AdminLessons() {
 
                         <div className="space-y-2">
                           <Label>Select Correct Image</Label>
-                          <RadioGroup 
+                          <RadioGroup
                             onValueChange={(value) => flashcardForm.setValue("correctIndex", value)}
                             defaultValue={selectedFlashcard ? String(selectedFlashcard.correctImageIndex) : undefined}
                             className="flex flex-col space-y-2"
