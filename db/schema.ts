@@ -25,6 +25,8 @@ export const lessons = pgTable("lessons", {
 export const flashcards = pgTable("flashcards", {
   id: serial("id").primaryKey(),
   lessonId: integer("lesson_id").references(() => lessons.id, { onDelete: "cascade" }).notNull(),
+  front: text("front"), // Make front optional
+  back: text("back"), // Make back optional
   audioUrl: text("audio_url").notNull(),
   imageChoices: jsonb("image_choices").default([]).notNull(), // Array of image URLs
   correctImageIndex: integer("correct_image_index").notNull(), // Index of the correct image in choices
