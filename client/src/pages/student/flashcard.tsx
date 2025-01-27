@@ -60,6 +60,7 @@ export default function FlashcardPage() {
   // Handle error cases
   useEffect(() => {
     if (error) {
+      console.error('Lesson access error:', error);
       toast({
         variant: "destructive",
         title: "错误",
@@ -72,6 +73,7 @@ export default function FlashcardPage() {
   // If no valid lesson found, redirect to dashboard
   useEffect(() => {
     if (!isLoading && !userLesson) {
+      console.error('No lesson found for ID:', params?.id);
       toast({
         variant: "destructive",
         title: "错误",
@@ -79,7 +81,7 @@ export default function FlashcardPage() {
       });
       setLocation("/");
     }
-  }, [isLoading, userLesson, setLocation]);
+  }, [isLoading, userLesson, setLocation, params?.id]);
 
   // Effects
   useEffect(() => {
@@ -127,7 +129,6 @@ export default function FlashcardPage() {
     },
   });
 
-
   if (isLoading || !userLesson?.lesson) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -160,6 +161,9 @@ export default function FlashcardPage() {
             ? "No flashcards need review at this time. Great job!"
             : "No flashcards available for this lesson."}
         </p>
+        <Button onClick={() => setLocation("/")} className="mt-4">
+          返回主页
+        </Button>
       </div>
     );
   }
@@ -171,6 +175,13 @@ export default function FlashcardPage() {
       setSelectedImage(null);
       setShowResult(false);
       setCurrentIndex((prev) => prev + 1);
+    } else {
+      // If we're at the last card, show a completion message
+      toast({
+        title: "课程完成",
+        description: "恭喜你完成了这节课程！",
+      });
+      setLocation("/");
     }
   };
 
