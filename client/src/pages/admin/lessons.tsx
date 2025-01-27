@@ -467,28 +467,34 @@ export default function AdminLessons() {
 
                         <div className="space-y-2">
                           <Label>Select Correct Image</Label>
-                          <RadioGroup
-                            onValueChange={(value) => flashcardForm.setValue("correctIndex", value)}
-                            defaultValue={selectedFlashcard ? String(selectedFlashcard.correctImageIndex) : undefined}
-                            className="flex flex-col space-y-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="0" id="image-0" />
-                              <Label htmlFor="image-0">First Image</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="1" id="image-1" />
-                              <Label htmlFor="image-1">Second Image</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="2" id="image-2" />
-                              <Label htmlFor="image-2">Third Image</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="3" id="image-3" />
-                              <Label htmlFor="image-3">Fourth Image</Label>
-                            </div>
-                          </RadioGroup>
+                          {selectedFlashcard ? (
+                            <RadioGroup
+                              onValueChange={(value) => flashcardForm.setValue("correctIndex", value)}
+                              defaultValue={String(selectedFlashcard.correctImageIndex)}
+                              className="flex flex-col space-y-2"
+                            >
+                              {(selectedFlashcard.imageChoices as string[]).map((url, idx) => (
+                                <div key={idx} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={String(idx)} id={`image-${idx}`} />
+                                  <Label htmlFor={`image-${idx}`}>
+                                    {url.split('/').pop()?.split('-').slice(2).join('-') || `Image ${idx + 1}`}
+                                  </Label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          ) : (
+                            <RadioGroup
+                              onValueChange={(value) => flashcardForm.setValue("correctIndex", value)}
+                              className="flex flex-col space-y-2"
+                            >
+                              {Array.from(flashcardForm.watch("images") || []).map((file: File, idx) => (
+                                <div key={idx} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={String(idx)} id={`image-${idx}`} />
+                                  <Label htmlFor={`image-${idx}`}>{file.name}</Label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          )}
                         </div>
 
                         <Button
