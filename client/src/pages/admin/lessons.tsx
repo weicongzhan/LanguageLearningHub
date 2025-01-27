@@ -10,12 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { Loader2, Plus, Pencil, Volume2 } from "lucide-react";
+import { Loader2, Plus, Pencil, Volume2, Upload } from "lucide-react";
 import type { Lesson, Flashcard } from "@db/schema";
 import {
   Select,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CSVReader } from "@/components/CSVReader";
 
 type LessonFormData = {
   title: string;
@@ -238,39 +240,114 @@ export default function AdminLessons() {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Lessons Management</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Lesson
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Lesson</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={lessonForm.handleSubmit(handleCreateLesson)} className="space-y-4">
-              <Input
-                placeholder="Lesson Title"
-                {...lessonForm.register("title", { required: true })}
-              />
-              <Textarea
-                placeholder="Lesson Description"
-                {...lessonForm.register("description")}
-              />
-              <Input
-                placeholder="Language"
-                {...lessonForm.register("language", { required: true })}
-              />
-              <Button type="submit" disabled={createLessonMutation.isPending}>
-                {createLessonMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Lesson
+        <div className="flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                批量导入闪卡
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>批量导入闪卡</DialogTitle>
+                <DialogDescription>
+                  请上传CSV文件。文件应包含以下列：lessonId, audioUrl, imageChoices, correctImageIndex
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const file = formData.get('file') as File;
+
+                if (!file) {
+                  toast({
+                    variant: "destructive",
+                    title: "错误",
+                    description: "请选择一个CSV文件"
+                  });
+                  return;
+                }
+
+                try {
+                  const formData = new FormData();
+                  formData.append('file', file);
+
+                  const response = await fetch('/api/flashcards/bulk-import', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                  });
+
+                  if (!response.ok) {
+                    throw new Error(await response.text());
+                  }
+
+                  const result = await response.json();
+
+                  toast({
+                    title: "导入成功",
+                    description: `成功导入 ${result.imported} 个闪卡`
+                  });
+
+                  queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+                } catch (error: any) {
+                  toast({
+                    variant: "destructive",
+                    title: "导入失败",
+                    description: error.message
+                  });
+                }
+              }} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>CSV文件</Label>
+                  <Input
+                    type="file"
+                    name="file"
+                    accept=".csv"
+                    required
+                  />
+                </div>
+                <Button type="submit">
+                  导入
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New Lesson
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Lesson</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={lessonForm.handleSubmit(handleCreateLesson)} className="space-y-4">
+                <Input
+                  placeholder="Lesson Title"
+                  {...lessonForm.register("title", { required: true })}
+                />
+                <Textarea
+                  placeholder="Lesson Description"
+                  {...lessonForm.register("description")}
+                />
+                <Input
+                  placeholder="Language"
+                  {...lessonForm.register("language", { required: true })}
+                />
+                <Button type="submit" disabled={createLessonMutation.isPending}>
+                  {createLessonMutation.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create Lesson
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (

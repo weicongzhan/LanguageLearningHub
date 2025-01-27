@@ -2,10 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { lessons, flashcards, userLessons, users } from "@db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { lessons, flashcards } from "@db/schema";
+import { eq } from "drizzle-orm";
 import multer from "multer";
-import { v4 as uuidv4 } from "uuid";
+import { parse } from 'csv-parse';
 import path from "path";
 import fs from "fs";
 import express from 'express';
@@ -218,6 +218,108 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ error: "Failed to fetch students" });
     }
   });
+
+  // Add bulk import endpoint
+  app.post("/api/flashcards/bulk-import", requireAdmin, upload.single('file'), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const results: any[] = [];
+    let imported = 0;
+
+    try {
+      // Read and parse CSV file
+      const fileContent = fs.readFileSync(req.file.path, 'utf-8');
+
+      const parser = parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true
+      });
+
+      for await (const record of parser) {
+        try {
+          // Validate required fields
+          if (!record.lessonId || !record.audioUrl || !record.imageChoices || !record.correctImageIndex) {
+            results.push({
+              success: false,
+              error: "Missing required fields",
+              record
+            });
+            continue;
+          }
+
+          // Parse and validate data
+          const lessonId = parseInt(record.lessonId);
+          const imageChoices = JSON.parse(record.imageChoices);
+          const correctImageIndex = parseInt(record.correctImageIndex);
+
+          if (isNaN(lessonId) || !Array.isArray(imageChoices) || isNaN(correctImageIndex)) {
+            results.push({
+              success: false,
+              error: "Invalid data format",
+              record
+            });
+            continue;
+          }
+
+          // Check if lesson exists
+          const [lesson] = await db
+            .select()
+            .from(lessons)
+            .where(eq(lessons.id, lessonId))
+            .limit(1);
+
+          if (!lesson) {
+            results.push({
+              success: false,
+              error: `Lesson with ID ${lessonId} not found`,
+              record
+            });
+            continue;
+          }
+
+          // Create flashcard
+          const [flashcard] = await db.insert(flashcards)
+            .values({
+              lessonId,
+              audioUrl: record.audioUrl,
+              imageChoices,
+              correctImageIndex
+            })
+            .returning();
+
+          results.push({
+            success: true,
+            flashcardId: flashcard.id
+          });
+
+          imported++;
+        } catch (error) {
+          results.push({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+            record
+          });
+        }
+      }
+
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
+
+      res.json({
+        imported,
+        results
+      });
+    } catch (error) {
+      console.error('Bulk import error:', error);
+      res.status(500).json({ 
+        error: "Failed to process CSV file",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
 
   // Lesson routes
   app.get("/api/lessons", async (req, res) => {
