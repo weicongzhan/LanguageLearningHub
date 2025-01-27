@@ -10,25 +10,6 @@ import path from "path";
 import fs from "fs";
 import express from 'express';
 
-const createUploadDir = (flashcardId: string) => {
-  const baseDir = path.join(process.cwd(), 'uploads');
-  if (!fs.existsSync(baseDir)) {
-    fs.mkdirSync(baseDir);
-  }
-
-  const flashcardDir = path.join(baseDir, flashcardId);
-  if (!fs.existsSync(flashcardDir)) {
-    fs.mkdirSync(flashcardDir);
-  }
-  console.log('Created upload directory:', flashcardDir);
-  return flashcardDir;
-};
-
-// Helper function to create URL friendly paths
-const createUrlPath = (...parts: string[]) => {
-  return '/' + parts.join('/').replace(/\\/g, '/');
-};
-
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -36,7 +17,15 @@ const storage = multer.diskStorage({
     if (!flashcardId) {
       return cb(new Error("Flashcard ID is required"), '');
     }
-    const uploadDir = createUploadDir(flashcardId);
+    // 创建上传目录
+    const baseDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir);
+    }
+    const uploadDir = path.join(baseDir, flashcardId);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
     console.log('File destination:', { uploadDir, file: file.originalname, flashcardId });
     cb(null, uploadDir);
   },
@@ -59,13 +48,8 @@ const upload = multer({
   }
 });
 
-const uploadFiles = upload.fields([
-  { name: 'audio', maxCount: 1 },
-  { name: 'images', maxCount: 4 }
-]);
-
 export function registerRoutes(app: Express): Server {
-  // Serve uploaded files - 确保uploads目录存在并且在其他路由之前配置
+  // 确保uploads目录存在并配置静态文件服务
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
@@ -108,27 +92,26 @@ export function registerRoutes(app: Express): Server {
     const flashcardId = uuidv4();
     console.log('Starting flashcard creation with ID:', flashcardId);
 
-    // Handle the file upload
-    const handleUpload = new Promise((resolve, reject) => {
-      const uploadMiddleware = upload.fields([
-        { name: 'audio', maxCount: 1 },
-        { name: 'images', maxCount: 4 }
-      ]);
-
-      // Add flashcardId to the request body before processing the upload
-      const wrappedUpload = (req: any, res: any) => {
-        req.body = { ...req.body, flashcardId };
-        uploadMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(req.files);
-        });
-      };
-
-      wrappedUpload(req, res);
-    });
+    // 创建处理上传的中间件
+    const uploadMiddleware = upload.fields([
+      { name: 'audio', maxCount: 1 },
+      { name: 'images', maxCount: 4 }
+    ]);
 
     try {
-      const files = await handleUpload as { [fieldname: string]: Express.Multer.File[] };
+      // 封装上传处理为Promise
+      await new Promise((resolve, reject) => {
+        const wrappedUpload = (req: any, res: any) => {
+          req.body = { ...req.body, flashcardId };
+          uploadMiddleware(req, res, (err) => {
+            if (err) reject(err);
+            else resolve(req.files);
+          });
+        };
+        wrappedUpload(req, res);
+      });
+
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       console.log('Uploaded files:', files);
 
       const audioFile = files.audio?.[0];
@@ -142,10 +125,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "At least 2 images are required" });
       }
 
-      const audioUrl = createUrlPath('uploads', flashcardId, audioFile.filename);
-      const imageUrls = imageFiles.map(file => 
-        createUrlPath('uploads', flashcardId, file.filename)
-      );
+      const audioUrl = `/uploads/${flashcardId}/${audioFile.filename}`;
+      const imageUrls = imageFiles.map(file => `/uploads/${flashcardId}/${file.filename}`);
       const correctImageIndex = parseInt(req.body.correctImageIndex);
 
       if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
@@ -155,10 +136,10 @@ export function registerRoutes(app: Express): Server {
       console.log('Creating flashcard with paths:', { audioUrl, imageUrls });
 
       // 验证文件是否存在
-      const audioPath = path.join(process.cwd(), audioUrl);
+      const audioPath = path.join(process.cwd(), 'uploads', flashcardId, audioFile.filename);
       console.log('Checking audio file exists:', audioPath, fs.existsSync(audioPath));
-      imageUrls.forEach((url, idx) => {
-        const imagePath = path.join(process.cwd(), url);
+      imageFiles.forEach((file, idx) => {
+        const imagePath = path.join(process.cwd(), 'uploads', flashcardId, file.filename);
         console.log(`Checking image ${idx} exists:`, imagePath, fs.existsSync(imagePath));
       });
 
@@ -404,3 +385,13 @@ export function registerRoutes(app: Express): Server {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Helper function to create URL friendly paths (kept for PUT and DELETE routes)
+const createUrlPath = (...parts: string[]) => {
+  return '/' + parts.join('/').replace(/\\/g, '/');
+};
+
+const uploadFiles = upload.fields([
+  { name: 'audio', maxCount: 1 },
+  { name: 'images', maxCount: 4 }
+]);
