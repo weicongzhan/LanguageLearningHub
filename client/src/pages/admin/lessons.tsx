@@ -15,8 +15,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { Loader2, Plus, Trash } from "lucide-react";
-import type { Lesson } from "@db/schema";
+import { Loader2, Plus } from "lucide-react";
+import type { Lesson, Flashcard } from "@db/schema";
 
 type LessonFormData = {
   title: string;
@@ -30,12 +30,16 @@ type FlashcardFormData = {
   correctIndex: string;
 };
 
+type LessonWithFlashcards = Lesson & {
+  flashcards: Flashcard[];
+};
+
 export default function AdminLessons() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: lessons, isLoading } = useQuery<Lesson[]>({
+  const { data: lessons, isLoading } = useQuery<LessonWithFlashcards[]>({
     queryKey: ["/api/lessons"],
   });
 
@@ -48,6 +52,7 @@ export default function AdminLessons() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
       if (!response.ok) throw new Error(await response.text());
       return response.json();
@@ -61,27 +66,32 @@ export default function AdminLessons() {
 
   const createFlashcardMutation = useMutation({
     mutationFn: async (data: FlashcardFormData) => {
-      const formData = new FormData();
-      formData.append("lessonId", selectedLesson!.id.toString());
+      if (!selectedLesson) throw new Error("No lesson selected");
 
-      // Add audio file
+      const formData = new FormData();
+      formData.append("lessonId", selectedLesson.id.toString());
+
       if (data.audio[0]) {
         formData.append("audio", data.audio[0]);
       }
 
-      // Add image files
       for (let i = 0; i < data.images.length; i++) {
         formData.append("images", data.images[i]);
       }
 
-      // Add correct image index
       formData.append("correctImageIndex", data.correctIndex);
 
       const response = await fetch("/api/flashcards", {
         method: "POST",
         body: formData,
+        credentials: 'include'
       });
-      if (!response.ok) throw new Error(await response.text());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
       return response.json();
     },
     onSuccess: () => {
@@ -194,6 +204,9 @@ export default function AdminLessons() {
                 <p className="text-sm font-medium mb-4">
                   Language: {lesson.language}
                 </p>
+                <p className="text-sm font-medium mb-4">
+                  Flashcards: {lesson.flashcards?.length || 0}
+                </p>
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button
@@ -266,6 +279,11 @@ export default function AdminLessons() {
               </CardContent>
             </Card>
           ))}
+          {(!lessons || lessons.length === 0) && (
+            <p className="text-muted-foreground col-span-full text-center">
+              No lessons available. Create your first lesson to get started.
+            </p>
+          )}
         </div>
       )}
     </div>
