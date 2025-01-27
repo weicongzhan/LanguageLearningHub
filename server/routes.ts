@@ -23,21 +23,35 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const flashcardId = req.params.flashcardId;
     const ext = path.extname(file.originalname);
-    const filename = `${flashcardId}-${file.fieldname}${ext}`;
+    let filename: string;
+
+    if (file.fieldname === 'audio') {
+      filename = `${flashcardId}-${file.fieldname}${ext}`;
+    } else {
+      // For images, add an index to make each filename unique
+      const timestamp = Date.now();
+      filename = `${flashcardId}-${file.fieldname}-${timestamp}${ext}`;
+    }
+
     console.log('Generated filename:', filename);
     cb(null, filename);
   }
 });
 
+// Filter to only allow certain file types
+const fileFilter = (req: any, file: any, cb: any) => {
+  if (file.fieldname === 'audio' && !file.mimetype.startsWith('audio/')) {
+    return cb(new Error('Invalid audio file type'), false);
+  }
+  if (file.fieldname === 'images' && !file.mimetype.startsWith('image/')) {
+    return cb(new Error('Invalid image file type'), false);
+  }
+  cb(null, true);
+};
+
 const upload = multer({ 
   storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/') || file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only audio and image files are allowed.'));
-    }
-  }
+  fileFilter
 });
 
 export function registerRoutes(app: Express): Server {
