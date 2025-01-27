@@ -21,10 +21,16 @@ const createUploadDir = (flashcardId?: string) => {
     if (!fs.existsSync(flashcardDir)) {
       fs.mkdirSync(flashcardDir);
     }
+    console.log('Created upload directory:', flashcardDir);
     return flashcardDir;
   }
 
   return baseDir;
+};
+
+// Helper function to create URL friendly paths
+const createUrlPath = (...parts: string[]) => {
+  return '/' + parts.join('/').replace(/\\/g, '/');
 };
 
 // Configure multer for file uploads
@@ -32,11 +38,13 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const flashcardId = req.body.flashcardId || uuidv4();
     const uploadDir = createUploadDir(flashcardId);
+    console.log('File destination:', { uploadDir, file: file.originalname });
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     const filename = file.fieldname === 'audio' ? 'audio' + ext : `image-${Date.now()}${ext}`;
+    console.log('Generated filename:', filename);
     cb(null, filename);
   }
 });
@@ -57,14 +65,14 @@ const uploadFiles = upload.fields([
   { name: 'images', maxCount: 4 }
 ]);
 
-// Helper function to create URL friendly paths
-const createUrlPath = (...parts: string[]) => {
-  return '/' + parts.join('/').replace(/\\/g, '/');
-};
-
 export function registerRoutes(app: Express): Server {
-  // Serve uploaded files - 移动到其他路由前面确保优先级
-  app.use('/uploads', express.static('uploads'));
+  // Serve uploaded files - 确保uploads目录存在
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+  }
+  console.log('Serving static files from:', uploadsDir);
+  app.use('/uploads', express.static(uploadsDir));
 
   setupAuth(app);
 
@@ -100,7 +108,8 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/flashcards", requireAdmin, async (req, res) => {
     try {
       const flashcardId = uuidv4();
-      req.body.flashcardId = flashcardId; // Pass to multer
+      req.body.flashcardId = flashcardId;
+      console.log('Starting flashcard creation with ID:', flashcardId);
 
       uploadFiles(req, res, async (err) => {
         if (err) {
@@ -113,6 +122,8 @@ export function registerRoutes(app: Express): Server {
 
         try {
           const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+          console.log('Uploaded files:', files);
+
           const audioFile = files.audio?.[0];
           const imageFiles = files.images || [];
 
@@ -135,6 +146,14 @@ export function registerRoutes(app: Express): Server {
           }
 
           console.log('Creating flashcard with paths:', { audioUrl, imageUrls });
+
+          // 验证文件是否存在
+          const audioPath = path.join(process.cwd(), audioUrl);
+          console.log('Checking audio file exists:', audioPath, fs.existsSync(audioPath));
+          imageUrls.forEach((url, idx) => {
+            const imagePath = path.join(process.cwd(), url);
+            console.log(`Checking image ${idx} exists:`, imagePath, fs.existsSync(imagePath));
+          });
 
           const [newFlashcard] = await db.insert(flashcards).values({
             lessonId: parseInt(req.body.lessonId),
@@ -205,7 +224,7 @@ export function registerRoutes(app: Express): Server {
 
             // Delete old audio file
             if (existingFlashcard.audioUrl) {
-              const oldPath = path.join('.', existingFlashcard.audioUrl);
+              const oldPath = path.join(process.cwd(), existingFlashcard.audioUrl);
               if (fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
               }
@@ -222,7 +241,7 @@ export function registerRoutes(app: Express): Server {
             // Delete old image files
             const oldImages = existingFlashcard.imageChoices as string[];
             oldImages.forEach(imgUrl => {
-              const oldPath = path.join('.', imgUrl);
+              const oldPath = path.join(process.cwd(), imgUrl);
               if (fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
               }
@@ -281,7 +300,7 @@ export function registerRoutes(app: Express): Server {
       await db.delete(flashcards).where(eq(flashcards.id, flashcardId));
 
       // Delete associated files
-      const uploadDir = path.join('.', 'uploads', flashcardId.toString());
+      const uploadDir = path.join(process.cwd(), 'uploads', flashcardId.toString());
       if (fs.existsSync(uploadDir)) {
         fs.rmSync(uploadDir, { recursive: true });
       }
