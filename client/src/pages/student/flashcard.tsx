@@ -110,8 +110,6 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
-    if (showResult) return; // 防止重复选择
-
     setSelectedImage(index);
     setShowResult(true);
 
@@ -122,30 +120,33 @@ export default function FlashcardPage() {
       reviews: []
     };
 
-    progress.reviews.push({
-      timestamp: new Date().toISOString(),
-      flashcardId: currentCard.id,
-      successful: isCorrect
-    });
+    // Only add to reviews if this is a new selection
+    if (!progress.reviews.some(r => r.flashcardId === currentCard.id && r.timestamp === new Date().toISOString())) {
+      progress.reviews.push({
+        timestamp: new Date().toISOString(),
+        flashcardId: currentCard.id,
+        successful: isCorrect
+      });
 
-    // Update completed count if this is first time seeing the card
-    if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
-      progress.completed++;
+      // Update completed count if this is first time seeing the card
+      if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
+        progress.completed++;
+      }
+
+      // Show feedback toast only for new selections
+      toast({
+        variant: isCorrect ? "default" : "destructive",
+        title: isCorrect ? "正确!" : "错误!",
+        description: isCorrect 
+          ? "非常好，继续保持!" 
+          : "再试一次吧，不要灰心!",
+      });
+
+      updateProgressMutation.mutate({
+        progress,
+        totalStudyTime: userLesson.totalStudyTime || 0
+      });
     }
-
-    // Show feedback toast
-    toast({
-      variant: isCorrect ? "default" : "destructive",
-      title: isCorrect ? "正确!" : "错误!",
-      description: isCorrect 
-        ? "非常好，继续保持!" 
-        : "再试一次吧，不要灰心!",
-    });
-
-    updateProgressMutation.mutate({
-      progress,
-      totalStudyTime: userLesson.totalStudyTime || 0
-    });
   };
 
   return (
@@ -185,7 +186,7 @@ export default function FlashcardPage() {
                     : "ring-4 ring-primary"
                   : "hover:ring-2 hover:ring-primary"
               }`}
-              onClick={() => !showResult && handleImageSelection(index)}
+              onClick={() => handleImageSelection(index)}
             >
               <CardContent className="p-2">
                 <img
@@ -194,9 +195,19 @@ export default function FlashcardPage() {
                   className="w-full h-48 object-cover rounded"
                 />
               </CardContent>
-              {showResult && index === currentCard.correctImageIndex && (
-                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
-                  正确答案
+              {showResult && (
+                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm text-white
+                  ${index === currentCard.correctImageIndex 
+                    ? "bg-green-500" 
+                    : selectedImage === index 
+                      ? "bg-red-500"
+                      : "hidden"
+                  }`}>
+                  {index === currentCard.correctImageIndex 
+                    ? "正确答案" 
+                    : selectedImage === index 
+                      ? "错误答案"
+                      : ""}
                 </div>
               )}
             </Card>
