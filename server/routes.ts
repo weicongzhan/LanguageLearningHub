@@ -10,22 +10,18 @@ import path from "path";
 import fs from "fs";
 import express from 'express';
 
-const createUploadDir = (flashcardId?: string) => {
-  const baseDir = './uploads';
+const createUploadDir = (flashcardId: string) => {
+  const baseDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(baseDir)) {
     fs.mkdirSync(baseDir);
   }
 
-  if (flashcardId) {
-    const flashcardDir = path.join(baseDir, flashcardId);
-    if (!fs.existsSync(flashcardDir)) {
-      fs.mkdirSync(flashcardDir);
-    }
-    console.log('Created upload directory:', flashcardDir);
-    return flashcardDir;
+  const flashcardDir = path.join(baseDir, flashcardId);
+  if (!fs.existsSync(flashcardDir)) {
+    fs.mkdirSync(flashcardDir);
   }
-
-  return baseDir;
+  console.log('Created upload directory:', flashcardDir);
+  return flashcardDir;
 };
 
 // Helper function to create URL friendly paths
@@ -36,9 +32,12 @@ const createUrlPath = (...parts: string[]) => {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const flashcardId = req.body.flashcardId || uuidv4();
+    const flashcardId = req.body.flashcardId;
+    if (!flashcardId) {
+      return cb(new Error("Flashcard ID is required"), '');
+    }
     const uploadDir = createUploadDir(flashcardId);
-    console.log('File destination:', { uploadDir, file: file.originalname });
+    console.log('File destination:', { uploadDir, file: file.originalname, flashcardId });
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
@@ -66,7 +65,7 @@ const uploadFiles = upload.fields([
 ]);
 
 export function registerRoutes(app: Express): Server {
-  // Serve uploaded files - 确保uploads目录存在
+  // Serve uploaded files - 确保uploads目录存在并且在其他路由之前配置
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
