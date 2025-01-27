@@ -72,7 +72,7 @@ function Router() {
               <Route path="/lesson/:id" component={Flashcard} />
             </>
           )}
-          <Route component={NotFound} />
+          <Route path="*" component={NotFound} />
         </Switch>
       </main>
     </div>
