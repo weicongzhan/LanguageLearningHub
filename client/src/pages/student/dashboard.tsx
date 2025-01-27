@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Loader2, BookOpen, Clock, Target } from "lucide-react";
+import { Loader2, BookOpen, Clock, Target, RefreshCw } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations } from "@db/schema";
 import type { Progress as ProgressType } from "@db/schema";
@@ -17,13 +17,26 @@ export default function StudentDashboard() {
   });
 
   const calculateProgress = (progress: ProgressType | null) => {
-    if (!progress) return { percent: 0, success: 0 };
+    if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
     const reviews = progress.reviews || [];
     const success = reviews.length > 0 
       ? (reviews.filter(review => review.successful).length / reviews.length) * 100 
       : 0;
-    return { percent, success };
+
+    // Calculate cards that need review (were answered incorrectly)
+    const incorrectCards = new Set();
+    reviews.forEach(review => {
+      if (!review.successful) {
+        incorrectCards.add(review.flashcardId);
+      }
+    });
+
+    return { 
+      percent, 
+      success,
+      needsReview: incorrectCards.size
+    };
   };
 
   const formatStudyTime = (seconds: number) => {
@@ -49,7 +62,7 @@ export default function StudentDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {userLessons?.map((userLesson) => {
-            const { percent, success } = calculateProgress(userLesson.progress as ProgressType);
+            const { percent, success, needsReview } = calculateProgress(userLesson.progress as ProgressType);
             return (
               <Card key={userLesson.id}>
                 <CardHeader>
@@ -85,9 +98,21 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
-                    <Link href={`/lesson/${userLesson.lessonId}`}>
-                      <Button className="w-full">Continue Learning</Button>
-                    </Link>
+                    {/* Study and Review Buttons */}
+                    <div className="space-y-2">
+                      <Link href={`/lesson/${userLesson.lessonId}`}>
+                        <Button className="w-full">Continue Learning</Button>
+                      </Link>
+
+                      {needsReview > 0 && (
+                        <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
+                          <Button variant="outline" className="w-full">
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Review {needsReview} Cards
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

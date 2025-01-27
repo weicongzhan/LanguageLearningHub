@@ -46,6 +46,10 @@ export default function FlashcardPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
 
+  // Get the mode from URL search params
+  const searchParams = new URLSearchParams(window.location.search);
+  const isReviewMode = searchParams.get('mode') === 'review';
+
   // Query for lesson data
   const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
@@ -106,13 +110,30 @@ export default function FlashcardPage() {
     );
   }
 
-  const flashcards = userLesson.lesson.flashcards || [];
+  // Filter flashcards based on mode
+  const allFlashcards = userLesson?.lesson?.flashcards || [];
+  const flashcards = isReviewMode
+    ? allFlashcards.filter(flashcard => {
+        const progress = userLesson.progress as Progress;
+        const reviews = progress.reviews || [];
+        // Find the most recent review for this flashcard
+        const lastReview = [...reviews]
+          .reverse()
+          .find(review => review.flashcardId === flashcard.id);
+        // Include in review if the last attempt was unsuccessful
+        return lastReview && !lastReview.successful;
+      })
+    : allFlashcards;
 
   if (flashcards.length === 0) {
     return (
       <div className="container mx-auto p-6 text-center">
         <h1 className="text-3xl font-bold mb-4">{userLesson.lesson.title}</h1>
-        <p className="text-muted-foreground">No flashcards available for this lesson.</p>
+        <p className="text-muted-foreground">
+          {isReviewMode
+            ? "No flashcards need review at this time. Great job!"
+            : "No flashcards available for this lesson."}
+        </p>
       </div>
     );
   }
@@ -170,8 +191,8 @@ export default function FlashcardPage() {
       toast({
         variant: isCorrect ? "default" : "destructive",
         title: isCorrect ? "正确!" : "错误!",
-        description: isCorrect 
-          ? "非常好，继续保持!" 
+        description: isCorrect
+          ? "非常好，继续保持!"
           : "再试一次吧，不要灰心!",
       });
 
@@ -230,15 +251,15 @@ export default function FlashcardPage() {
               </CardContent>
               {showResult && (
                 <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm text-white
-                  ${index === currentCard.correctImageIndex 
-                    ? "bg-green-500" 
-                    : selectedImage === index 
+                  ${index === currentCard.correctImageIndex
+                    ? "bg-green-500"
+                    : selectedImage === index
                       ? "bg-red-500"
                       : "hidden"
                   }`}>
-                  {index === currentCard.correctImageIndex 
-                    ? "正确答案" 
-                    : selectedImage === index 
+                  {index === currentCard.correctImageIndex
+                    ? "正确答案"
+                    : selectedImage === index
                       ? "错误答案"
                       : ""}
                 </div>
