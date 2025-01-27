@@ -144,6 +144,96 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Update flashcard route
+  app.put("/api/flashcards", requireAdmin, async (req, res) => {
+    try {
+      uploadFiles(req, res, async (err) => {
+        if (err) {
+          console.error('File upload error:', err);
+          return res.status(400).json({ 
+            error: err.message || "File upload failed",
+            details: err
+          });
+        }
+
+        try {
+          const flashcardId = parseInt(req.body.flashcardId);
+          if (!flashcardId) {
+            return res.status(400).json({ error: "Flashcard ID is required" });
+          }
+
+          // Get the existing flashcard
+          const [existingFlashcard] = await db
+            .select()
+            .from(flashcards)
+            .where(eq(flashcards.id, flashcardId))
+            .limit(1);
+
+          if (!existingFlashcard) {
+            return res.status(404).json({ error: "Flashcard not found" });
+          }
+
+          const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+          const updateData: Partial<typeof flashcards.$inferInsert> = {};
+
+          // Handle audio update
+          if (files.audio?.length > 0) {
+            const audioFile = files.audio[0];
+            updateData.audioUrl = `/uploads/audio/${audioFile.filename}`;
+            // Delete old audio file if it exists
+            if (existingFlashcard.audioUrl) {
+              const oldPath = path.join('.', existingFlashcard.audioUrl);
+              if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+              }
+            }
+          }
+
+          // Handle images update
+          if (files.images?.length > 0) {
+            const imageUrls = files.images.map(file => `/uploads/images/${file.filename}`);
+            updateData.imageChoices = imageUrls;
+            // Delete old image files
+            const oldImages = existingFlashcard.imageChoices as string[];
+            oldImages.forEach(imgUrl => {
+              const oldPath = path.join('.', imgUrl);
+              if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+              }
+            });
+          }
+
+          // Update correct image index if provided
+          if (req.body.correctImageIndex !== undefined) {
+            updateData.correctImageIndex = parseInt(req.body.correctImageIndex);
+          }
+
+          // Update the flashcard
+          const [updatedFlashcard] = await db
+            .update(flashcards)
+            .set(updateData)
+            .where(eq(flashcards.id, flashcardId))
+            .returning();
+
+          console.log('Updated flashcard:', updatedFlashcard);
+          res.json(updatedFlashcard);
+        } catch (error) {
+          console.error('Database error:', error);
+          res.status(500).json({ 
+            error: "Failed to update flashcard",
+            details: error instanceof Error ? error.message : String(error)
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Outer error:', error);
+      res.status(500).json({ 
+        error: "Failed to process request",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Lesson routes
   app.get("/api/lessons", async (req, res) => {
     try {
