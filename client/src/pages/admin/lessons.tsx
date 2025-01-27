@@ -17,6 +17,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Loader2, Plus, Pencil, Volume2 } from "lucide-react";
 import type { Lesson, Flashcard } from "@db/schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type LessonFormData = {
   title: string;
@@ -34,15 +41,29 @@ type LessonWithFlashcards = Lesson & {
   flashcards: Flashcard[];
 };
 
+type User = {
+  id: number;
+  username: string;
+  isAdmin: boolean;
+};
+
 export default function AdminLessons() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [selectedFlashcard, setSelectedFlashcard] = useState<Flashcard | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [students, setStudents] = useState<User[]>([]); // Added state for students
 
   const { data: lessons, isLoading } = useQuery<LessonWithFlashcards[]>({
     queryKey: ["/api/lessons"],
   });
+
+  const { data: studentsData } = useQuery<User[]>({
+    queryKey: ["/api/students"],
+  });
+
+  setStudents(studentsData || []);
+
 
   const lessonForm = useForm<LessonFormData>();
   const flashcardForm = useForm<FlashcardFormData>();
@@ -396,6 +417,71 @@ export default function AdminLessons() {
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           )}
                           {selectedFlashcard ? "Update" : "Add"} Flashcard
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="ml-2">
+                        Assign to Students
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Assign Lesson to Students</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const studentId = formData.get('studentId');
+
+                        if (!studentId || !lesson.id) return;
+
+                        try {
+                          const response = await fetch('/api/user-lessons', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              userId: parseInt(studentId as string),
+                              lessonId: lesson.id
+                            }),
+                            credentials: 'include'
+                          });
+
+                          if (!response.ok) {
+                            throw new Error(await response.text());
+                          }
+
+                          toast({
+                            title: "Success",
+                            description: "Lesson assigned successfully"
+                          });
+                        } catch (error: any) {
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: error.message
+                          });
+                        }
+                      }} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Select Student</Label>
+                          <Select name="studentId" required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a student" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {students?.map((student) => (
+                                <SelectItem key={student.id} value={student.id.toString()}>
+                                  {student.username}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button type="submit">
+                          Assign Lesson
                         </Button>
                       </form>
                     </DialogContent>

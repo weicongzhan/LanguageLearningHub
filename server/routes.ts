@@ -204,6 +204,21 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Add this route before the lessons routes
+  app.get("/api/students", requireAdmin, async (req, res) => {
+    try {
+      const students = await db
+        .select()
+        .from(users)
+        .where(eq(users.isAdmin, false));
+
+      res.json(students);
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
+      res.status(500).json({ error: "Failed to fetch students" });
+    }
+  });
+
   // Lesson routes
   app.get("/api/lessons", async (req, res) => {
     try {
@@ -279,6 +294,43 @@ export function registerRoutes(app: Express): Server {
       res.json(updated);
     } catch (error) {
       res.status(500).json({ error: "Failed to update progress" });
+    }
+  });
+
+  app.post("/api/user-lessons", requireAdmin, async (req, res) => {
+    try {
+      const { userId, lessonId } = req.body;
+
+      // Check if the assignment already exists
+      const [existingAssignment] = await db
+        .select()
+        .from(userLessons)
+        .where(and(
+          eq(userLessons.userId, userId),
+          eq(userLessons.lessonId, lessonId)
+        ))
+        .limit(1);
+
+      if (existingAssignment) {
+        return res.status(400).json({ error: "Lesson already assigned to this user" });
+      }
+
+      const [userLesson] = await db.insert(userLessons)
+        .values({
+          userId,
+          lessonId,
+          progress: {
+            total: 0,
+            completed: 0,
+            reviews: []
+          }
+        })
+        .returning();
+
+      res.json(userLesson);
+    } catch (error) {
+      console.error('Failed to assign lesson:', error);
+      res.status(500).json({ error: "Failed to assign lesson to user" });
     }
   });
 
