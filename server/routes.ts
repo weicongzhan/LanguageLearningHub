@@ -2,13 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { lessons, flashcards, userLessons } from "@db/schema";
-import { eq, and } from "drizzle-orm";
+import { lessons, flashcards, userLessons, users } from "@db/schema";
+import { eq, and, count } from "drizzle-orm";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
-import express from 'express'; //Import express here
+import express from 'express';
 
 // 确保上传目录存在
 const uploadDirs = ['./uploads/audio', './uploads/images'];
@@ -41,7 +41,6 @@ const upload = multer({
   }
 });
 
-// Middleware to handle multiple file uploads
 const uploadFiles = upload.fields([
   { name: 'audio', maxCount: 1 },
   { name: 'images', maxCount: 4 }
@@ -60,6 +59,26 @@ export function registerRoutes(app: Express): Server {
     }
     next();
   };
+
+  // Stats route for admin dashboard
+  app.get("/api/stats", requireAdmin, async (req, res) => {
+    try {
+      const [lessonsCount] = await db.select({ count: count() }).from(lessons);
+      const [flashcardsCount] = await db.select({ count: count() }).from(flashcards);
+      const [studentsCount] = await db.select({ count: count() })
+        .from(users)
+        .where(eq(users.isAdmin, false));
+
+      res.json({
+        totalLessons: lessonsCount.count,
+        totalFlashcards: flashcardsCount.count,
+        totalStudents: studentsCount.count
+      });
+    } catch (error) {
+      console.error('Stats error:', error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
 
   // Flashcard routes with improved error handling
   app.post("/api/flashcards", requireAdmin, async (req, res) => {
