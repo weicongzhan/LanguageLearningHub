@@ -9,6 +9,32 @@ import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import type { UserLessonWithRelations, Progress } from "@db/schema";
 
+// Create audio contexts for correct and incorrect sounds
+const createBeep = (frequency: number, duration: number) => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.type = 'sine';
+  oscillator.frequency.value = frequency;
+
+  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+  gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + duration);
+};
+
+const playCorrectSound = () => createBeep(800, 0.1);
+const playIncorrectSound = () => {
+  createBeep(300, 0.15);
+  setTimeout(() => createBeep(300, 0.15), 160);
+};
+
 export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
   const { user } = useUser();
@@ -131,6 +157,13 @@ export default function FlashcardPage() {
       // Update completed count if this is first time seeing the card
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
+      }
+
+      // Play sound effect based on correctness
+      if (isCorrect) {
+        playCorrectSound();
+      } else {
+        playIncorrectSound();
       }
 
       // Show feedback toast only for new selections
