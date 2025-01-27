@@ -58,7 +58,7 @@ const uploadFiles = upload.fields([
 ]);
 
 export function registerRoutes(app: Express): Server {
-  // Serve uploaded files
+  // Serve uploaded files - 移动到其他路由前面确保优先级
   app.use('/uploads', express.static('uploads'));
 
   setupAuth(app);
@@ -119,9 +119,10 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).json({ error: "At least 2 images are required" });
           }
 
-          const flashcardPath = `/uploads/${flashcardId}`;
-          const audioUrl = `${flashcardPath}/${audioFile.filename}`;
-          const imageUrls = imageFiles.map(file => `${flashcardPath}/${file.filename}`);
+          const audioUrl = path.join('/uploads', flashcardId, audioFile.filename);
+          const imageUrls = imageFiles.map(file => 
+            path.join('/uploads', flashcardId, file.filename)
+          );
           const correctImageIndex = parseInt(req.body.correctImageIndex);
 
           if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
@@ -193,8 +194,7 @@ export function registerRoutes(app: Express): Server {
           // Handle audio update
           if (files.audio?.length > 0) {
             const audioFile = files.audio[0];
-            const flashcardPath = `/uploads/${flashcardId}`;
-            updateData.audioUrl = `${flashcardPath}/${audioFile.filename}`;
+            updateData.audioUrl = path.join('/uploads', flashcardId.toString(), audioFile.filename);
 
             // Delete old audio file
             if (existingFlashcard.audioUrl) {
@@ -207,8 +207,9 @@ export function registerRoutes(app: Express): Server {
 
           // Handle images update
           if (files.images?.length > 0) {
-            const flashcardPath = `/uploads/${flashcardId}`;
-            const imageUrls = files.images.map(file => `${flashcardPath}/${file.filename}`);
+            const imageUrls = files.images.map(file => 
+              path.join('/uploads', flashcardId.toString(), file.filename)
+            );
             updateData.imageChoices = imageUrls;
 
             // Delete old image files
