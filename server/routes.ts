@@ -10,23 +10,34 @@ import path from "path";
 import fs from "fs";
 import express from 'express';
 
-// 确保上传目录存在
-const uploadDirs = ['./uploads/audio', './uploads/images'];
-uploadDirs.forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+const createUploadDir = (flashcardId?: string) => {
+  const baseDir = './uploads';
+  if (!fs.existsSync(baseDir)) {
+    fs.mkdirSync(baseDir);
   }
-});
 
-// Configure multer for both audio and image uploads
+  if (flashcardId) {
+    const flashcardDir = path.join(baseDir, flashcardId);
+    if (!fs.existsSync(flashcardDir)) {
+      fs.mkdirSync(flashcardDir);
+    }
+    return flashcardDir;
+  }
+
+  return baseDir;
+};
+
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = file.mimetype.startsWith('audio/') ? './uploads/audio' : './uploads/images';
+    const flashcardId = req.body.flashcardId || uuidv4();
+    const uploadDir = createUploadDir(flashcardId);
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
+    const ext = path.extname(file.originalname);
+    const filename = file.fieldname === 'audio' ? 'audio' + ext : `image-${Date.now()}${ext}`;
+    cb(null, filename);
   }
 });
 
@@ -83,6 +94,9 @@ export function registerRoutes(app: Express): Server {
   // Flashcard routes with improved error handling
   app.post("/api/flashcards", requireAdmin, async (req, res) => {
     try {
+      const flashcardId = uuidv4();
+      req.body.flashcardId = flashcardId; // Pass to multer
+
       uploadFiles(req, res, async (err) => {
         if (err) {
           console.error('File upload error:', err);
@@ -97,11 +111,6 @@ export function registerRoutes(app: Express): Server {
           const audioFile = files.audio?.[0];
           const imageFiles = files.images || [];
 
-          console.log('Received files:', {
-            audio: audioFile?.filename,
-            images: imageFiles.map(f => f.filename)
-          });
-
           if (!audioFile) {
             return res.status(400).json({ error: "Audio file is required" });
           }
@@ -110,8 +119,9 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).json({ error: "At least 2 images are required" });
           }
 
-          const audioUrl = `/uploads/audio/${audioFile.filename}`;
-          const imageUrls = imageFiles.map(file => `/uploads/images/${file.filename}`);
+          const flashcardPath = `/uploads/${flashcardId}`;
+          const audioUrl = `${flashcardPath}/${audioFile.filename}`;
+          const imageUrls = imageFiles.map(file => `${flashcardPath}/${file.filename}`);
           const correctImageIndex = parseInt(req.body.correctImageIndex);
 
           if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
@@ -125,10 +135,14 @@ export function registerRoutes(app: Express): Server {
             correctImageIndex
           }).returning();
 
-          console.log('Created flashcard:', newFlashcard);
           res.json(newFlashcard);
         } catch (error) {
           console.error('Database error:', error);
+          // 删除上传的文件
+          const uploadDir = createUploadDir(flashcardId);
+          if (fs.existsSync(uploadDir)) {
+            fs.rmSync(uploadDir, { recursive: true });
+          }
           res.status(500).json({ 
             error: "Failed to create flashcard",
             details: error instanceof Error ? error.message : String(error)
@@ -179,8 +193,10 @@ export function registerRoutes(app: Express): Server {
           // Handle audio update
           if (files.audio?.length > 0) {
             const audioFile = files.audio[0];
-            updateData.audioUrl = `/uploads/audio/${audioFile.filename}`;
-            // Delete old audio file if it exists
+            const flashcardPath = `/uploads/${flashcardId}`;
+            updateData.audioUrl = `${flashcardPath}/${audioFile.filename}`;
+
+            // Delete old audio file
             if (existingFlashcard.audioUrl) {
               const oldPath = path.join('.', existingFlashcard.audioUrl);
               if (fs.existsSync(oldPath)) {
@@ -191,8 +207,10 @@ export function registerRoutes(app: Express): Server {
 
           // Handle images update
           if (files.images?.length > 0) {
-            const imageUrls = files.images.map(file => `/uploads/images/${file.filename}`);
+            const flashcardPath = `/uploads/${flashcardId}`;
+            const imageUrls = files.images.map(file => `${flashcardPath}/${file.filename}`);
             updateData.imageChoices = imageUrls;
+
             // Delete old image files
             const oldImages = existingFlashcard.imageChoices as string[];
             oldImages.forEach(imgUrl => {
@@ -215,7 +233,6 @@ export function registerRoutes(app: Express): Server {
             .where(eq(flashcards.id, flashcardId))
             .returning();
 
-          console.log('Updated flashcard:', updatedFlashcard);
           res.json(updatedFlashcard);
         } catch (error) {
           console.error('Database error:', error);
@@ -229,6 +246,41 @@ export function registerRoutes(app: Express): Server {
       console.error('Outer error:', error);
       res.status(500).json({ 
         error: "Failed to process request",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Delete flashcard route
+  app.delete("/api/flashcards/:id", requireAdmin, async (req, res) => {
+    try {
+      const flashcardId = parseInt(req.params.id);
+
+      // Get flashcard before deletion
+      const [flashcard] = await db
+        .select()
+        .from(flashcards)
+        .where(eq(flashcards.id, flashcardId))
+        .limit(1);
+
+      if (!flashcard) {
+        return res.status(404).json({ error: "Flashcard not found" });
+      }
+
+      // Delete the flashcard from database
+      await db.delete(flashcards).where(eq(flashcards.id, flashcardId));
+
+      // Delete associated files
+      const uploadDir = path.join('.', 'uploads', flashcardId.toString());
+      if (fs.existsSync(uploadDir)) {
+        fs.rmSync(uploadDir, { recursive: true });
+      }
+
+      res.json({ message: "Flashcard deleted successfully" });
+    } catch (error) {
+      console.error('Delete error:', error);
+      res.status(500).json({ 
+        error: "Failed to delete flashcard",
         details: error instanceof Error ? error.message : String(error)
       });
     }
@@ -257,7 +309,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // User lesson access routes
+  // User lesson routes
   app.post("/api/user-lessons", requireAdmin, async (req, res) => {
     try {
       const [userLesson] = await db.insert(userLessons).values(req.body).returning();
@@ -267,7 +319,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get user lessons with flashcards
   app.get("/api/user-lessons/:userId/:lessonId?", async (req, res) => {
     try {
       const { userId, lessonId } = req.params;
@@ -282,7 +333,6 @@ export function registerRoutes(app: Express): Server {
         }
       });
 
-      // If lessonId is provided, filter for specific lesson
       if (lessonId) {
         query = db.query.userLessons.findMany({
           where: and(
@@ -306,7 +356,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update progress
   app.put("/api/user-lessons/:id/progress", async (req, res) => {
     try {
       const [updated] = await db

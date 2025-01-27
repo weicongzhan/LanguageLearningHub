@@ -111,6 +111,28 @@ export default function AdminLessons() {
     },
   });
 
+  // Delete flashcard mutation
+  const deleteFlashcardMutation = useMutation({
+    mutationFn: async (flashcardId: number) => {
+      const response = await fetch(`/api/flashcards/${flashcardId}`, {
+        method: "DELETE",
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+      toast({ title: "Flashcard deleted successfully" });
+      setSelectedFlashcard(null);
+    },
+  });
+
   const handleCreateLesson = async (data: LessonFormData) => {
     try {
       await createLessonMutation.mutateAsync(data);
@@ -165,6 +187,18 @@ export default function AdminLessons() {
     }
   };
 
+  const handleDeleteFlashcard = async (flashcard: Flashcard) => {
+    try {
+      await deleteFlashcardMutation.mutateAsync(flashcard.id);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting flashcard",
+        description: error.message,
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -211,7 +245,7 @@ export default function AdminLessons() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons?.map((lesson) => (
-            <Card key={lesson.id} className="relative">
+            <Card key={lesson.id}>
               <CardHeader>
                 <CardTitle>{lesson.title}</CardTitle>
               </CardHeader>
@@ -229,17 +263,26 @@ export default function AdminLessons() {
                       <div key={flashcard.id} className="mb-4 p-4 border rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <audio src={flashcard.audioUrl} controls className="w-48" />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedLesson(lesson);
-                              setSelectedFlashcard(flashcard);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedLesson(lesson);
+                                setSelectedFlashcard(flashcard);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteFlashcard(flashcard)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           {(flashcard.imageChoices as string[]).map((url, idx) => (
