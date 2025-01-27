@@ -57,6 +57,11 @@ const uploadFiles = upload.fields([
   { name: 'images', maxCount: 4 }
 ]);
 
+// Helper function to create URL friendly paths
+const createUrlPath = (...parts: string[]) => {
+  return '/' + parts.join('/').replace(/\\/g, '/');
+};
+
 export function registerRoutes(app: Express): Server {
   // Serve uploaded files - 移动到其他路由前面确保优先级
   app.use('/uploads', express.static('uploads'));
@@ -119,15 +124,17 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).json({ error: "At least 2 images are required" });
           }
 
-          const audioUrl = path.join('/uploads', flashcardId, audioFile.filename);
+          const audioUrl = createUrlPath('uploads', flashcardId, audioFile.filename);
           const imageUrls = imageFiles.map(file => 
-            path.join('/uploads', flashcardId, file.filename)
+            createUrlPath('uploads', flashcardId, file.filename)
           );
           const correctImageIndex = parseInt(req.body.correctImageIndex);
 
           if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
             return res.status(400).json({ error: "Invalid correct image index" });
           }
+
+          console.log('Creating flashcard with paths:', { audioUrl, imageUrls });
 
           const [newFlashcard] = await db.insert(flashcards).values({
             lessonId: parseInt(req.body.lessonId),
@@ -194,7 +201,7 @@ export function registerRoutes(app: Express): Server {
           // Handle audio update
           if (files.audio?.length > 0) {
             const audioFile = files.audio[0];
-            updateData.audioUrl = path.join('/uploads', flashcardId.toString(), audioFile.filename);
+            updateData.audioUrl = createUrlPath('uploads', flashcardId.toString(), audioFile.filename);
 
             // Delete old audio file
             if (existingFlashcard.audioUrl) {
@@ -208,7 +215,7 @@ export function registerRoutes(app: Express): Server {
           // Handle images update
           if (files.images?.length > 0) {
             const imageUrls = files.images.map(file => 
-              path.join('/uploads', flashcardId.toString(), file.filename)
+              createUrlPath('uploads', flashcardId.toString(), file.filename)
             );
             updateData.imageChoices = imageUrls;
 
@@ -226,6 +233,8 @@ export function registerRoutes(app: Express): Server {
           if (req.body.correctImageIndex !== undefined) {
             updateData.correctImageIndex = parseInt(req.body.correctImageIndex);
           }
+
+          console.log('Updating flashcard with data:', updateData);
 
           // Update the flashcard
           const [updatedFlashcard] = await db
