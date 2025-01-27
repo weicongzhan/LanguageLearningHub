@@ -28,9 +28,10 @@ const storage = multer.diskStorage({
     if (file.fieldname === 'audio') {
       filename = `${flashcardId}-${file.fieldname}${ext}`;
     } else {
-      // For images, add an index to make each filename unique
+      // For images, add index to make each filename unique
       const timestamp = Date.now();
-      filename = `${flashcardId}-${file.fieldname}-${timestamp}${ext}`;
+      const randomId = Math.floor(Math.random() * 1000000);
+      filename = `${flashcardId}-${file.fieldname}-${timestamp}-${randomId}${ext}`;
     }
 
     console.log('Generated filename:', filename);
