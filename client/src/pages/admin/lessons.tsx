@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,9 +50,9 @@ type User = {
 export default function AdminLessons() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [selectedFlashcard, setSelectedFlashcard] = useState<Flashcard | null>(null);
+  const [students, setStudents] = useState<User[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [students, setStudents] = useState<User[]>([]); // Added state for students
 
   const { data: lessons, isLoading } = useQuery<LessonWithFlashcards[]>({
     queryKey: ["/api/lessons"],
@@ -62,7 +62,12 @@ export default function AdminLessons() {
     queryKey: ["/api/students"],
   });
 
-  setStudents(studentsData || []);
+  // 使用 useEffect 来更新 students 状态
+  useEffect(() => {
+    if (studentsData) {
+      setStudents(studentsData);
+    }
+  }, [studentsData]);
 
 
   const lessonForm = useForm<LessonFormData>();
