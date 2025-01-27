@@ -105,81 +105,81 @@ export function registerRoutes(app: Express): Server {
 
   // Flashcard routes with improved error handling
   app.post("/api/flashcards", requireAdmin, async (req, res) => {
+    const flashcardId = uuidv4();
+    console.log('Starting flashcard creation with ID:', flashcardId);
+
+    // Handle the file upload
+    const handleUpload = new Promise((resolve, reject) => {
+      const uploadMiddleware = upload.fields([
+        { name: 'audio', maxCount: 1 },
+        { name: 'images', maxCount: 4 }
+      ]);
+
+      // Add flashcardId to the request body before processing the upload
+      const wrappedUpload = (req: any, res: any) => {
+        req.body = { ...req.body, flashcardId };
+        uploadMiddleware(req, res, (err) => {
+          if (err) reject(err);
+          else resolve(req.files);
+        });
+      };
+
+      wrappedUpload(req, res);
+    });
+
     try {
-      const flashcardId = uuidv4();
-      req.body.flashcardId = flashcardId;
-      console.log('Starting flashcard creation with ID:', flashcardId);
+      const files = await handleUpload as { [fieldname: string]: Express.Multer.File[] };
+      console.log('Uploaded files:', files);
 
-      uploadFiles(req, res, async (err) => {
-        if (err) {
-          console.error('File upload error:', err);
-          return res.status(400).json({ 
-            error: err.message || "File upload failed",
-            details: err
-          });
-        }
+      const audioFile = files.audio?.[0];
+      const imageFiles = files.images || [];
 
-        try {
-          const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-          console.log('Uploaded files:', files);
+      if (!audioFile) {
+        return res.status(400).json({ error: "Audio file is required" });
+      }
 
-          const audioFile = files.audio?.[0];
-          const imageFiles = files.images || [];
+      if (imageFiles.length < 2) {
+        return res.status(400).json({ error: "At least 2 images are required" });
+      }
 
-          if (!audioFile) {
-            return res.status(400).json({ error: "Audio file is required" });
-          }
+      const audioUrl = createUrlPath('uploads', flashcardId, audioFile.filename);
+      const imageUrls = imageFiles.map(file => 
+        createUrlPath('uploads', flashcardId, file.filename)
+      );
+      const correctImageIndex = parseInt(req.body.correctImageIndex);
 
-          if (imageFiles.length < 2) {
-            return res.status(400).json({ error: "At least 2 images are required" });
-          }
+      if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
+        return res.status(400).json({ error: "Invalid correct image index" });
+      }
 
-          const audioUrl = createUrlPath('uploads', flashcardId, audioFile.filename);
-          const imageUrls = imageFiles.map(file => 
-            createUrlPath('uploads', flashcardId, file.filename)
-          );
-          const correctImageIndex = parseInt(req.body.correctImageIndex);
+      console.log('Creating flashcard with paths:', { audioUrl, imageUrls });
 
-          if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
-            return res.status(400).json({ error: "Invalid correct image index" });
-          }
-
-          console.log('Creating flashcard with paths:', { audioUrl, imageUrls });
-
-          // 验证文件是否存在
-          const audioPath = path.join(process.cwd(), audioUrl);
-          console.log('Checking audio file exists:', audioPath, fs.existsSync(audioPath));
-          imageUrls.forEach((url, idx) => {
-            const imagePath = path.join(process.cwd(), url);
-            console.log(`Checking image ${idx} exists:`, imagePath, fs.existsSync(imagePath));
-          });
-
-          const [newFlashcard] = await db.insert(flashcards).values({
-            lessonId: parseInt(req.body.lessonId),
-            audioUrl,
-            imageChoices: imageUrls,
-            correctImageIndex
-          }).returning();
-
-          res.json(newFlashcard);
-        } catch (error) {
-          console.error('Database error:', error);
-          // 删除上传的文件
-          const uploadDir = createUploadDir(flashcardId);
-          if (fs.existsSync(uploadDir)) {
-            fs.rmSync(uploadDir, { recursive: true });
-          }
-          res.status(500).json({ 
-            error: "Failed to create flashcard",
-            details: error instanceof Error ? error.message : String(error)
-          });
-        }
+      // 验证文件是否存在
+      const audioPath = path.join(process.cwd(), audioUrl);
+      console.log('Checking audio file exists:', audioPath, fs.existsSync(audioPath));
+      imageUrls.forEach((url, idx) => {
+        const imagePath = path.join(process.cwd(), url);
+        console.log(`Checking image ${idx} exists:`, imagePath, fs.existsSync(imagePath));
       });
+
+      const [newFlashcard] = await db.insert(flashcards).values({
+        lessonId: parseInt(req.body.lessonId),
+        audioUrl,
+        imageChoices: imageUrls,
+        correctImageIndex
+      }).returning();
+
+      res.json(newFlashcard);
     } catch (error) {
-      console.error('Outer error:', error);
-      res.status(500).json({ 
-        error: "Failed to process request",
-        details: error instanceof Error ? error.message : String(error)
+      console.error('Upload error:', error);
+      // 删除上传的文件
+      const uploadDir = path.join(process.cwd(), 'uploads', flashcardId);
+      if (fs.existsSync(uploadDir)) {
+        fs.rmSync(uploadDir, { recursive: true });
+      }
+      res.status(400).json({ 
+        error: error instanceof Error ? error.message : "File upload failed",
+        details: error
       });
     }
   });
