@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ const playIncorrectSound = () => {
 
 export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
+  const [, setLocation] = useLocation();
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -51,30 +52,34 @@ export default function FlashcardPage() {
   const isReviewMode = searchParams.get('mode') === 'review';
 
   // Query for lesson data
-  const { data: userLesson, isLoading } = useQuery<UserLessonWithRelations>({
+  const { data: userLesson, isLoading, error } = useQuery<UserLessonWithRelations>({
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
 
-  // Progress mutation
-  const updateProgressMutation = useMutation({
-    mutationFn: async (data: { progress: Progress; totalStudyTime: number }) => {
-      if (!userLesson?.id) return;
-      const response = await fetch(`/api/user-lessons/${userLesson.id}/progress`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: 'include'
+  // Handle error cases
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "错误",
+        description: "无法访问该课程，请确认课程已分配给您",
       });
-      if (!response.ok) throw new Error(await response.text());
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
+      setLocation("/"); // Redirect to dashboard on error
+    }
+  }, [error, setLocation]);
+
+  // If no valid lesson found, redirect to dashboard
+  useEffect(() => {
+    if (!isLoading && !userLesson) {
+      toast({
+        variant: "destructive",
+        title: "错误",
+        description: "未找到课程",
       });
-    },
-  });
+      setLocation("/");
+    }
+  }, [isLoading, userLesson, setLocation]);
 
   // Effects
   useEffect(() => {
@@ -101,6 +106,27 @@ export default function FlashcardPage() {
       }
     };
   }, [userLesson?.lesson?.flashcards?.length]);
+
+  // Progress mutation
+  const updateProgressMutation = useMutation({
+    mutationFn: async (data: { progress: Progress; totalStudyTime: number }) => {
+      if (!userLesson?.id) return;
+      const response = await fetch(`/api/user-lessons/${userLesson.id}/progress`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
+      });
+    },
+  });
+
 
   if (isLoading || !userLesson?.lesson) {
     return (
