@@ -46,6 +46,8 @@ function Router() {
     return <AuthPage />;
   }
 
+  console.log("Current user:", user); // Add logging to debug
+
   // Show admin or student routes based on user role
   return (
     <div>
