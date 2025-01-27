@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Volume2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
+import { useToast } from "@/hooks/use-toast";
 import type { UserLessonWithRelations, Progress } from "@db/schema";
 
 export default function FlashcardPage() {
   const [, params] = useRoute("/lesson/:id");
   const { user } = useUser();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
@@ -46,7 +48,6 @@ export default function FlashcardPage() {
 
   // Effects
   useEffect(() => {
-    // Initialize progress when lesson loads
     if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
       const progress = userLesson.progress as Progress || {
         total: userLesson.lesson.flashcards.length,
@@ -60,7 +61,6 @@ export default function FlashcardPage() {
       });
     }
 
-    // Cleanup - update study time
     return () => {
       if (userLesson) {
         const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
@@ -72,7 +72,6 @@ export default function FlashcardPage() {
     };
   }, [userLesson?.lesson?.flashcards?.length]);
 
-  // Loading state
   if (isLoading || !userLesson?.lesson) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -83,7 +82,6 @@ export default function FlashcardPage() {
 
   const flashcards = userLesson.lesson.flashcards || [];
 
-  // No flashcards state
   if (flashcards.length === 0) {
     return (
       <div className="container mx-auto p-6 text-center">
@@ -95,7 +93,6 @@ export default function FlashcardPage() {
 
   const currentCard = flashcards[currentIndex];
 
-  // Event handlers
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setSelectedImage(null);
@@ -113,6 +110,8 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
+    if (showResult) return; // 防止重复选择
+
     setSelectedImage(index);
     setShowResult(true);
 
@@ -133,6 +132,15 @@ export default function FlashcardPage() {
     if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
       progress.completed++;
     }
+
+    // Show feedback toast
+    toast({
+      variant: isCorrect ? "default" : "destructive",
+      title: isCorrect ? "正确!" : "错误!",
+      description: isCorrect 
+        ? "非常好，继续保持!" 
+        : "再试一次吧，不要灰心!",
+    });
 
     updateProgressMutation.mutate({
       progress,
@@ -186,6 +194,11 @@ export default function FlashcardPage() {
                   className="w-full h-48 object-cover rounded"
                 />
               </CardContent>
+              {showResult && index === currentCard.correctImageIndex && (
+                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
+                  正确答案
+                </div>
+              )}
             </Card>
           ))}
         </div>
