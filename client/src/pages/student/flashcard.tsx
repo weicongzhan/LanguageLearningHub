@@ -170,28 +170,32 @@ export default function FlashcardPage() {
   }
 
   const currentCard = flashcards[currentIndex];
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
 
-  // Remove unused function
+  useEffect(() => {
+    if (currentCard) {
+      const choices = [...currentCard.imageChoices as string[]];
+      const correctImage = choices[currentCard.correctImageIndex];
 
-  const shuffleImages = (card: any) => {
-    const shuffledChoices = [...card.imageChoices];
-    const correctImage = shuffledChoices[card.correctImageIndex];
-    
-    for (let i = shuffledChoices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+      // Only shuffle if no selection has been made
+      if (selectedImage === null) {
+        for (let i = choices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+      }
+
+      setCurrentImages(choices);
+      setCurrentCorrectIndex(choices.indexOf(correctImage));
     }
-    
-    card.correctImageIndex = shuffledChoices.indexOf(correctImage);
-    card.imageChoices = shuffledChoices;
-  };
+  }, [currentIndex, currentCard]);
 
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setSelectedImage(null);
       setShowResult(false);
       const nextIndex = currentIndex + 1;
-      shuffleImages(flashcards[nextIndex]);
       setCurrentIndex(nextIndex);
     } else {
       // If we're at the last card, show a completion message
@@ -216,10 +220,10 @@ export default function FlashcardPage() {
     setSelectedImage(index);
     setShowResult(true);
     // Clear any previous shuffle effects
-    const currentChoices = [...currentCard.imageChoices];
+    const currentChoices = [...currentImages];
     currentCard.imageChoices = currentChoices;
 
-    const isCorrect = index === currentCard.correctImageIndex;
+    const isCorrect = index === currentCorrectIndex;
     const progress = userLesson.progress as Progress || {
       total: flashcards.length,
       completed: 0,
@@ -295,13 +299,13 @@ export default function FlashcardPage() {
 
         {/* Image Choices */}
         <div className="grid grid-cols-2 gap-4">
-          {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
+          {currentImages.map((imageUrl, index) => (
             <Card
               key={index}
               className={`cursor-pointer transition-all ${
                 selectedImage === index
                   ? showResult
-                    ? index === currentCard.correctImageIndex
+                    ? index === currentCorrectIndex
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
                     : "ring-4 ring-primary"
@@ -318,13 +322,13 @@ export default function FlashcardPage() {
               </CardContent>
               {showResult && (
                 <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm text-white
-                  ${index === currentCard.correctImageIndex
+                  ${index === currentCorrectIndex
                     ? "bg-green-500"
                     : selectedImage === index
                       ? "bg-red-500"
                       : "hidden"
                   }`}>
-                  {index === currentCard.correctImageIndex
+                  {index === currentCorrectIndex
                     ? "正确答案"
                     : selectedImage === index
                       ? "错误答案"
