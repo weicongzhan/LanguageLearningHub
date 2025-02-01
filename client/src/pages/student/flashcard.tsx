@@ -176,6 +176,23 @@ export default function FlashcardPage() {
       setSelectedImage(null);
       setShowResult(false);
       setCurrentIndex((prev) => prev + 1);
+      
+      // Shuffle the image choices of the next card
+      const nextCard = flashcards[currentIndex + 1];
+      if (nextCard) {
+        const shuffledChoices = [...nextCard.imageChoices as string[]];
+        const correctImage = shuffledChoices[nextCard.correctImageIndex];
+        
+        // Fisher-Yates shuffle
+        for (let i = shuffledChoices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+        }
+        
+        // Update the correct index to match the new position
+        nextCard.correctImageIndex = shuffledChoices.indexOf(correctImage);
+        nextCard.imageChoices = shuffledChoices;
+      }
     } else {
       // If we're at the last card, show a completion message
       toast({
