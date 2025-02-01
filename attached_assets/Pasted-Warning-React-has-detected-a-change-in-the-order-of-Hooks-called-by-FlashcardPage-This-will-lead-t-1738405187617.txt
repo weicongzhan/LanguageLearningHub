@@ -1,0 +1,103 @@
+Warning: React has detected a change in the order of Hooks called by FlashcardPage. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useContext                 useContext
+2. useContext                 useContext
+3. useSyncExternalStore       useSyncExternalStore
+4. useRef                     useRef
+5. useInsertionEffect         useInsertionEffect
+6. useContext                 useContext
+7. useSyncExternalStore       useSyncExternalStore
+8. useRef                     useRef
+9. useInsertionEffect         useInsertionEffect
+10. useContext                useContext
+11. useContext                useContext
+12. useContext                useContext
+13. useContext                useContext
+14. useEffect                 useEffect
+15. useState                  useState
+16. useCallback               useCallback
+17. useSyncExternalStore      useSyncExternalStore
+18. useEffect                 useEffect
+19. useContext                useContext
+20. useState                  useState
+21. useEffect                 useEffect
+22. useCallback               useCallback
+23. useSyncExternalStore      useSyncExternalStore
+24. useCallback               useCallback
+25. useContext                useContext
+26. useState                  useState
+27. useEffect                 useEffect
+28. useCallback               useCallback
+29. useSyncExternalStore      useSyncExternalStore
+30. useCallback               useCallback
+31. useContext                useContext
+32. useState                  useState
+33. useEffect                 useEffect
+34. useCallback               useCallback
+35. useSyncExternalStore      useSyncExternalStore
+36. useCallback               useCallback
+37. useState                  useState
+38. useEffect                 useEffect
+39. useContext                useContext
+40. useState                  useState
+41. useState                  useState
+42. useState                  useState
+43. useRef                    useRef
+44. useRef                    useRef
+45. useRef                    useRef
+46. useContext                useContext
+47. useContext                useContext
+48. useContext                useContext
+49. useEffect                 useEffect
+50. useState                  useState
+51. useCallback               useCallback
+52. useSyncExternalStore      useSyncExternalStore
+53. useEffect                 useEffect
+54. useEffect                 useEffect
+55. useEffect                 useEffect
+56. useEffect                 useEffect
+57. useContext                useContext
+58. useState                  useState
+59. useEffect                 useEffect
+60. useCallback               useCallback
+61. useSyncExternalStore      useSyncExternalStore
+62. useCallback               useCallback
+63. undefined                 useState
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    at FlashcardPage (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/src/pages/student/flashcard.tsx:47:22)
+    at Route (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c9023808:323:16)
+    at Switch (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c9023808:379:17)
+    at main
+    at div
+    at Router (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/src/App.tsx?v=cRIFEA_9EDpqvO4ER8PtT:34:39)
+    at QueryClientProvider (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c9023808:2805:3)
+    at App
+Rendered more hooks than during the previous render.
+Rendered more hooks than during the previous render.
+The above error occurred in the <FlashcardPage> component:
+
+    at FlashcardPage (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/src/pages/student/flashcard.tsx:47:22)
+    at Route (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c9023808:323:16)
+    at Switch (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c9023808:379:17)
+    at main
+    at div
+    at Router (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/src/App.tsx?v=cRIFEA_9EDpqvO4ER8PtT:34:39)
+    at QueryClientProvider (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c9023808:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Rendered more hooks than during the previous render.
+at updateWorkInProgressHook (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:11678:21)
+at updateReducer (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:11727:22)
+at updateState (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:12021:18)
+at Object.useState (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:12753:24)
+at useState (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3TFVT2CW.js?v=c9023808:1066:29)
+at FlashcardPage (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/src/pages/student/flashcard.tsx:168:45)
+at renderWithHooks (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:11548:26)
+at updateFunctionComponent (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:14582:28)
+at beginWork (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:15924:22)
+at beginWork$1 (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=c9023808:19753:22)
