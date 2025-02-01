@@ -235,6 +235,15 @@ export default function FlashcardPage() {
       setSelectedImage(null);
       setShowResult(false);
       setCurrentIndex(currentIndex + 1);
+      
+      // Get the current flashcard's choices and correct image
+      const nextCard = flashcards[currentIndex + 1];
+      const choices = [...nextCard.imageChoices as string[]];
+      const correctImage = choices[nextCard.correctImageIndex];
+      
+      // Update current images without randomization
+      setCurrentImages(choices);
+      setCurrentCorrectIndex(nextCard.correctImageIndex);
     } else {
       toast({
         title: "课程完成",
