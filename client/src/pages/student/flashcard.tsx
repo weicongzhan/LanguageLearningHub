@@ -46,13 +46,12 @@ export default function FlashcardPage() {
   const studyStartTimeRef = useRef<Date>(new Date());
 
   // All state declarations at the top
-  // All state declarations at the top
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
-  const [flashcards, setFlashcards] = useState<any[]>([]);
+
   const searchParams = new URLSearchParams(window.location.search);
   const isReviewMode = searchParams.get('mode') === 'review';
 
@@ -61,23 +60,6 @@ export default function FlashcardPage() {
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
-
-  useEffect(() => {
-    if (userLesson?.lesson?.flashcards) {
-      const allFlashcards = userLesson.lesson.flashcards;
-      const filteredFlashcards = isReviewMode
-        ? allFlashcards.filter(flashcard => {
-            const progress = userLesson.progress as Progress;
-            const reviews = progress.reviews || [];
-            const lastReview = [...reviews]
-              .reverse()
-              .find(review => review.flashcardId === flashcard.id);
-            return lastReview && !lastReview.successful;
-          })
-        : allFlashcards;
-      setFlashcards(filteredFlashcards);
-    }
-  }, [userLesson, isReviewMode]);
 
   // Progress mutation
   const updateProgressMutation = useMutation({
@@ -110,7 +92,7 @@ export default function FlashcardPage() {
       });
       setLocation("/");
     }
-  }, [error, setLocation]);
+  }, [error, setLocation, toast]);
 
   // If no valid lesson found, redirect to dashboard
   useEffect(() => {
@@ -123,32 +105,59 @@ export default function FlashcardPage() {
       });
       setLocation("/");
     }
-  }, [isLoading, userLesson, setLocation, params?.id]);
+  }, [isLoading, userLesson, setLocation, params?.id, toast]);
 
   useEffect(() => {
-    if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
-      const progress = userLesson.progress as Progress || {
-        total: userLesson.lesson.flashcards.length,
-        completed: 0,
-        reviews: []
-      };
-      progress.total = userLesson.lesson.flashcards.length;
-      updateProgressMutation.mutate({
-        progress,
-        totalStudyTime: userLesson.totalStudyTime || 0
-      });
-    }
+    if (!userLesson?.lesson?.flashcards) return;
+
+    const progress = userLesson.progress as Progress || {
+      total: userLesson.lesson.flashcards.length,
+      completed: 0,
+      reviews: []
+    };
+    progress.total = userLesson.lesson.flashcards.length;
+    updateProgressMutation.mutate({
+      progress,
+      totalStudyTime: userLesson.totalStudyTime || 0
+    });
 
     return () => {
-      if (userLesson) {
-        const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
-        updateProgressMutation.mutate({
-          progress: userLesson.progress as Progress,
-          totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
-        });
-      }
+      const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
+      updateProgressMutation.mutate({
+        progress: userLesson.progress as Progress,
+        totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
+      });
     };
-  }, [userLesson?.lesson?.flashcards?.length]);
+  }, [userLesson?.lesson?.flashcards?.length, userLesson?.totalStudyTime]);
+
+  const flashcards = userLesson?.lesson?.flashcards?.filter(flashcard => {
+    if (!isReviewMode) return true;
+    const progress = userLesson.progress as Progress;
+    const reviews = progress.reviews || [];
+    const lastReview = [...reviews]
+      .reverse()
+      .find(review => review.flashcardId === flashcard.id);
+    return lastReview && !lastReview.successful;
+  }) || [];
+
+  const currentCard = flashcards[currentIndex];
+
+  useEffect(() => {
+    if (!currentCard) return;
+    
+    const choices = [...currentCard.imageChoices as string[]];
+    const correctImage = choices[currentCard.correctImageIndex];
+
+    if (selectedImage === null) {
+      for (let i = choices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+      }
+    }
+
+    setCurrentImages(choices);
+    setCurrentCorrectIndex(choices.indexOf(correctImage));
+  }, [currentCard, selectedImage]);
 
   if (isLoading || !userLesson?.lesson) {
     return (
@@ -157,8 +166,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-
-  
 
   if (flashcards.length === 0) {
     return (
@@ -175,47 +182,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-
-  const currentCard = flashcards[currentIndex];
-
-  useEffect(() => {
-    if (currentCard) {
-      const choices = [...currentCard.imageChoices as string[]];
-      const correctImage = choices[currentCard.correctImageIndex];
-
-      if (selectedImage === null) {
-        for (let i = choices.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [choices[i], choices[j]] = [choices[j], choices[i]];
-        }
-      }
-
-      setCurrentImages(choices);
-      setCurrentCorrectIndex(choices.indexOf(correctImage));
-    }
-  }, [currentIndex, currentCard, selectedImage]);
-
-  const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setSelectedImage(null);
-      setShowResult(false);
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      toast({
-        title: "课程完成",
-        description: "恭喜你完成了这节课程！",
-      });
-      setLocation("/");
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setSelectedImage(null);
-      setShowResult(false);
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
 
   const handleImageSelection = (index: number) => {
     if (selectedImage !== null) return;
@@ -261,6 +227,28 @@ export default function FlashcardPage() {
         progress,
         totalStudyTime: userLesson.totalStudyTime || 0
       });
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < flashcards.length - 1) {
+      setSelectedImage(null);
+      setShowResult(false);
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      toast({
+        title: "课程完成",
+        description: "恭喜你完成了这节课程！",
+      });
+      setLocation("/");
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setSelectedImage(null);
+      setShowResult(false);
+      setCurrentIndex(currentIndex - 1);
     }
   };
 
