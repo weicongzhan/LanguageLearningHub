@@ -54,7 +54,7 @@ export default function FlashcardPage() {
   const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
   const [flashcards, setFlashcards] = useState<any[]>([]);
 
-  // Get the mode from URL search params
+  const [flashcards, setFlashcards] = useState<any[]>([]);
   const searchParams = new URLSearchParams(window.location.search);
   const isReviewMode = searchParams.get('mode') === 'review';
 
@@ -63,6 +63,23 @@ export default function FlashcardPage() {
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
+
+  useEffect(() => {
+    if (userLesson?.lesson?.flashcards) {
+      const allFlashcards = userLesson.lesson.flashcards;
+      const filteredFlashcards = isReviewMode
+        ? allFlashcards.filter(flashcard => {
+            const progress = userLesson.progress as Progress;
+            const reviews = progress.reviews || [];
+            const lastReview = [...reviews]
+              .reverse()
+              .find(review => review.flashcardId === flashcard.id);
+            return lastReview && !lastReview.successful;
+          })
+        : allFlashcards;
+      setFlashcards(filteredFlashcards);
+    }
+  }, [userLesson, isReviewMode]);
 
   // Progress mutation
   const updateProgressMutation = useMutation({
@@ -143,23 +160,7 @@ export default function FlashcardPage() {
     );
   }
 
-  // Update flashcards when userLesson changes
-  useEffect(() => {
-    if (userLesson?.lesson?.flashcards) {
-      const allFlashcards = userLesson.lesson.flashcards;
-      const filteredFlashcards = isReviewMode
-        ? allFlashcards.filter(flashcard => {
-            const progress = userLesson.progress as Progress;
-            const reviews = progress.reviews || [];
-            const lastReview = [...reviews]
-              .reverse()
-              .find(review => review.flashcardId === flashcard.id);
-            return lastReview && !lastReview.successful;
-          })
-        : allFlashcards;
-      setFlashcards(filteredFlashcards);
-    }
-  }, [userLesson, isReviewMode]);
+  
 
   if (flashcards.length === 0) {
     return (
