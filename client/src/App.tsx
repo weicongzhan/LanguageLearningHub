@@ -72,7 +72,7 @@ function Router() {
             <>
               <Route path="/" component={StudentDashboard} />
               <Route path="/lesson/:id" component={Flashcard} />
-              <Route path="/lesson/:id?mode=review" component={Flashcard} />
+              <Route path="/lesson/:id/review" component={Flashcard} />
             </>
           )}
           <Route path="*" component={NotFound} />

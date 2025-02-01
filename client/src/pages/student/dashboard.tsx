@@ -105,7 +105,7 @@ export default function StudentDashboard() {
                       </Link>
 
                       {needsReview > 0 && (
-                        <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
+                        <Link href={`/lesson/${userLesson.lessonId}/review`}>
                           <Button variant="outline" className="w-full">
                             <RefreshCw className="w-4 h-4 mr-2" />
                             Review {needsReview} Cards
