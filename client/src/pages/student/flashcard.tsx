@@ -215,6 +215,9 @@ export default function FlashcardPage() {
     if (selectedImage !== null) return; // Prevent multiple selections
     setSelectedImage(index);
     setShowResult(true);
+    // Clear any previous shuffle effects
+    const currentChoices = [...currentCard.imageChoices];
+    currentCard.imageChoices = currentChoices;
 
     const isCorrect = index === currentCard.correctImageIndex;
     const progress = userLesson.progress as Progress || {
