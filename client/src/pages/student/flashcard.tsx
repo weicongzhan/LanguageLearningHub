@@ -189,12 +189,26 @@ export default function FlashcardPage() {
     }
   };
 
+  const shuffleImages = (card: any) => {
+    const shuffledChoices = [...card.imageChoices];
+    const correctImage = shuffledChoices[card.correctImageIndex];
+    
+    for (let i = shuffledChoices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+    }
+    
+    card.correctImageIndex = shuffledChoices.indexOf(correctImage);
+    card.imageChoices = shuffledChoices;
+  };
+
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setSelectedImage(null);
       setShowResult(false);
-      setCurrentIndex((prev) => prev + 1);
-      setTimeout(shuffleCurrentCard, 0); // Shuffle after state updates
+      const nextIndex = currentIndex + 1;
+      shuffleImages(flashcards[nextIndex]);
+      setCurrentIndex(nextIndex);
     } else {
       // If we're at the last card, show a completion message
       toast({
