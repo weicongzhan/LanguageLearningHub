@@ -53,8 +53,6 @@ export default function FlashcardPage() {
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
   const [flashcards, setFlashcards] = useState<any[]>([]);
-
-  const [flashcards, setFlashcards] = useState<any[]>([]);
   const searchParams = new URLSearchParams(window.location.search);
   const isReviewMode = searchParams.get('mode') === 'review';
 
