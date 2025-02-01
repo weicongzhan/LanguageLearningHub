@@ -58,18 +58,23 @@ export default function AuthPage() {
     try {
       setIsLoading(true);
       const result = await register(data);
-      if (!result.ok) {
+      if (result.ok) {
+        toast({
+          title: "注册成功",
+          description: "账户创建成功"
+        });
+      } else {
         toast({
           variant: "destructive",
-          title: "Registration failed",
+          title: "注册失败",
           description: result.message,
         });
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: "错误",
+        description: "发生意外错误",
       });
     } finally {
       setIsLoading(false);
