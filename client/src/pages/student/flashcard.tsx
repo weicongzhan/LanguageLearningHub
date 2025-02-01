@@ -130,6 +130,9 @@ export default function FlashcardPage() {
     },
   });
 
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
+
   if (isLoading || !userLesson?.lesson) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -169,8 +172,6 @@ export default function FlashcardPage() {
     );
   }
 
-  const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
   const currentCard = flashcards[currentIndex];
 
   useEffect(() => {
