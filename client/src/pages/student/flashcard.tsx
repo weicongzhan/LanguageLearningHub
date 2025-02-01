@@ -169,9 +169,9 @@ export default function FlashcardPage() {
     );
   }
 
-  const currentCard = flashcards[currentIndex];
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
+  const currentCard = flashcards[currentIndex];
 
   useEffect(() => {
     if (currentCard) {
@@ -189,7 +189,7 @@ export default function FlashcardPage() {
       setCurrentImages(choices);
       setCurrentCorrectIndex(choices.indexOf(correctImage));
     }
-  }, [currentIndex, currentCard]);
+  }, [currentIndex, currentCard, selectedImage]);
 
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
