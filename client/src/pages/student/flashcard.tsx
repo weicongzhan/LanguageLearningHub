@@ -46,11 +46,13 @@ export default function FlashcardPage() {
   const studyStartTimeRef = useRef<Date>(new Date());
 
   // All state declarations at the top
+  // All state declarations at the top
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
+  const [flashcards, setFlashcards] = useState<any[]>([]);
 
   // Get the mode from URL search params
   const searchParams = new URLSearchParams(window.location.search);
@@ -141,18 +143,23 @@ export default function FlashcardPage() {
     );
   }
 
-  // Filter flashcards based on mode
-  const allFlashcards = userLesson?.lesson?.flashcards || [];
-  const flashcards = isReviewMode
-    ? allFlashcards.filter(flashcard => {
-        const progress = userLesson.progress as Progress;
-        const reviews = progress.reviews || [];
-        const lastReview = [...reviews]
-          .reverse()
-          .find(review => review.flashcardId === flashcard.id);
-        return lastReview && !lastReview.successful;
-      })
-    : allFlashcards;
+  // Update flashcards when userLesson changes
+  useEffect(() => {
+    if (userLesson?.lesson?.flashcards) {
+      const allFlashcards = userLesson.lesson.flashcards;
+      const filteredFlashcards = isReviewMode
+        ? allFlashcards.filter(flashcard => {
+            const progress = userLesson.progress as Progress;
+            const reviews = progress.reviews || [];
+            const lastReview = [...reviews]
+              .reverse()
+              .find(review => review.flashcardId === flashcard.id);
+            return lastReview && !lastReview.successful;
+          })
+        : allFlashcards;
+      setFlashcards(filteredFlashcards);
+    }
+  }, [userLesson, isReviewMode]);
 
   if (flashcards.length === 0) {
     return (
