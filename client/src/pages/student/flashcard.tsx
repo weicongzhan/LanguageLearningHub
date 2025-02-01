@@ -171,23 +171,7 @@ export default function FlashcardPage() {
 
   const currentCard = flashcards[currentIndex];
 
-  const shuffleCurrentCard = () => {
-    const card = flashcards[currentIndex];
-    if (card) {
-      const shuffledChoices = [...card.imageChoices as string[]];
-      const correctImage = shuffledChoices[card.correctImageIndex];
-      
-      // Fisher-Yates shuffle
-      for (let i = shuffledChoices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
-      }
-      
-      // Update the correct index to match the new position
-      card.correctImageIndex = shuffledChoices.indexOf(correctImage);
-      card.imageChoices = shuffledChoices;
-    }
-  };
+  // Remove unused function
 
   const shuffleImages = (card: any) => {
     const shuffledChoices = [...card.imageChoices];
@@ -228,6 +212,7 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
+    if (selectedImage !== null) return; // Prevent multiple selections
     setSelectedImage(index);
     setShowResult(true);
 
