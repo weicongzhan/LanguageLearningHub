@@ -45,6 +45,7 @@ export default function FlashcardPage() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const previousAudioRef = useRef<string | null>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
 
   // Get the mode from URL search params
@@ -256,7 +257,15 @@ export default function FlashcardPage() {
             <Button
               variant="outline"
               size="icon"
-              onClick={() => audioRef.current?.play()}
+              onClick={() => {
+                if (audioRef.current) {
+                  if (previousAudioRef.current === currentCard.audioUrl) {
+                    audioRef.current.currentTime = 0;
+                  }
+                  audioRef.current.play();
+                  previousAudioRef.current = currentCard.audioUrl;
+                }
+              }}
             >
               <Volume2 className="h-6 w-6" />
             </Button>
