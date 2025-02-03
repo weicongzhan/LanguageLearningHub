@@ -199,20 +199,21 @@ export default function FlashcardPage() {
     setSelectedImage(index);
     setShowResult(true);
     
+    const progress = userLesson.progress as Progress || {
+      total: flashcards.length,
+      completed: 0,
+      reviews: []
+    };
+
+    // Add to reviews list
+    progress.reviews.push({
+      timestamp: new Date().toISOString(),
+      flashcardId: currentCard.id,
+      successful: isCorrect
+    });
+    
     if (isCorrect) {
       playCorrectSound();
-      
-      const progress = userLesson.progress as Progress || {
-        total: flashcards.length,
-        completed: 0,
-        reviews: []
-      };
-
-      progress.reviews.push({
-        timestamp: new Date().toISOString(),
-        flashcardId: currentCard.id,
-        successful: true
-      });
 
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
