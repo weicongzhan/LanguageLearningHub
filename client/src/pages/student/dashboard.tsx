@@ -100,18 +100,18 @@ export default function StudentDashboard() {
 
                     {/* Study and Review Buttons */}
                     <div className="space-y-2">
-                      <Link href={`/lesson/${userLesson.lessonId}`}>
-                        <Button className="w-full">Continue Learning</Button>
-                      </Link>
-
-                      {needsReview > 0 && (
-                        <Link href={`/lesson/${userLesson.lessonId}/review`}>
-                          <Button variant="outline" className="w-full">
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Review {needsReview} Cards
-                          </Button>
+                      <div className="space-x-2">
+                        <Link href={`/lesson/${userLesson.lessonId}`}>
+                          <Button className="w-full">Continue Learning</Button>
                         </Link>
-                      )}
+                        {needsReview > 0 && (
+                          <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
+                            <Button variant="outline" className="w-full">
+                              Review {needsReview} Cards
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

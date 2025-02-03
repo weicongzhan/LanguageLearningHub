@@ -144,10 +144,10 @@ export default function FlashcardPage() {
     ? allFlashcards.filter(flashcard => {
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
-        // Find the most recent review for this flashcard
-        const lastReview = [...reviews]
-          .reverse()
-          .find(review => review.flashcardId === flashcard.id);
+        // Find all reviews for this flashcard
+        const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+        // Get the last review
+        const lastReview = flashcardReviews[flashcardReviews.length - 1];
         // Include in review if the last attempt was unsuccessful
         return lastReview && !lastReview.successful;
       })
