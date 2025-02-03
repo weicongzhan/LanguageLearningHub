@@ -206,7 +206,6 @@ export default function FlashcardPage() {
       reviews: []
     };
 
-    // Only add to reviews if this is a new selection
     if (!progress.reviews.some(r => r.flashcardId === currentCard.id && r.timestamp === new Date().toISOString())) {
       progress.reviews.push({
         timestamp: new Date().toISOString(),
@@ -214,7 +213,6 @@ export default function FlashcardPage() {
         successful: isCorrect
       });
 
-      // Update completed count if this is first time seeing the card
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
@@ -226,7 +224,6 @@ export default function FlashcardPage() {
         playIncorrectSound();
       }
 
-      // Show feedback toast
       toast({
         variant: isCorrect ? "default" : "destructive",
         title: isCorrect ? "正确!" : "错误!",
