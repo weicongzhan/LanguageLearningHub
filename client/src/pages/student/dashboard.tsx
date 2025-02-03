@@ -72,13 +72,10 @@ export default function StudentDashboard() {
                   const { needsReview } = calculateProgress(lesson.progress);
                   if (needsReview > 0) {
                     return (
-                      <div key={lesson.id}>
+                      <div key={lesson.id} className="space-y-4">
                         <span>{lesson.lesson.title}</span>
-                        <div className="pt-4 flex gap-2">
-                          <Link href={`/lesson/${lesson.lessonId}`} className="flex-1">
-                            <Button className="w-full">继续学习</Button>
-                          </Link>
-                          <Link href={`/lesson/${lesson.lessonId}?mode=review`} className="flex-1">
+                        <div className="pt-4">
+                          <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
                             <Button className="w-full">
                               复习 {needsReview} 道题
                             </Button>
