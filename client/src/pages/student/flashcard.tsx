@@ -195,43 +195,38 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
-    const isCorrect = index === currentCard.correctImageIndex;
-    
-    if (!isCorrect && selectedImage === null) {
-      // First incorrect attempt
-      setSelectedImage(index);
-      setShowResult(true);
-      playIncorrectSound();
-      toast({
-        variant: "destructive",
-        title: "错误!",
-        description: "请再试一次"
-      });
-    } else if (isCorrect) {
-      // Correct attempt
-      setSelectedImage(index);
-      setShowResult(true);
-      
-      const progress = userLesson.progress as Progress || {
-        total: flashcards.length,
-        completed: 0,
-        reviews: []
-      };
+    if (selectedImage !== null) return; // Prevent multiple selections
+    setSelectedImage(index);
+    setShowResult(true);
 
+    const isCorrect = index === currentCard.correctImageIndex;
+    const progress = userLesson.progress as Progress || {
+      total: flashcards.length,
+      completed: 0,
+      reviews: []
+    };
+
+    if (!progress.reviews.some(r => r.flashcardId === currentCard.id && r.timestamp === new Date().toISOString())) {
       progress.reviews.push({
         timestamp: new Date().toISOString(),
         flashcardId: currentCard.id,
-        successful: true
+        successful: isCorrect
       });
 
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
 
-      playCorrectSound();
+      // Play sound based on correctness
+      if (isCorrect) {
+        playCorrectSound();
+      } else {
+        playIncorrectSound();
+      }
+
       toast({
-        variant: "default",
-        title: "正确!",
+        variant: isCorrect ? "default" : "destructive",
+        title: isCorrect ? "正确!" : "错误!",
         description: "点击'下一个'继续!"
       });
 
