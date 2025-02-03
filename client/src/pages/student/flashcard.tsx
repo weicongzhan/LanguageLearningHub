@@ -195,38 +195,33 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
-    if (selectedImage !== null) return; // Prevent multiple selections
-    setSelectedImage(index);
-    setShowResult(true);
-
     const isCorrect = index === currentCard.correctImageIndex;
-    const progress = userLesson.progress as Progress || {
-      total: flashcards.length,
-      completed: 0,
-      reviews: []
-    };
+    
+    // If correct answer, proceed with selection
+    if (isCorrect) {
+      setSelectedImage(index);
+      setShowResult(true);
+      playCorrectSound();
+      
+      const progress = userLesson.progress as Progress || {
+        total: flashcards.length,
+        completed: 0,
+        reviews: []
+      };
 
-    if (!progress.reviews.some(r => r.flashcardId === currentCard.id && r.timestamp === new Date().toISOString())) {
       progress.reviews.push({
         timestamp: new Date().toISOString(),
         flashcardId: currentCard.id,
-        successful: isCorrect
+        successful: true
       });
 
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
 
-      // Play sound based on correctness
-      if (isCorrect) {
-        playCorrectSound();
-      } else {
-        playIncorrectSound();
-      }
-
       toast({
-        variant: isCorrect ? "default" : "destructive",
-        title: isCorrect ? "正确!" : "错误!",
+        variant: "default",
+        title: "正确!",
         description: "点击'下一个'继续!"
       });
 
