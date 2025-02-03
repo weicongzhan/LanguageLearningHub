@@ -280,7 +280,9 @@ export default function FlashcardPage() {
               className={`cursor-pointer transition-all ${
                 selectedImage !== null && showResult
                   ? selectedImage === index
-                    ? "ring-4 ring-red-500"
+                    ? index === currentCard.correctImageIndex
+                      ? "ring-4 ring-green-500"
+                      : "ring-4 ring-red-500"
                     : ""
                   : selectedImage === index
                     ? "ring-4 ring-primary"
