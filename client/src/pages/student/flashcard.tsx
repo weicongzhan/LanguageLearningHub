@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Volume2, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import type { UserLessonWithRelations, Progress } from "@db/schema";
@@ -41,17 +41,14 @@ export default function FlashcardPage() {
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const previousAudioRef = useRef<string | null>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
 
-  // All state declarations at the top
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const [currentCorrectIndex, setCurrentCorrectIndex] = useState<number>(0);
-
+  // Get the mode from URL search params
   const searchParams = new URLSearchParams(window.location.search);
   const isReviewMode = searchParams.get('mode') === 'review';
 
@@ -60,6 +57,58 @@ export default function FlashcardPage() {
     queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
     enabled: !!user && !!params?.id,
   });
+
+  // Handle error cases
+  useEffect(() => {
+    if (error) {
+      console.error('Lesson access error:', error);
+      toast({
+        variant: "destructive",
+        title: "错误",
+        description: "无法访问该课程，请确认课程已分配给您",
+      });
+      setLocation("/"); // Redirect to dashboard on error
+    }
+  }, [error, setLocation]);
+
+  // If no valid lesson found, redirect to dashboard
+  useEffect(() => {
+    if (!isLoading && !userLesson) {
+      console.error('No lesson found for ID:', params?.id);
+      toast({
+        variant: "destructive",
+        title: "错误",
+        description: "未找到课程",
+      });
+      setLocation("/");
+    }
+  }, [isLoading, userLesson, setLocation, params?.id]);
+
+  // Effects
+  useEffect(() => {
+    if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
+      const progress = userLesson.progress as Progress || {
+        total: userLesson.lesson.flashcards.length,
+        completed: 0,
+        reviews: []
+      };
+      progress.total = userLesson.lesson.flashcards.length;
+      updateProgressMutation.mutate({
+        progress,
+        totalStudyTime: userLesson.totalStudyTime || 0
+      });
+    }
+
+    return () => {
+      if (userLesson) {
+        const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
+        updateProgressMutation.mutate({
+          progress: userLesson.progress as Progress,
+          totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
+        });
+      }
+    };
+  }, [userLesson?.lesson?.flashcards?.length]);
 
   // Progress mutation
   const updateProgressMutation = useMutation({
@@ -81,84 +130,6 @@ export default function FlashcardPage() {
     },
   });
 
-  // Handle error cases
-  useEffect(() => {
-    if (error) {
-      console.error('Lesson access error:', error);
-      toast({
-        variant: "destructive",
-        title: "错误",
-        description: "无法访问该课程，请确认课程已分配给您",
-      });
-      setLocation("/");
-    }
-  }, [error, setLocation, toast]);
-
-  // If no valid lesson found, redirect to dashboard
-  useEffect(() => {
-    if (!isLoading && !userLesson) {
-      console.error('No lesson found for ID:', params?.id);
-      toast({
-        variant: "destructive",
-        title: "错误",
-        description: "未找到课程",
-      });
-      setLocation("/");
-    }
-  }, [isLoading, userLesson, setLocation, params?.id, toast]);
-
-  useEffect(() => {
-    if (!userLesson?.lesson?.flashcards) return;
-
-    const progress = userLesson.progress as Progress || {
-      total: userLesson.lesson.flashcards.length,
-      completed: 0,
-      reviews: []
-    };
-    progress.total = userLesson.lesson.flashcards.length;
-    updateProgressMutation.mutate({
-      progress,
-      totalStudyTime: userLesson.totalStudyTime || 0
-    });
-
-    return () => {
-      const studyTime = Math.floor((new Date().getTime() - studyStartTimeRef.current.getTime()) / 1000);
-      updateProgressMutation.mutate({
-        progress: userLesson.progress as Progress,
-        totalStudyTime: (userLesson.totalStudyTime || 0) + studyTime
-      });
-    };
-  }, [userLesson?.lesson?.flashcards?.length, userLesson?.totalStudyTime]);
-
-  const flashcards = userLesson?.lesson?.flashcards?.filter(flashcard => {
-    if (!isReviewMode) return true;
-    const progress = userLesson.progress as Progress;
-    const reviews = progress.reviews || [];
-    const lastReview = [...reviews]
-      .reverse()
-      .find(review => review.flashcardId === flashcard.id);
-    return lastReview && !lastReview.successful;
-  }) || [];
-
-  const currentCard = flashcards[currentIndex];
-
-  useEffect(() => {
-    if (!currentCard) return;
-    
-    const choices = [...currentCard.imageChoices as string[]];
-    const correctImage = choices[currentCard.correctImageIndex];
-
-    if (selectedImage === null) {
-      for (let i = choices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [choices[i], choices[j]] = [choices[j], choices[i]];
-      }
-    }
-
-    setCurrentImages(choices);
-    setCurrentCorrectIndex(choices.indexOf(correctImage));
-  }, [currentCard, selectedImage]);
-
   if (isLoading || !userLesson?.lesson) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -166,6 +137,21 @@ export default function FlashcardPage() {
       </div>
     );
   }
+
+  // Filter flashcards based on mode
+  const allFlashcards = userLesson?.lesson?.flashcards || [];
+  const flashcards = isReviewMode
+    ? allFlashcards.filter(flashcard => {
+        const progress = userLesson.progress as Progress;
+        const reviews = progress.reviews || [];
+        // Find the most recent review for this flashcard
+        const lastReview = [...reviews]
+          .reverse()
+          .find(review => review.flashcardId === flashcard.id);
+        // Include in review if the last attempt was unsuccessful
+        return lastReview && !lastReview.successful;
+      })
+    : allFlashcards;
 
   if (flashcards.length === 0) {
     return (
@@ -183,21 +169,43 @@ export default function FlashcardPage() {
     );
   }
 
+  const currentCard = flashcards[currentIndex];
+
+  const handleNext = () => {
+    if (currentIndex < flashcards.length - 1) {
+      setSelectedImage(null);
+      setShowResult(false);
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      // If we're at the last card, show a completion message
+      toast({
+        title: "课程完成",
+        description: "恭喜你完成了这节课程！",
+      });
+      setLocation("/");
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setSelectedImage(null);
+      setShowResult(false);
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
+
   const handleImageSelection = (index: number) => {
-    if (selectedImage !== null) return;
     setSelectedImage(index);
     setShowResult(true);
-    
-    const currentChoices = [...currentImages];
-    currentCard.imageChoices = currentChoices;
 
-    const isCorrect = index === currentCorrectIndex;
+    const isCorrect = index === currentCard.correctImageIndex;
     const progress = userLesson.progress as Progress || {
       total: flashcards.length,
       completed: 0,
       reviews: []
     };
 
+    // Only add to reviews if this is a new selection
     if (!progress.reviews.some(r => r.flashcardId === currentCard.id && r.timestamp === new Date().toISOString())) {
       progress.reviews.push({
         timestamp: new Date().toISOString(),
@@ -205,16 +213,19 @@ export default function FlashcardPage() {
         successful: isCorrect
       });
 
+      // Update completed count if this is first time seeing the card
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
 
+      // Play sound effect based on correctness
       if (isCorrect) {
         playCorrectSound();
       } else {
         playIncorrectSound();
       }
 
+      // Show feedback toast only for new selections
       toast({
         variant: isCorrect ? "default" : "destructive",
         title: isCorrect ? "正确!" : "错误!",
@@ -230,37 +241,6 @@ export default function FlashcardPage() {
     }
   };
 
-  const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setSelectedImage(null);
-      setShowResult(false);
-      setCurrentIndex(currentIndex + 1);
-      
-      // Get the current flashcard's choices and correct image
-      const nextCard = flashcards[currentIndex + 1];
-      const choices = [...nextCard.imageChoices as string[]];
-      const correctImage = choices[nextCard.correctImageIndex];
-      
-      // Update current images without randomization
-      setCurrentImages(choices);
-      setCurrentCorrectIndex(nextCard.correctImageIndex);
-    } else {
-      toast({
-        title: "课程完成",
-        description: "恭喜你完成了这节课程！",
-      });
-      setLocation("/");
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setSelectedImage(null);
-      setShowResult(false);
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="mb-6">
@@ -271,6 +251,7 @@ export default function FlashcardPage() {
       </div>
 
       <div className="space-y-6">
+        {/* Audio Section */}
         <Card>
           <CardContent className="flex items-center justify-center py-6">
             <Button
@@ -291,14 +272,15 @@ export default function FlashcardPage() {
           </CardContent>
         </Card>
 
+        {/* Image Choices */}
         <div className="grid grid-cols-2 gap-4">
-          {currentImages.map((imageUrl, index) => (
+          {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
             <Card
               key={index}
               className={`cursor-pointer transition-all ${
                 selectedImage === index
                   ? showResult
-                    ? index === currentCorrectIndex
+                    ? index === currentCard.correctImageIndex
                       ? "ring-4 ring-green-500"
                       : "ring-4 ring-red-500"
                     : "ring-4 ring-primary"
@@ -315,13 +297,13 @@ export default function FlashcardPage() {
               </CardContent>
               {showResult && (
                 <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm text-white
-                  ${index === currentCorrectIndex
+                  ${index === currentCard.correctImageIndex
                     ? "bg-green-500"
                     : selectedImage === index
                       ? "bg-red-500"
                       : "hidden"
                   }`}>
-                  {index === currentCorrectIndex
+                  {index === currentCard.correctImageIndex
                     ? "正确答案"
                     : selectedImage === index
                       ? "错误答案"
@@ -332,6 +314,7 @@ export default function FlashcardPage() {
           ))}
         </div>
 
+        {/* Navigation */}
         <div className="flex justify-between mt-6">
           <Button
             variant="outline"
