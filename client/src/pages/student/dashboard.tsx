@@ -75,7 +75,7 @@ export default function StudentDashboard() {
                       <div key={lesson.id} className="flex justify-between items-center">
                         <span>{lesson.lesson.title}</span>
                         <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
-                          <Button variant="outline" size="sm">
+                          <Button className="w-full">
                             复习 {needsReview} 道题
                           </Button>
                         </Link>
