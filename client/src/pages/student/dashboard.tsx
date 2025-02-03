@@ -1,12 +1,12 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Loader2, BookOpen, Clock, Target, RefreshCw } from "lucide-react";
+import { Loader2, BookOpen, Clock, Target } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations } from "@db/schema";
-import type { Progress as ProgressType } from "@db/schema";
 
 export default function StudentDashboard() {
   const { user } = useUser();
@@ -16,10 +16,12 @@ export default function StudentDashboard() {
     enabled: !!user,
   });
 
-  const calculateProgress = (progress: ProgressType | null) => {
+  const calculateProgress = (progress: any) => {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
     const reviews = progress.reviews || [];
+
+    // Calculate success rate
     const success = reviews.length > 0 
       ? (reviews.filter(review => review.successful).length / reviews.length) * 100 
       : 0;
@@ -51,8 +53,8 @@ export default function StudentDashboard() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Welcome, {user?.username}!</h1>
-        <p className="text-muted-foreground">Your assigned lessons are below</p>
+        <h1 className="text-3xl font-bold">欢迎, {user?.username}!</h1>
+        <p className="text-muted-foreground">你的课程在下面</p>
       </div>
 
       {isLoading ? (
@@ -62,7 +64,7 @@ export default function StudentDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {userLessons?.map((userLesson) => {
-            const { percent, success, needsReview } = calculateProgress(userLesson.progress as ProgressType);
+            const { percent, success, needsReview } = calculateProgress(userLesson.progress);
             return (
               <Card key={userLesson.id}>
                 <CardHeader>
@@ -80,7 +82,7 @@ export default function StudentDashboard() {
                     {/* Progress */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Progress</span>
+                        <span>学习进度</span>
                         <span>{Math.round(percent)}%</span>
                       </div>
                       <ProgressBar value={percent} className="h-2" />
@@ -94,24 +96,23 @@ export default function StudentDashboard() {
                       </div>
                       <div className="flex items-center gap-1 justify-end">
                         <Target className="h-4 w-4 text-muted-foreground" />
-                        <span>{Math.round(success)}% correct</span>
+                        <span>{Math.round(success)}% 正确率</span>
                       </div>
                     </div>
 
                     {/* Study and Review Buttons */}
                     <div className="space-y-2">
-                      <div className="space-x-2">
-                        <Link href={`/lesson/${userLesson.lessonId}`}>
-                          <Button className="w-full">Continue Learning</Button>
+                      <Link href={`/lesson/${userLesson.lessonId}`}>
+                        <Button className="w-full">继续学习</Button>
+                      </Link>
+
+                      {needsReview > 0 && (
+                        <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
+                          <Button variant="outline" className="w-full">
+                            复习错题 ({needsReview}题)
+                          </Button>
                         </Link>
-                        {needsReview > 0 && (
-                          <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
-                            <Button variant="outline" className="w-full">
-                              Review {needsReview} Cards
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -120,7 +121,7 @@ export default function StudentDashboard() {
           })}
           {(!userLessons || userLessons.length === 0) && (
             <p className="text-muted-foreground col-span-full text-center">
-              No lessons assigned yet
+              还没有分配课程
             </p>
           )}
         </div>
