@@ -56,44 +56,45 @@ export default function StudentDashboard() {
         <p className="text-muted-foreground">欢迎, {user?.username}!</p>
       </div>
 
-      {/* Review Book Section */}
-      {userLessons?.some(lesson => calculateProgress(lesson.progress).needsReview > 0) && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              错题本
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {userLessons.map(lesson => {
-                const { needsReview } = calculateProgress(lesson.progress);
-                if (needsReview > 0) {
-                  return (
-                    <div key={lesson.id} className="flex justify-between items-center">
-                      <span>{lesson.lesson.title}</span>
-                      <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
-                        <Button variant="outline" size="sm">
-                          复习 {needsReview} 道题
-                        </Button>
-                      </Link>
-                    </div>
-                  );
-                }
-                return null;
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Review Book Section */}
+        {userLessons?.some(lesson => calculateProgress(lesson.progress).needsReview > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                错题本
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {userLessons.map(lesson => {
+                  const { needsReview } = calculateProgress(lesson.progress);
+                  if (needsReview > 0) {
+                    return (
+                      <div key={lesson.id} className="flex justify-between items-center">
+                        <span>{lesson.lesson.title}</span>
+                        <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
+                          <Button variant="outline" size="sm">
+                            复习 {needsReview} 道题
+                          </Button>
+                        </Link>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {isLoading ? (
         <div className="flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <>
           {userLessons?.map((userLesson) => {
             const { percent, success, needsReview } = calculateProgress(userLesson.progress);
             return (
@@ -149,8 +150,9 @@ export default function StudentDashboard() {
               还没有分配课程
             </p>
           )}
-        </div>
+        </>
       )}
+      </div>
     </div>
   );
 }
