@@ -195,8 +195,6 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
-    if (selectedImage !== null) return; // Prevent multiple selections
-    
     setSelectedImage(index);
     setShowResult(true);
 
@@ -281,11 +279,11 @@ export default function FlashcardPage() {
               key={index}
               className={`cursor-pointer transition-all ${
                 selectedImage !== null && showResult
-                  ? selectedImage === index
-                    ? index === currentCard.correctImageIndex
-                      ? "ring-4 ring-green-500"
-                      : "ring-4 ring-red-500"
-                    : ""
+                  ? (index === currentCard.correctImageIndex)
+                    ? "ring-4 ring-green-500"
+                    : selectedImage === index
+                      ? "ring-4 ring-red-500"
+                      : ""
                   : selectedImage === index
                     ? "ring-4 ring-primary"
                     : "hover:ring-2 hover:ring-primary"
