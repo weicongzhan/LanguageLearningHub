@@ -54,8 +54,40 @@ export default function StudentDashboard() {
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">欢迎, {user?.username}!</h1>
-        <p className="text-muted-foreground">你的课程在下面</p>
+        <p className="text-muted-foreground">你的学习空间</p>
       </div>
+
+      {/* Review Book Section */}
+      {userLessons?.some(lesson => calculateProgress(lesson.progress).needsReview > 0) && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              错题本
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {userLessons.map(lesson => {
+                const { needsReview } = calculateProgress(lesson.progress);
+                if (needsReview > 0) {
+                  return (
+                    <div key={lesson.id} className="flex justify-between items-center">
+                      <span>{lesson.lesson.title}</span>
+                      <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
+                        <Button variant="outline" size="sm">
+                          复习 {needsReview} 道题
+                        </Button>
+                      </Link>
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center">
@@ -106,13 +138,7 @@ export default function StudentDashboard() {
                         <Button className="w-full">继续学习</Button>
                       </Link>
 
-                      {needsReview > 0 && (
-                        <Link href={`/lesson/${userLesson.lessonId}?mode=review`}>
-                          <Button variant="outline" className="w-full">
-                            复习错题 ({needsReview}题)
-                          </Button>
-                        </Link>
-                      )}
+                      
                     </div>
                   </div>
                 </CardContent>
