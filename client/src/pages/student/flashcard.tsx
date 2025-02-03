@@ -280,11 +280,11 @@ export default function FlashcardPage() {
               key={index}
               className={`cursor-pointer transition-all ${
                 selectedImage !== null && showResult
-                  ? (index === currentCard.correctImageIndex)
-                    ? "ring-4 ring-green-500"
-                    : selectedImage === index
-                      ? "ring-4 ring-red-500"
-                      : ""
+                  ? selectedImage === index
+                    ? index === currentCard.correctImageIndex
+                      ? "ring-4 ring-green-500"
+                      : "ring-4 ring-red-500"
+                    : ""
                   : selectedImage === index
                     ? "ring-4 ring-primary"
                     : "hover:ring-2 hover:ring-primary"
