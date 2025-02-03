@@ -218,20 +218,18 @@ export default function FlashcardPage() {
         progress.completed++;
       }
 
-      // Play sound effect based on correctness
+      // Play sound based on correctness
       if (isCorrect) {
         playCorrectSound();
       } else {
         playIncorrectSound();
       }
 
-      // Show feedback toast only for new selections
+      // Show feedback toast
       toast({
         variant: isCorrect ? "default" : "destructive",
         title: isCorrect ? "正确!" : "错误!",
-        description: isCorrect
-          ? "点击'下一个'继续!"
-          : "点击'下一个'继续!",
+        description: "点击'下一个'继续!"
       });
 
       updateProgressMutation.mutate({
