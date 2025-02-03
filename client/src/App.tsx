@@ -53,7 +53,7 @@ function Router() {
     <div>
       {/* Header with logout button */}
       <header className="bg-background border-b py-4 px-6 flex justify-between items-center">
-        <h1 className="text-xl font-semibold">语言学习平台</h1>
+        <Link href="/" className="text-xl font-semibold hover:opacity-80">语言学习平台</Link>
         <Button variant="outline" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" />
           退出账户
