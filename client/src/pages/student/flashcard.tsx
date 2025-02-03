@@ -295,12 +295,10 @@ export default function FlashcardPage() {
                   className="w-full h-48 object-cover rounded"
                 />
               </CardContent>
-              {showResult && (
-                {showResult && selectedImage === index && (
-                  <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
-                    错误答案
-                  </div>
-                )}
+              {showResult && selectedImage === index && (
+                <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
+                  错误答案
+                </div>
               )}
             </Card>
           ))}
