@@ -73,10 +73,7 @@ export default function StudentDashboard() {
                     return (
                       <div key={lesson.id} className="space-y-4">
                         <span>{lesson.lesson.title}</span>
-                        <div className="pt-4 flex flex-col gap-2">
-                          <Link href={`/lesson/${lesson.lessonId}`}>
-                            <Button className="w-full">继续学习</Button>
-                          </Link>
+                        <div className="pt-4">
                           <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
                             <Button className="w-full">
                               复习 {needsReview} 道题
