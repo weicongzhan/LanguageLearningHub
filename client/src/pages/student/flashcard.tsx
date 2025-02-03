@@ -232,8 +232,8 @@ export default function FlashcardPage() {
         variant: isCorrect ? "default" : "destructive",
         title: isCorrect ? "正确!" : "错误!",
         description: isCorrect
-          ? "点击"下一个"继续!"
-          : "点击"下一个"继续!",
+          ? "点击'下一个'继续!"
+          : "点击'下一个'继续!",
       });
 
       updateProgressMutation.mutate({
