@@ -273,8 +273,9 @@ export default function FlashcardPage() {
         </Card>
 
         {/* Image Choices */}
-        <div className="grid grid-cols-2 gap-4">
-          {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
+        {currentCard && (
+          <div className="grid grid-cols-2 gap-4">
+            {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
             <Card
               key={index}
               className={`cursor-pointer transition-all ${
@@ -304,7 +305,8 @@ export default function FlashcardPage() {
               )}
             </Card>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="flex justify-between mt-6">
