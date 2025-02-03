@@ -76,7 +76,13 @@ export default function StudentDashboard() {
                         <div className="pt-4">
                           <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
                             <Button className="w-full">
-                              复习 {needsReview} 道题
+                              复习 {lesson.lesson.flashcards.filter(flashcard => {
+                                const progress = lesson.progress as Progress;
+                                const reviews = progress.reviews || [];
+                                const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+                                const lastReview = flashcardReviews[flashcardReviews.length - 1];
+                                return lastReview && !lastReview.successful;
+                              }).length} 道题
                             </Button>
                           </Link>
                         </div>
