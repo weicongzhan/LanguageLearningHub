@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,7 +73,10 @@ export default function StudentDashboard() {
                     return (
                       <div key={lesson.id} className="space-y-4">
                         <span>{lesson.lesson.title}</span>
-                        <div className="pt-4">
+                        <div className="pt-4 flex flex-col gap-2">
+                          <Link href={`/lesson/${lesson.lessonId}`}>
+                            <Button className="w-full">继续学习</Button>
+                          </Link>
                           <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
                             <Button className="w-full">
                               复习 {needsReview} 道题
@@ -140,7 +142,7 @@ export default function StudentDashboard() {
                         <Button className="w-full">继续学习</Button>
                       </Link>
 
-                      
+
                     </div>
                   </div>
                 </CardContent>
