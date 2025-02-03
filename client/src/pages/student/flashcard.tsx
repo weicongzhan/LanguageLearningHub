@@ -279,11 +279,9 @@ export default function FlashcardPage() {
               key={index}
               className={`cursor-pointer transition-all ${
                 selectedImage !== null && showResult
-                  ? index === currentCard.correctImageIndex
-                    ? "ring-4 ring-green-500"
-                    : selectedImage === index
-                      ? "ring-4 ring-red-500"
-                      : ""
+                  ? selectedImage === index
+                    ? "ring-4 ring-red-500"
+                    : ""
                   : selectedImage === index
                     ? "ring-4 ring-primary"
                     : "hover:ring-2 hover:ring-primary"
@@ -298,19 +296,11 @@ export default function FlashcardPage() {
                 />
               </CardContent>
               {showResult && (
-                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm text-white
-                  ${index === currentCard.correctImageIndex
-                    ? "bg-green-500"
-                    : selectedImage === index
-                      ? "bg-red-500"
-                      : "hidden"
-                  }`}>
-                  {index === currentCard.correctImageIndex
-                    ? "正确答案"
-                    : selectedImage === index
-                      ? "错误答案"
-                      : ""}
-                </div>
+                {showResult && selectedImage === index && (
+                  <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
+                    错误答案
+                  </div>
+                )}
               )}
             </Card>
           ))}
