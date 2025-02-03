@@ -196,10 +196,11 @@ export default function FlashcardPage() {
 
   const handleImageSelection = (index: number) => {
     const isCorrect = index === currentCard.correctImageIndex;
-    setSelectedImage(index);
-    setShowResult(true);
     
+    // If correct answer, proceed with selection
     if (isCorrect) {
+      setSelectedImage(index);
+      setShowResult(true);
       playCorrectSound();
       
       const progress = userLesson.progress as Progress || {
@@ -227,13 +228,6 @@ export default function FlashcardPage() {
       updateProgressMutation.mutate({
         progress,
         totalStudyTime: userLesson.totalStudyTime || 0
-      });
-    } else {
-      playIncorrectSound();
-      toast({
-        variant: "destructive",
-        title: "错误!",
-        description: "请再试一次"
       });
     }
   };
