@@ -53,9 +53,6 @@ export default function StudentDashboard() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <Link href="/" className="hover:opacity-80">
-          <h1 className="text-3xl font-bold">语言学习平台</h1>
-        </Link>
         <p className="text-muted-foreground">欢迎, {user?.username}!</p>
       </div>
 
