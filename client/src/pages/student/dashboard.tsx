@@ -53,8 +53,10 @@ export default function StudentDashboard() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">欢迎, {user?.username}!</h1>
-        <p className="text-muted-foreground">你的学习空间</p>
+        <Link href="/" className="hover:opacity-80">
+          <h1 className="text-3xl font-bold">语言学习平台</h1>
+        </Link>
+        <p className="text-muted-foreground">欢迎, {user?.username}!</p>
       </div>
 
       {/* Review Book Section */}
