@@ -195,6 +195,7 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
+    if (selectedImage !== null) return; // Prevent multiple selections
     setSelectedImage(index);
     setShowResult(true);
 
