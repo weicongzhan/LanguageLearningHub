@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Upload } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast"; // Added import statement
 
 type FileUpload = {
   id: number;
@@ -20,6 +19,7 @@ export default function FilesPage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast(); // Added toast destructuring
 
   const { data: files, isLoading } = useQuery<FileUpload[]>({
     queryKey: ["/api/files"],
