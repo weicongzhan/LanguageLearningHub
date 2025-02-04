@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Upload, User } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, Upload, User, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type FileUpload = {
@@ -25,7 +26,6 @@ type Student = {
 export default function FilesPage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -56,7 +56,6 @@ export default function FilesPage() {
       });
       setTitle("");
       setFile(null);
-      setSelectedStudentId("");
     },
     onError: () => {
       toast({
@@ -67,16 +66,49 @@ export default function FilesPage() {
     },
   });
 
+  const assignMutation = useMutation({
+    mutationFn: async ({ fileId, studentId }: { fileId: number; studentId: number }) => {
+      const response = await fetch(`/api/files/${fileId}/assign`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ studentId }),
+      });
+      if (!response.ok) {
+        throw new Error("Assignment failed");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      toast({
+        title: "Success",
+        description: "File assigned successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to assign file",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title || !selectedStudentId) return;
+    if (!file || !title) return;
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("file", file);
-    formData.append("studentId", selectedStudentId);
 
     uploadMutation.mutate(formData);
+  };
+
+  const handleAssign = (fileId: number, studentId: string) => {
+    assignMutation.mutate({ fileId, studentId: parseInt(studentId) });
   };
 
   return (
@@ -101,21 +133,6 @@ export default function FilesPage() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               required
             />
-            <Select
-              value={selectedStudentId}
-              onValueChange={setSelectedStudentId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Student" />
-              </SelectTrigger>
-              <SelectContent>
-                {students?.map((student) => (
-                  <SelectItem key={student.id} value={student.id.toString()}>
-                    {student.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Button disabled={uploadMutation.isPending}>
               {uploadMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -148,6 +165,31 @@ export default function FilesPage() {
                     <span>Assigned to {file.assignedStudents.length} student(s)</span>
                   </div>
                 )}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full mt-2">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Assign to Student
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Assign File to Student</DialogTitle>
+                    </DialogHeader>
+                    <Select onValueChange={(value) => handleAssign(file.id, value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Student" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {students?.map((student) => (
+                          <SelectItem key={student.id} value={student.id.toString()}>
+                            {student.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           ))}

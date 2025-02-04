@@ -501,6 +501,36 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/files/:id/assign", requireAdmin, async (req, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const { studentId } = req.body;
+
+      const [file] = await db
+        .select()
+        .from(files)
+        .where(eq(files.id, fileId))
+        .limit(1);
+
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      const assignedStudents = [...new Set([...file.assignedStudents, studentId])];
+
+      const [updatedFile] = await db
+        .update(files)
+        .set({ assignedStudents })
+        .where(eq(files.id, fileId))
+        .returning();
+
+      res.json(updatedFile);
+    } catch (error) {
+      console.error('Assignment error:', error);
+      res.status(500).json({ error: "Failed to assign file" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
