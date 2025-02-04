@@ -115,3 +115,15 @@ export type UserLessonWithRelations = UserLesson & {
     flashcards: Flashcard[]
   }
 };
+// Files table
+export const files = pgTable("files", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  type: text("type").notNull(),
+  url: text("url").notNull(),
+  uploadedBy: integer("uploaded_by").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export type File = typeof files.$inferSelect;
+export type InsertFile = typeof files.$inferInsert;
