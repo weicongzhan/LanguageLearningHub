@@ -1,0 +1,58 @@
+Serving static files from: /home/runner/workspace/uploads
+2:48:11 PM [express] serving on port 5000
+2:48:14 PM [express] GET /api/user 401 in 3ms
+2:48:14 PM [express] GET /api/user 401 in 0ms
+2:48:33 PM [express] POST /api/login 200 in 2983ms :: {"message":"Login successful","user":{"id":1,"…
+2:48:34 PM [express] GET /api/user 304 in 79ms :: {"id":1,"username":"weicongzhan","password":"4484d…
+2:48:34 PM [express] GET /api/stats 304 in 315ms :: {"totalLessons":4,"totalFlashcards":9,"totalStud…
+2:48:37 PM [express] GET /api/files 500 in 154ms :: {"error":"Failed to fetch files"}
+Upload error: error: relation "files" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:478:25) {
+  length: 104,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '13',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+2:49:01 PM [express] GET /api/user 304 in 77ms :: {"id":1,"username":"weicongzhan","password":"4484d…
+2:49:01 PM [express] GET /api/stats 304 in 304ms :: {"totalLessons":4,"totalFlashcards":9,"totalStud…
+2:49:08 PM [express] GET /api/files 500 in 152ms :: {"error":"Failed to fetch files"}
+Upload error: error: relation "files" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:478:25) {
+  length: 104,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '13',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+2:49:16 PM [express] POST /api/files/upload 500 in 392ms :: {"error":"Failed to upload file"}
