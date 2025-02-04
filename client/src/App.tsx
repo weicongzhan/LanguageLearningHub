@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { Switch, Route, Link } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -62,22 +63,24 @@ function Router() {
 
       {/* Main content */}
       <main className="p-6">
-        <Switch>
-          {user.isAdmin ? (
-            <>
-              <Route path="/" component={AdminDashboard} />
-              <Route path="/lessons" component={AdminLessons} />
-              <Route path="/files" component={() => import('@/pages/admin/files')} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={StudentDashboard} />
-              <Route path="/lesson/:id" component={Flashcard} />
-              <Route path="/lesson/:id/review" component={Flashcard} />
-            </>
-          )}
-          <Route path="*" component={NotFound} />
-        </Switch>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Switch>
+            {user.isAdmin ? (
+              <>
+                <Route path="/" component={AdminDashboard} />
+                <Route path="/lessons" component={AdminLessons} />
+                <Route path="/files" component={React.lazy(() => import('@/pages/admin/files'))} />
+              </>
+            ) : (
+              <>
+                <Route path="/" component={StudentDashboard} />
+                <Route path="/lesson/:id" component={Flashcard} />
+                <Route path="/lesson/:id/review" component={Flashcard} />
+              </>
+            )}
+            <Route path="*" component={NotFound} />
+          </Switch>
+        </Suspense>
       </main>
     </div>
   );
