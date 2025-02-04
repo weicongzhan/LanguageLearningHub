@@ -67,6 +67,7 @@ function Router() {
             <>
               <Route path="/" component={AdminDashboard} />
               <Route path="/lessons" component={AdminLessons} />
+              <Route path="/files" component={() => import('@/pages/admin/files')} />
             </>
           ) : (
             <>

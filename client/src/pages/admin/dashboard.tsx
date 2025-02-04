@@ -24,12 +24,19 @@ export default function AdminDashboard() {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Link href="/lessons">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Lesson
-          </Button>
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/files">
+            <Button>
+              Manage Files
+            </Button>
+          </Link>
+          <Link href="/lessons">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Lesson
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {isLoading ? (
