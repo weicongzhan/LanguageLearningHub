@@ -85,6 +85,13 @@ export default function FlashcardPage() {
   }, [isLoading, userLesson, setLocation, params?.id]);
 
   // Effects
+  // Auto-play audio when card changes
+  useEffect(() => {
+    if (audioRef.current && isReviewMode) {
+      audioRef.current.play();
+    }
+  }, [currentIndex, isReviewMode]);
+
   useEffect(() => {
     if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
       const progress = userLesson.progress as Progress || {
@@ -222,13 +229,21 @@ export default function FlashcardPage() {
       toast({
         variant: "default",
         title: "正确!",
-        description: "点击'下一个'继续!"
       });
 
       updateProgressMutation.mutate({
         progress,
         totalStudyTime: userLesson.totalStudyTime || 0
       });
+
+      // Auto advance to next card after a short delay in review mode
+      if (isReviewMode && currentIndex < flashcards.length - 1) {
+        setTimeout(() => {
+          setSelectedImage(null);
+          setShowResult(false);
+          setCurrentIndex(prev => prev + 1);
+        }, 1000);
+      }
     } else {
       playIncorrectSound();
       toast({
