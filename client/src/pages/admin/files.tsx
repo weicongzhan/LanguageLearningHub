@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Upload } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast"; // Added import statement
+import { useToast } from "@/hooks/use-toast"; // Added import statement
 
 type FileUpload = {
   id: number;
