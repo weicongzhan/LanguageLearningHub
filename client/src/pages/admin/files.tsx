@@ -1,10 +1,12 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"; // Added import statement
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Upload, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type FileUpload = {
   id: number;
@@ -15,14 +17,24 @@ type FileUpload = {
   createdAt: string;
 };
 
+type Student = {
+  id: number;
+  username: string;
+};
+
 export default function FilesPage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const queryClient = useQueryClient();
-  const { toast } = useToast(); // Added toast destructuring
+  const { toast } = useToast();
 
   const { data: files, isLoading } = useQuery<FileUpload[]>({
     queryKey: ["/api/files"],
+  });
+
+  const { data: students } = useQuery<Student[]>({
+    queryKey: ["/api/students"],
   });
 
   const uploadMutation = useMutation({
@@ -44,6 +56,7 @@ export default function FilesPage() {
       });
       setTitle("");
       setFile(null);
+      setSelectedStudentId("");
     },
     onError: () => {
       toast({
@@ -56,11 +69,12 @@ export default function FilesPage() {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title) return;
+    if (!file || !title || !selectedStudentId) return;
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("file", file);
+    formData.append("studentId", selectedStudentId);
 
     uploadMutation.mutate(formData);
   };
@@ -87,6 +101,21 @@ export default function FilesPage() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               required
             />
+            <Select
+              value={selectedStudentId}
+              onValueChange={setSelectedStudentId}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Student" />
+              </SelectTrigger>
+              <SelectContent>
+                {students?.map((student) => (
+                  <SelectItem key={student.id} value={student.id.toString()}>
+                    {student.username}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button disabled={uploadMutation.isPending}>
               {uploadMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -113,6 +142,12 @@ export default function FilesPage() {
                 <p className="text-sm text-gray-500">
                   Uploaded: {new Date(file.createdAt).toLocaleDateString()}
                 </p>
+                {file.assignedStudents.length > 0 && (
+                  <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
+                    <User className="h-4 w-4" />
+                    <span>Assigned to {file.assignedStudents.length} student(s)</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

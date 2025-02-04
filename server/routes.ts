@@ -468,18 +468,20 @@ export function registerRoutes(app: Express): Server {
   // File management routes
   app.post("/api/files/upload", requireAdmin, fileUpload.single('file'), async (req, res) => {
     try {
-      if (!req.file || !req.body.title) {
-        return res.status(400).json({ error: "File and title are required" });
+      if (!req.file || !req.body.title || !req.body.studentId) {
+        return res.status(400).json({ error: "File, title and student are required" });
       }
 
       const fileUrl = `/uploads/files/${req.file.filename}`;
       const fileType = req.file.mimetype.split('/')[0] as 'audio' | 'video' | 'image';
+      const studentId = parseInt(req.body.studentId);
 
       const [newFile] = await db.insert(files).values({
         title: req.body.title,
         type: fileType,
         url: fileUrl,
         uploadedBy: req.user?.id,
+        assignedStudents: [studentId],
         createdAt: new Date(),
       }).returning();
 

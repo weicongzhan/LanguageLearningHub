@@ -122,6 +122,7 @@ export const files = pgTable("files", {
   type: text("type").notNull(),
   url: text("url").notNull(),
   uploadedBy: integer("uploaded_by").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  assignedStudents: jsonb("assigned_students").default([]).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
