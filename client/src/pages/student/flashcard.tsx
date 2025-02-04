@@ -210,11 +210,15 @@ export default function FlashcardPage() {
       reviews: []
     };
 
+    // Check if this is the first attempt for this card
+    const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
+    const isFirstAttempt = previousAttempts.length === 0;
+
     // Add to reviews list
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
-      successful: isCorrect
+      successful: isFirstAttempt ? isCorrect : false // Mark as incorrect if it's first attempt and wrong
     });
 
     if (isCorrect) {
