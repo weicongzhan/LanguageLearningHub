@@ -205,7 +205,7 @@ export default function FlashcardPage() {
     const isCorrect = index === currentCard.correctImageIndex;
     setSelectedImage(index);
     setShowResult(true);
-    
+
     const progress = userLesson.progress as Progress || {
       total: flashcards.length,
       completed: 0,
@@ -218,7 +218,7 @@ export default function FlashcardPage() {
       flashcardId: currentCard.id,
       successful: isCorrect
     });
-    
+
     if (isCorrect) {
       playCorrectSound();
 
@@ -341,7 +341,9 @@ export default function FlashcardPage() {
           </Button>
         </div>
 
-        <audio ref={audioRef} src={currentCard.audioUrl} />
+        {currentCard && (
+            <audio ref={audioRef} src={currentCard.audioUrl} />
+          )}
       </div>
     </div>
   );
