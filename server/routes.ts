@@ -436,72 +436,69 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Configure multer for file uploads
+  const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'uploads', 'files');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const filename = `${uuidv4()}${ext}`;
+      cb(null, filename);
+    }
+  });
+
+  const fileUpload = multer({ 
+    storage: fileStorage,
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['audio', 'video', 'image'];
+      const fileType = file.mimetype.split('/')[0];
+      if (allowedTypes.includes(fileType)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type'));
+      }
+    }
+  });
+
+  // File management routes
+  app.post("/api/files/upload", requireAdmin, fileUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file || !req.body.title) {
+        return res.status(400).json({ error: "File and title are required" });
+      }
+
+      const fileUrl = `/uploads/files/${req.file.filename}`;
+      const fileType = req.file.mimetype.split('/')[0] as 'audio' | 'video' | 'image';
+
+      const [newFile] = await db.insert(files).values({
+        title: req.body.title,
+        type: fileType,
+        url: fileUrl,
+        uploadedBy: req.user?.id,
+        createdAt: new Date(),
+      }).returning();
+
+      res.json(newFile);
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
+  app.get("/api/files", requireAdmin, async (req, res) => {
+    try {
+      const filesList = await db.select().from(files);
+      res.json(filesList);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch files" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
-import multer from "multer";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-
-// Configure multer for file uploads
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), 'uploads', 'files');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = `${uuidv4()}${ext}`;
-    cb(null, filename);
-  }
-});
-
-const fileUpload = multer({ 
-  storage: fileStorage,
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['audio', 'video', 'image'];
-    const fileType = file.mimetype.split('/')[0];
-    if (allowedTypes.includes(fileType)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  }
-});
-
-// File management routes
-app.post("/api/files/upload", requireAdmin, fileUpload.single('file'), async (req, res) => {
-  try {
-    if (!req.file || !req.body.title) {
-      return res.status(400).json({ error: "File and title are required" });
-    }
-
-    const fileUrl = `/uploads/files/${req.file.filename}`;
-    const fileType = req.file.mimetype.split('/')[0] as 'audio' | 'video' | 'image';
-
-    const [newFile] = await db.insert(files).values({
-      title: req.body.title,
-      type: fileType,
-      url: fileUrl,
-      uploadedBy: req.user?.id,
-      createdAt: new Date(),
-    }).returning();
-
-    res.json(newFile);
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ error: "Failed to upload file" });
-  }
-});
-
-app.get("/api/files", requireAdmin, async (req, res) => {
-  try {
-    const filesList = await db.select().from(files);
-    res.json(filesList);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch files" });
-  }
-});
