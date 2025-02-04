@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { lessons, flashcards, userLessons, users } from "@db/schema";
+import { lessons, flashcards, userLessons, users, files } from "@db/schema";
 import { eq, and, count } from "drizzle-orm";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
