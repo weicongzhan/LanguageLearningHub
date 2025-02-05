@@ -84,6 +84,20 @@ export default function FlashcardPage() {
     }
   }, [isLoading, userLesson, setLocation, params?.id]);
 
+  // Filter flashcards based on mode
+  const allFlashcards = userLesson?.lesson?.flashcards || [];
+  const flashcards = isReviewMode
+    ? allFlashcards.filter(flashcard => {
+        if (!flashcard.imageChoices?.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
+          return false;
+        }
+        const progress = userLesson.progress as Progress;
+        const reviews = progress.reviews || [];
+        const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+        return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
+      })
+    : allFlashcards;
+
   // Get current flashcard
   const currentCard = flashcards[currentIndex];
 
