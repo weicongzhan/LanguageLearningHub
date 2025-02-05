@@ -149,12 +149,14 @@ export default function FlashcardPage() {
   const allFlashcards = userLesson?.lesson?.flashcards || [];
   const flashcards = isReviewMode
     ? allFlashcards.filter(flashcard => {
-        if (!flashcard.imageChoices || !flashcard.audioUrl) {
+        // Validate flashcard has required data
+        if (!flashcard.imageChoices?.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
           return false;
         }
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+        // Only include cards with unsuccessful last attempt
         return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
       })
     : allFlashcards;
@@ -240,13 +242,16 @@ export default function FlashcardPage() {
         totalStudyTime: userLesson.totalStudyTime || 0
       });
 
-      // Auto advance to next card after a short delay in review mode
-      if (isReviewMode && currentIndex < flashcards.length - 1) {
-        setTimeout(() => {
-          setSelectedImage(null);
-          setShowResult(false);
-          setCurrentIndex(prev => prev + 1);
-        }, 1000);
+      // In review mode, only advance if answer is correct
+      if (isReviewMode && isCorrect) {
+        const remainingCards = flashcards.filter((_, index) => index > currentIndex);
+        if (remainingCards.length > 0) {
+          setTimeout(() => {
+            setSelectedImage(null);
+            setShowResult(false);
+            setCurrentIndex(prev => prev + 1);
+          }, 1000);
+        }
       }
     } else {
       playIncorrectSound();
