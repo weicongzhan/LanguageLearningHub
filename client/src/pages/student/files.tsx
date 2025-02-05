@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, FileIcon } from "lucide-react";
+import { Loader2, FileIcon, Music, Video, Image } from "lucide-react";
 
 type File = {
   id: number;
@@ -9,6 +9,19 @@ type File = {
   type: string;
   url: string;
   createdAt: string;
+};
+
+const FileTypeIcon = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'audio':
+      return <Music className="h-8 w-8 text-blue-500" />;
+    case 'video':
+      return <Video className="h-8 w-8 text-purple-500" />;
+    case 'image':
+      return <Image className="h-8 w-8 text-green-500" />;
+    default:
+      return <FileIcon className="h-8 w-8 text-gray-500" />;
+  }
 };
 
 export default function StudentFiles() {
@@ -27,19 +40,27 @@ export default function StudentFiles() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {files?.map((file) => (
-            <Card key={file.id}>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-2">{file.title}</h3>
-                <p className="text-sm text-gray-500 mb-2">{file.type}</p>
+            <Card key={file.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <FileTypeIcon type={file.type} />
+                  <div>
+                    <h3 className="font-semibold text-lg">{file.title}</h3>
+                    <p className="text-sm text-gray-500 capitalize">{file.type}</p>
+                  </div>
+                </div>
                 <a 
                   href={file.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-700 flex items-center gap-2"
+                  className="flex items-center gap-2 text-blue-500 hover:text-blue-700 hover:underline mt-2"
                 >
                   <FileIcon className="h-4 w-4" />
-                  View File
+                  Open File
                 </a>
+                <p className="text-xs text-gray-400 mt-4">
+                  Added: {new Date(file.createdAt).toLocaleDateString()}
+                </p>
               </CardContent>
             </Card>
           ))}
