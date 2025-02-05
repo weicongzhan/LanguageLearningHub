@@ -153,7 +153,7 @@ export default function FlashcardPage() {
         const reviews = progress.reviews || [];
         // Get reviews for this flashcard
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        // If no reviews, include card
+        // If no reviews, don't include in review mode
         if (flashcardReviews.length === 0) return false;
         // Get last review attempt
         const lastReview = flashcardReviews[flashcardReviews.length - 1];
