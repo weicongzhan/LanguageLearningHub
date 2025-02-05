@@ -20,4 +20,10 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
   },
+  server: {
+    middlewareMode: true,
+    hmr: {
+      overlay: false
+    },
+  },
 });
