@@ -87,10 +87,10 @@ export default function FlashcardPage() {
   // Effects
   // Auto-play audio when card changes
   useEffect(() => {
-    if (audioRef.current && isReviewMode) {
+    if (audioRef.current) {
       audioRef.current.play();
     }
-  }, [currentIndex, isReviewMode]);
+  }, [currentIndex]);
 
   useEffect(() => {
     if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
@@ -243,20 +243,18 @@ export default function FlashcardPage() {
       });
 
       // Show result and let user manually navigate
-      if (isCorrect && isReviewMode) {
+      if (isCorrect) {
+        setTimeout(() => {
+          handleNext();
+        }, 1000);
+      } else {
+        playIncorrectSound();
         toast({
-          title: "答对了!",
-          description: "点击下一个继续复习",
+          variant: "destructive",
+          title: "错误!",
+          description: "请再试一次"
         });
       }
-    } else {
-      playIncorrectSound();
-      toast({
-        variant: "destructive",
-        title: "错误!",
-        description: "请再试一次"
-      });
-    }
   };
 
   return (
