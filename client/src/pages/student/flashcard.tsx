@@ -149,17 +149,14 @@ export default function FlashcardPage() {
   const allFlashcards = userLesson?.lesson?.flashcards || [];
   const flashcards = isReviewMode
     ? allFlashcards.filter(flashcard => {
+        if (!flashcard.imageChoices || !flashcard.audioUrl) {
+          return false;
+        }
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
-        // Get reviews for this flashcard
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        // If there are reviews, check if last attempt was unsuccessful
-        if (flashcardReviews.length > 0) {
-          const lastReview = flashcardReviews[flashcardReviews.length - 1];
-          return !lastReview.successful;
-        }
-        return false;
-      }).filter(flashcard => flashcard.imageChoices && flashcard.audioUrl)
+        return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
+      })
     : allFlashcards;
 
   if (flashcards.length === 0) {
@@ -278,12 +275,20 @@ export default function FlashcardPage() {
               variant="outline"
               size="icon"
               onClick={() => {
-                if (audioRef.current) {
+                if (audioRef.current && currentCard?.audioUrl) {
                   audioRef.current.src = currentCard.audioUrl;
                   audioRef.current.load();
-                  audioRef.current.play().catch(err => {
-                    console.error('Error playing audio:', err);
-                  });
+                  const playPromise = audioRef.current.play();
+                  if (playPromise) {
+                    playPromise.catch(err => {
+                      console.error('Error playing audio:', err);
+                      toast({
+                        variant: "destructive",
+                        title: "播放失败",
+                        description: "无法播放音频"
+                      });
+                    });
+                  }
                 }
               }}
             >
