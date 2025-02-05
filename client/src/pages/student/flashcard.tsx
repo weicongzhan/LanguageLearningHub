@@ -151,14 +151,12 @@ export default function FlashcardPage() {
     ? allFlashcards.filter(flashcard => {
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
-        // Get reviews for this flashcard
+        // Get last review attempt for this flashcard
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        // If no reviews, don't include in review mode
-        if (flashcardReviews.length === 0) return false;
-        // Get last review attempt
         const lastReview = flashcardReviews[flashcardReviews.length - 1];
-        // Include only if last attempt was unsuccessful
-        return !lastReview.successful;
+        
+        // Only include if there are reviews and the last attempt was unsuccessful
+        return flashcardReviews.length > 0 && !lastReview.successful;
       })
     : allFlashcards;
 
@@ -214,16 +212,17 @@ export default function FlashcardPage() {
       reviews: []
     };
 
-    // Check if this is the first attempt for this card
-    const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
-    const isFirstAttempt = previousAttempts.length === 0;
-
-    // Add to reviews list
+    // Add new review attempt
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
-      successful: isFirstAttempt ? isCorrect : false // Mark as incorrect if it's first attempt and wrong
+      successful: isCorrect
     });
+
+    // If correct in review mode, update completed count
+    if (isReviewMode && isCorrect) {
+      progress.completed++;
+    }
 
     if (isCorrect) {
       playCorrectSound();
