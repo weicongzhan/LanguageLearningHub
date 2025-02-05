@@ -1,0 +1,40 @@
+[vite] connecting...
+[vite] connected.
+Current user: 
+Object {id: 15, username: "wuxingxing12", password: "cf2afcac842a8a27be2f088b6413630dad941fb76b3a30a3771d8d100f57c3b9096818955cbae8989f62b284a928fd04395…", isAdmin: false, createdAt: "2025-02-01T10:06:31.630Z"}
+Current user: 
+Object {id: 15, username: "wuxingxing12", password: "cf2afcac842a8a27be2f088b6413630dad941fb76b3a30a3771d8d100f57c3b9096818955cbae8989f62b284a928fd04395…", isAdmin: false, createdAt: "2025-02-01T10:06:31.630Z"}
+Cannot access 'flashcards' before initialization
+Cannot access 'flashcards' before initialization
+The above error occurred in the <FlashcardPage> component:
+
+    at FlashcardPage (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/src/pages/student/flashcard.tsx:47:22)
+    at Route (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0895300d:323:16)
+    at Switch (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0895300d:379:17)
+    at Suspense
+    at main
+    at div
+    at Router (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/src/App.tsx?v=F0iT2Jqnuec1Q-fqlku2A:35:39)
+    at QueryClientProvider (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=0895300d:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+at FlashcardPage (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/src/pages/student/flashcard.tsx:47:22)
+at Route (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0895300d:323:16)
+at Switch (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=0895300d:379:17)
+at Suspense
+at main
+at div
+at Router (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/src/App.tsx?v=F0iT2Jqnuec1Q-fqlku2A:35:39)
+at QueryClientProvider (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=0895300d:2805:3)
+at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+at t.value (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://7b9be891-56d2-4e84-a3b0-65880c3b253b-00-xo8yeo3lil78.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Cannot access 'flashcards' before initialization
