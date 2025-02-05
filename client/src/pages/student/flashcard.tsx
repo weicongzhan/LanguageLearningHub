@@ -1,10 +1,10 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Volume2, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import type { UserLessonWithRelations, Progress } from "@db/schema";
@@ -149,14 +149,12 @@ export default function FlashcardPage() {
   const allFlashcards = userLesson?.lesson?.flashcards || [];
   const flashcards = isReviewMode
     ? allFlashcards.filter(flashcard => {
-        // Validate flashcard has required data
         if (!flashcard.imageChoices?.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
           return false;
         }
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        // Only include cards with unsuccessful last attempt
         return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
       })
     : allFlashcards;
@@ -185,7 +183,6 @@ export default function FlashcardPage() {
       setShowResult(false);
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // If we're at the last card, show a completion message
       toast({
         title: "课程完成",
         description: "恭喜你完成了这节课程！",
@@ -203,58 +200,47 @@ export default function FlashcardPage() {
   };
 
   const handleImageSelection = (index: number) => {
-    const isCorrect = index === currentCard.correctImageIndex;
     setSelectedImage(index);
     setShowResult(true);
 
+    const isCorrect = index === currentCard.correctImageIndex;
     const progress = userLesson.progress as Progress || {
       total: flashcards.length,
       completed: 0,
       reviews: []
     };
 
-    // Add new review attempt
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
       successful: isCorrect
     });
 
-    // If correct in review mode, update completed count
     if (isReviewMode && isCorrect) {
       progress.completed++;
     }
 
     if (isCorrect) {
       playCorrectSound();
-
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
-
+      setTimeout(() => {
+        handleNext();
+      }, 1000);
+    } else {
+      playIncorrectSound();
       toast({
-        variant: "default",
-        title: "正确!",
+        variant: "destructive",
+        title: "错误!",
+        description: "请再试一次"
       });
+    }
 
-      updateProgressMutation.mutate({
-        progress,
-        totalStudyTime: userLesson.totalStudyTime || 0
-      });
-
-      // Show result and let user manually navigate
-      if (isCorrect) {
-        setTimeout(() => {
-          handleNext();
-        }, 1000);
-      } else {
-        playIncorrectSound();
-        toast({
-          variant: "destructive",
-          title: "错误!",
-          description: "请再试一次"
-        });
-      }
+    updateProgressMutation.mutate({
+      progress,
+      totalStudyTime: userLesson.totalStudyTime || 0
+    });
   };
 
   return (
@@ -267,7 +253,6 @@ export default function FlashcardPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Audio Section */}
         <Card>
           <CardContent className="flex items-center justify-center py-6">
             <Button
@@ -296,43 +281,41 @@ export default function FlashcardPage() {
           </CardContent>
         </Card>
 
-        {/* Image Choices */}
         {currentCard && (
           <div className="grid grid-cols-2 gap-4">
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
-            <Card
-              key={index}
-              className={`cursor-pointer transition-all ${
-                selectedImage !== null && showResult
-                  ? selectedImage === index
-                    ? index === currentCard.correctImageIndex
-                      ? "ring-4 ring-green-500"
-                      : "ring-4 ring-red-500"
-                    : ""
-                  : selectedImage === index
-                    ? "ring-4 ring-primary"
-                    : "hover:ring-2 hover:ring-primary"
-              }`}
-              onClick={() => handleImageSelection(index)}
-            >
-              <CardContent className="p-2">
-                <img
-                  src={imageUrl}
-                  alt={`Choice ${index + 1}`}
-                  className="w-full h-48 object-cover rounded"
-                />
-              </CardContent>
-              {showResult && selectedImage === index && (
-                <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
-                  错误答案
-                </div>
-              )}
-            </Card>
-          ))}
+              <Card
+                key={index}
+                className={`cursor-pointer transition-all ${
+                  selectedImage !== null && showResult
+                    ? selectedImage === index
+                      ? index === currentCard.correctImageIndex
+                        ? "ring-4 ring-green-500"
+                        : "ring-4 ring-red-500"
+                      : ""
+                    : selectedImage === index
+                      ? "ring-4 ring-primary"
+                      : "hover:ring-2 hover:ring-primary"
+                }`}
+                onClick={() => handleImageSelection(index)}
+              >
+                <CardContent className="p-2">
+                  <img
+                    src={imageUrl}
+                    alt={`Choice ${index + 1}`}
+                    className="w-full h-48 object-cover rounded"
+                  />
+                </CardContent>
+                {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
+                  <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
+                    错误答案
+                  </div>
+                )}
+              </Card>
+            ))}
           </div>
         )}
 
-        {/* Navigation */}
         <div className="flex justify-between mt-6">
           <Button
             variant="outline"
@@ -353,8 +336,8 @@ export default function FlashcardPage() {
         </div>
 
         {currentCard && (
-            <audio ref={audioRef} src={currentCard.audioUrl} />
-          )}
+          <audio ref={audioRef} src={currentCard.audioUrl} />
+        )}
       </div>
     </div>
   );
