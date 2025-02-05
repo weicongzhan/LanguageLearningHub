@@ -242,16 +242,12 @@ export default function FlashcardPage() {
         totalStudyTime: userLesson.totalStudyTime || 0
       });
 
-      // In review mode, only advance if answer is correct
-      if (isReviewMode && isCorrect) {
-        const remainingCards = flashcards.filter((_, index) => index > currentIndex);
-        if (remainingCards.length > 0) {
-          setTimeout(() => {
-            setSelectedImage(null);
-            setShowResult(false);
-            setCurrentIndex(prev => prev + 1);
-          }, 1000);
-        }
+      // Show result and let user manually navigate
+      if (isCorrect && isReviewMode) {
+        toast({
+          title: "答对了!",
+          description: "点击下一个继续复习",
+        });
       }
     } else {
       playIncorrectSound();
