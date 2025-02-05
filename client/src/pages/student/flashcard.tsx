@@ -151,13 +151,15 @@ export default function FlashcardPage() {
     ? allFlashcards.filter(flashcard => {
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
-        // Get last review attempt for this flashcard
+        // Get reviews for this flashcard
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        const lastReview = flashcardReviews[flashcardReviews.length - 1];
-        
-        // Only include if there are reviews and the last attempt was unsuccessful
-        return flashcardReviews.length > 0 && !lastReview.successful;
-      })
+        // If there are reviews, check if last attempt was unsuccessful
+        if (flashcardReviews.length > 0) {
+          const lastReview = flashcardReviews[flashcardReviews.length - 1];
+          return !lastReview.successful;
+        }
+        return false;
+      }).filter(flashcard => flashcard.imageChoices && flashcard.audioUrl)
     : allFlashcards;
 
   if (flashcards.length === 0) {
@@ -277,11 +279,11 @@ export default function FlashcardPage() {
               size="icon"
               onClick={() => {
                 if (audioRef.current) {
-                  if (previousAudioRef.current === currentCard.audioUrl) {
-                    audioRef.current.currentTime = 0;
-                  }
-                  audioRef.current.play();
-                  previousAudioRef.current = currentCard.audioUrl;
+                  audioRef.current.src = currentCard.audioUrl;
+                  audioRef.current.load();
+                  audioRef.current.play().catch(err => {
+                    console.error('Error playing audio:', err);
+                  });
                 }
               }}
             >
