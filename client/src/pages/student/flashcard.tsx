@@ -151,10 +151,14 @@ export default function FlashcardPage() {
     ? allFlashcards.filter(flashcard => {
         const progress = userLesson.progress as Progress;
         const reviews = progress.reviews || [];
-        // Get all reviews for this flashcard
+        // Get reviews for this flashcard
         const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        // Check if there are any unsuccessful attempts
-        return flashcardReviews.some(review => !review.successful);
+        // If no reviews, include card
+        if (flashcardReviews.length === 0) return false;
+        // Get last review attempt
+        const lastReview = flashcardReviews[flashcardReviews.length - 1];
+        // Include only if last attempt was unsuccessful
+        return !lastReview.successful;
       })
     : allFlashcards;
 
