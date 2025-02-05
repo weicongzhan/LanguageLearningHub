@@ -225,9 +225,6 @@ export default function FlashcardPage() {
       if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
         progress.completed++;
       }
-      setTimeout(() => {
-        handleNext();
-      }, 1000);
     } else {
       playIncorrectSound();
       toast({
