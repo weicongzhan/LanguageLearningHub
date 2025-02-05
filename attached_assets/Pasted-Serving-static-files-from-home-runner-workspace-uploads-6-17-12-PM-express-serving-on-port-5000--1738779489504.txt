@@ -1,0 +1,55 @@
+Serving static files from: /home/runner/workspace/uploads
+6:17:12 PM [express] serving on port 5000
+6:17:16 PM [express] GET /api/user 401 in 2ms
+6:17:33 PM [express] POST /api/login 200 in 2898ms :: {"message":"Login successful","user":{"id":1,"…
+6:17:33 PM [express] GET /api/user 304 in 77ms :: {"id":1,"username":"weicongzhan","password":"4484d…
+6:17:34 PM [express] GET /api/stats 304 in 308ms :: {"totalLessons":4,"totalFlashcards":9,"totalStud…
+Files fetch error: error: column "assigned_students" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:501:25) {
+  length: 117,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '53',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3716',
+  routine: 'errorMissingColumn'
+}
+6:17:38 PM [express] GET /api/files 500 in 157ms :: {"error":"Failed to fetch files"}
+6:17:40 PM [express] GET /api/students 304 in 2419ms :: [{"id":2,"username":"wuxingxing","password":…
+Upload error: error: column "assigned_students" of relation "files" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:102:18)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:483:25) {
+  length: 135,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '67',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_target.c',
+  line: '1065',
+  routine: 'checkInsertTargets'
+}
+6:17:48 PM [express] POST /api/files/upload 500 in 216ms :: {"error":"Failed to upload file"}
