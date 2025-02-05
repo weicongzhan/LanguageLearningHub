@@ -174,24 +174,26 @@ export default function StudentDashboard() {
       )}
 
       {/* Files Link Section */}
-      <div className="mt-6 col-span-1">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              查看资源
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Link href="/files">
-                <Button className="w-full" variant="outline">
-                  查看分配的文件
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            查看资源
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            查看分配的文件
+          </p>
+          <div className="space-y-4">
+            <Link href="/files">
+              <Button className="w-full">
+                查看分配的文件
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
       </div>
     </div>
   );
