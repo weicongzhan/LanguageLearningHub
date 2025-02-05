@@ -173,57 +173,15 @@ export default function StudentDashboard() {
         </>
       )}
 
-      {/* Files Section */}
+      {/* Files Link Section */}
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">我的文件</h2>
-        <FilesGrid />
+        <Link href="/files">
+          <Button className="w-full">
+            查看分配的文件
+          </Button>
+        </Link>
       </div>
       </div>
-    </div>
-  );
-}
-
-// Files Grid Component
-function FilesGrid() {
-  const { data: files, isLoading } = useQuery<File[]>({
-    queryKey: ["/api/student/files"],
-  });
-
-  if (isLoading) {
-    return <Loader2 className="h-8 w-8 animate-spin" />;
-  }
-
-  if (!files || files.length === 0) {
-    return <p className="text-muted-foreground">暂无分配的文件</p>;
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {files.map((file) => (
-        <Card key={file.id} className="hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <FileTypeIcon type={file.type} />
-              <div>
-                <h3 className="font-semibold text-lg">{file.title}</h3>
-                <p className="text-sm text-gray-500 capitalize">{file.type}</p>
-              </div>
-            </div>
-            <a 
-              href={file.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-blue-500 hover:text-blue-700 hover:underline mt-2"
-            >
-              <FileIcon className="h-4 w-4" />
-              打开文件
-            </a>
-            <p className="text-xs text-gray-400 mt-4">
-              添加时间: {new Date(file.createdAt).toLocaleDateString()}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function StudentFiles() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">My Files</h1>
+      <h1 className="text-3xl font-bold mb-6">分配的文件</h1>
 
       {isLoading ? (
         <div className="flex justify-center">
@@ -56,17 +56,17 @@ export default function StudentFiles() {
                   className="flex items-center gap-2 text-blue-500 hover:text-blue-700 hover:underline mt-2"
                 >
                   <FileIcon className="h-4 w-4" />
-                  Open File
+                  打开文件
                 </a>
                 <p className="text-xs text-gray-400 mt-4">
-                  Added: {new Date(file.createdAt).toLocaleDateString()}
+                  添加时间: {new Date(file.createdAt).toLocaleDateString()}
                 </p>
               </CardContent>
             </Card>
           ))}
           {(!files || files.length === 0) && (
             <p className="text-muted-foreground col-span-full text-center">
-              No files assigned yet
+              暂无分配的文件
             </p>
           )}
         </div>
