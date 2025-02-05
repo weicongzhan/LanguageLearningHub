@@ -474,12 +474,17 @@ export function registerRoutes(app: Express): Server {
 
       const fileUrl = `/uploads/files/${req.file.filename}`;
       const fileType = req.file.mimetype.split('/')[0] as 'audio' | 'video' | 'image';
+      const uploadedBy = req.user?.id;
+
+      if (!uploadedBy) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
 
       const [newFile] = await db.insert(files).values({
         title: req.body.title,
         type: fileType,
         url: fileUrl,
-        uploadedBy: req.user?.id,
+        uploadedBy,
         assignedStudents: [],
         createdAt: new Date(),
       }).returning();
@@ -496,6 +501,7 @@ export function registerRoutes(app: Express): Server {
       const filesList = await db.select().from(files);
       res.json(filesList);
     } catch (error) {
+      console.error('Files fetch error:', error);
       res.status(500).json({ error: "Failed to fetch files" });
     }
   });
