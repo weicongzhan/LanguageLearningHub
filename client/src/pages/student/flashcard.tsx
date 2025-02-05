@@ -84,6 +84,9 @@ export default function FlashcardPage() {
     }
   }, [isLoading, userLesson, setLocation, params?.id]);
 
+  // Get current flashcard
+  const currentCard = flashcards[currentIndex];
+
   // Effects
   // Auto-play audio when card changes
   useEffect(() => {
@@ -102,7 +105,7 @@ export default function FlashcardPage() {
         });
       }
     }
-  }, [currentIndex, currentCard]);
+  }, [currentIndex, currentCard?.audioUrl]);
 
   useEffect(() => {
     if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
