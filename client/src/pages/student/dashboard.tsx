@@ -71,24 +71,24 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Review Book Section */}
         {userLessons?.some(lesson => calculateProgress(lesson.progress).needsReview > 0) && (
-          <Card className="h-full">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5" />
                 错题本
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 flex flex-col justify-between h-full">
-              <div>
+            <CardContent>
+              <div className="space-y-4">
                 {userLessons.map(lesson => {
                   const { needsReview } = calculateProgress(lesson.progress);
                   if (needsReview > 0) {
                     return (
                       <div key={lesson.id} className="space-y-4">
-                        <span className="text-xl font-semibold mb-3">{lesson.lesson.title}</span>
+                        <span>{lesson.lesson.title}</span>
                         <div className="pt-4">
                           <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
-                            <Button className="w-full text-lg py-6" >
+                            <Button className="w-full">
                               复习 {lesson.lesson.flashcards.filter(flashcard => {
                                 const progress = lesson.progress as Progress;
                                 const reviews = progress.reviews || [];
@@ -118,48 +118,47 @@ export default function StudentDashboard() {
           {userLessons?.map((userLesson) => {
             const { percent, success, needsReview } = calculateProgress(userLesson.progress);
             return (
-              <Card key={userLesson.id} className="h-full">
+              <Card key={userLesson.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5" />
                     {userLesson.lesson.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 flex flex-col justify-between h-full">
-                  <div>
-                    <h2 className="text-2xl font-semibold mb-3">{userLesson.lesson.title}</h2>
-                    <p className="text-base text-gray-600 mb-4">
-                      {userLesson.lesson.description}
-                    </p>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {userLesson.lesson.description}
+                  </p>
 
-                    <div className="space-y-4">
-                      {/* Progress */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>学习进度</span>
-                          <span>{Math.round(percent)}%</span>
-                        </div>
-                        <ProgressBar value={percent} className="h-2 mb-4" />
+                  <div className="space-y-4">
+                    {/* Progress */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>学习进度</span>
+                        <span>{Math.round(percent)}%</span>
                       </div>
+                      <ProgressBar value={percent} className="h-2" />
+                    </div>
 
-                      {/* Study Stats */}
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{formatStudyTime(userLesson.totalStudyTime || 0)}</span>
-                        </div>
-                        <div className="flex items-center gap-1 justify-end">
-                          <Target className="h-4 w-4 text-muted-foreground" />
-                          <span>{Math.round(success)}% 正确率</span>
-                        </div>
+                    {/* Study Stats */}
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{formatStudyTime(userLesson.totalStudyTime || 0)}</span>
                       </div>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <span>{Math.round(success)}% 正确率</span>
+                      </div>
+                    </div>
 
-                      {/* Study and Review Buttons */}
-                      <div className="space-y-2">
-                        <Link href={`/lesson/${userLesson.lessonId}`}>
-                          <Button className="w-full text-lg py-6">继续学习</Button>
-                        </Link>
-                      </div>
+                    {/* Study and Review Buttons */}
+                    <div className="space-y-2">
+                      <Link href={`/lesson/${userLesson.lessonId}`}>
+                        <Button className="w-full">继续学习</Button>
+                      </Link>
+
+
                     </div>
                   </div>
                 </CardContent>
@@ -177,7 +176,7 @@ export default function StudentDashboard() {
       {/* Files Link Section */}
       <div className="mt-8">
         <Link href="/files">
-          <Button className="w-full text-lg py-6">
+          <Button className="w-full">
             查看分配的文件
           </Button>
         </Link>
