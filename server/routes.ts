@@ -506,6 +506,20 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.get("/api/student/files", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const filesList = await db.select().from(files)
+        .where(sql`${files.assignedStudents}::jsonb @> ${[req.user.id]}::jsonb`);
+      res.json(filesList);
+    } catch (error) {
+      console.error('Student files fetch error:', error);
+      res.status(500).json({ error: "Failed to fetch files" });
+    }
+  });
+
   app.post("/api/files/:id/assign", requireAdmin, async (req, res) => {
     try {
       const fileId = parseInt(req.params.id);
