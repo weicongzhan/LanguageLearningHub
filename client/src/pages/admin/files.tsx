@@ -96,9 +96,16 @@ export default function FilesPage() {
     },
   });
 
-  const handleUpload = (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title) return;
+    if (!file || !title) {
+      toast({
+        title: "Error",
+        description: "Please provide both file and title",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const formData = new FormData();
     formData.append("title", title);
