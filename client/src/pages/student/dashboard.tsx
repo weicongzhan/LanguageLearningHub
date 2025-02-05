@@ -3,9 +3,22 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Loader2, BookOpen, Clock, Target } from "lucide-react";
+import { Loader2, BookOpen, Clock, Target, FileIcon, Music, Video, Image } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations } from "@db/schema";
+
+const FileTypeIcon = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'audio':
+      return <Music className="h-8 w-8 text-blue-500" />;
+    case 'video':
+      return <Video className="h-8 w-8 text-purple-500" />;
+    case 'image':
+      return <Image className="h-8 w-8 text-green-500" />;
+    default:
+      return <FileIcon className="h-8 w-8 text-gray-500" />;
+  }
+};
 
 export default function StudentDashboard() {
   const { user } = useUser();
