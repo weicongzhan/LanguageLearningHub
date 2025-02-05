@@ -190,8 +190,6 @@ export default function FlashcardPage() {
     );
   }
 
-  const currentCard = flashcards[currentIndex];
-
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setSelectedImage(null);
