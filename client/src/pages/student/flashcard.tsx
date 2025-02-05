@@ -87,10 +87,22 @@ export default function FlashcardPage() {
   // Effects
   // Auto-play audio when card changes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.play();
+    if (audioRef.current && currentCard?.audioUrl) {
+      audioRef.current.src = currentCard.audioUrl;
+      audioRef.current.load();
+      const playPromise = audioRef.current.play();
+      if (playPromise) {
+        playPromise.catch(err => {
+          console.error('Error playing audio:', err);
+          toast({
+            variant: "destructive",
+            title: "播放失败",
+            description: "无法播放音频"
+          });
+        });
+      }
     }
-  }, [currentIndex]);
+  }, [currentIndex, currentCard]);
 
   useEffect(() => {
     if (userLesson?.lesson?.flashcards && userLesson.lesson.flashcards.length > 0) {
