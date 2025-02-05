@@ -174,19 +174,21 @@ export default function StudentDashboard() {
       )}
 
       {/* Files Link Section */}
-      <div className="mt-6">
-        <Card className="h-full">
+      <div className="mt-6 col-span-1">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               查看资源
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <Link href="/files">
-              <Button className="w-full text-lg py-6" variant="destructive">
-                查看分配的文件
-              </Button>
-            </Link>
+          <CardContent>
+            <div className="space-y-4">
+              <Link href="/files">
+                <Button className="w-full" variant="outline">
+                  查看分配的文件
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
