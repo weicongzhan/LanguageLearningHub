@@ -313,7 +313,7 @@ export default function FlashcardPage() {
                   <img
                     src={imageUrl}
                     alt={`Choice ${index + 1}`}
-                    className="w-full h-48 object-cover rounded"
+                    className="w-[338px] h-[334px] object-cover rounded"
                   />
                 </CardContent>
                 {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
