@@ -246,7 +246,7 @@ export default function FlashcardPage() {
         });
       }
     } else {
-      // 后续尝试只播放声音和显示消息
+      // 后续尝试只播放声音
       if (isCorrect) {
         playCorrectSound();
       } else {
@@ -262,10 +262,18 @@ export default function FlashcardPage() {
     setSelectedImage(index);
     setShowResult(true);
 
-    updateProgressMutation.mutate({
-      progress,
-      totalStudyTime: userLesson.totalStudyTime || 0
-    });
+    try {
+      await updateProgressMutation.mutateAsync({
+        progress,
+        totalStudyTime: userLesson.totalStudyTime || 0
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "保存进度失败",
+        description: error.message
+      });
+    }
   };
 
   return (
