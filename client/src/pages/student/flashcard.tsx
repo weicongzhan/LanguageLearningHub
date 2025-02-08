@@ -226,31 +226,32 @@ export default function FlashcardPage() {
     const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
     const isFirstAttempt = previousAttempts.length === 0;
 
-    // Add to review list if it's first attempt and incorrect
+    // Add current attempt to reviews
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
       successful: isCorrect
     });
 
-
-    // Only update progress.completed based on first attempt
-    if (isCorrect) {
-      playCorrectSound();
-      // Only mark as completed if this is the first attempt and it's correct
-      if (isFirstAttempt) {
+    // Only increment completed count if first attempt is correct
+    if (isFirstAttempt) {
+      if (isCorrect) {
         progress.completed++;
-      }
-    } else {
-      playIncorrectSound();
-      // If it's the first attempt and incorrect, show error message
-      if (isFirstAttempt) {
+        playCorrectSound();
+      } else {
+        playIncorrectSound();
         toast({
           variant: "destructive",
           title: "错误!",
           description: "此卡片已加入错题本，请继续努力！"
         });
+      }
+    } else {
+      // For subsequent attempts
+      if (isCorrect) {
+        playCorrectSound();
       } else {
+        playIncorrectSound();
         toast({
           variant: "destructive",
           title: "错误!",
