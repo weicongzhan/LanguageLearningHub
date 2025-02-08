@@ -21,6 +21,10 @@ export default function AdminDashboard() {
     queryKey: ["/api/stats"],
   });
 
+  const { data: students } = useQuery<{ id: number; username: string; isAdmin: boolean }[]>({
+    queryKey: ["/api/students"],
+  });
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
