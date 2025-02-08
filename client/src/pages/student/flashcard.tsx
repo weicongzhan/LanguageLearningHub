@@ -211,9 +211,8 @@ export default function FlashcardPage() {
     }
   };
 
-  const handleImageSelection = (index: number) => {
-    setSelectedImage(index);
-    setShowResult(true);
+  const handleImageSelection = async (index: number) => {
+    if (!userLesson) return;
 
     const isCorrect = index === currentCard.correctImageIndex;
     const progress = userLesson.progress as Progress || {
@@ -222,18 +221,18 @@ export default function FlashcardPage() {
       reviews: []
     };
 
-    // Check if this is the first attempt for this flashcard
+    // 检查这是否是该卡片的第一次尝试
     const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
     const isFirstAttempt = previousAttempts.length === 0;
 
-    // Add current attempt to reviews
+    // 记录当前尝试
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
-      successful: isCorrect
+      successful: isFirstAttempt ? isCorrect : previousAttempts[0].successful // 保持第一次答题的结果
     });
 
-    // Only increment completed count if first attempt is correct
+    // 只在第一次尝试时更新完成状态和显示消息
     if (isFirstAttempt) {
       if (isCorrect) {
         progress.completed++;
@@ -247,7 +246,7 @@ export default function FlashcardPage() {
         });
       }
     } else {
-      // For subsequent attempts
+      // 后续尝试只播放声音和显示消息
       if (isCorrect) {
         playCorrectSound();
       } else {
@@ -259,6 +258,9 @@ export default function FlashcardPage() {
         });
       }
     }
+
+    setSelectedImage(index);
+    setShowResult(true);
 
     updateProgressMutation.mutate({
       progress,
