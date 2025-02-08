@@ -263,7 +263,7 @@ export default function FlashcardPage() {
 
       <div className="space-y-6">
         <Card>
-          <CardContent className="flex items-center justify-center py-6">
+          <CardContent className="flex items-center justify-center py-3"> {/*Reduced padding here*/}
             <Button
               variant="outline"
               size="icon"
@@ -291,7 +291,7 @@ export default function FlashcardPage() {
         </Card>
 
         {currentCard && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2"> {/*Reduced gap here*/}
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
               <Card
                 key={index}
@@ -299,17 +299,17 @@ export default function FlashcardPage() {
                   selectedImage !== null && showResult
                     ? selectedImage === index
                       ? index === currentCard.correctImageIndex
-                        ? "ring-4 ring-green-500"
-                        : "ring-4 ring-red-500"
+                        ? "ring-2 ring-green-500"
+                        : "ring-2 ring-red-500"
                       : ""
                     : selectedImage === index
-                      ? "ring-4 ring-primary"
-                      : "hover:ring-4 hover:ring-primary"
+                      ? "ring-2 ring-primary"
+                      : "hover:ring-2 hover:ring-primary"
                 }`}
                 onClick={() => handleImageSelection(index)}
               >
-                <CardContent className="p-2">
-                  <div className="aspect-square relative max-w-[200px] mx-auto">
+                <CardContent className="p-1"> {/*Reduced padding here*/}
+                  <div className="aspect-square relative max-w-[100px] mx-auto">
                     <img
                       src={imageUrl}
                       alt={`Choice ${index + 1}`}
@@ -318,7 +318,7 @@ export default function FlashcardPage() {
                   </div>
                 </CardContent>
                 {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
-                  <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">
+                  <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-xs text-white bg-red-500">
                     错误答案
                   </div>
                 )}
@@ -327,7 +327,7 @@ export default function FlashcardPage() {
           </div>
         )}
 
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-4"> {/*Reduced margin here*/}
           <Button
             variant="outline"
             onClick={handlePrevious}
