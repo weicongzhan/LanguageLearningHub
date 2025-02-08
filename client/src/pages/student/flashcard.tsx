@@ -291,7 +291,7 @@ export default function FlashcardPage() {
         </Card>
 
         {currentCard && (
-          <div className="grid grid-cols-2 gap-1 max-w-[300px] mx-auto">
+          <div className="grid grid-cols-2 gap-2 max-w-[300px] mx-auto">
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
               <Card
                 key={index}
