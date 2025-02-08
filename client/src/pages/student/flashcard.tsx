@@ -233,18 +233,17 @@ export default function FlashcardPage() {
       successful: isCorrect
     });
 
-    if (isReviewMode && isCorrect) {
-      progress.completed++;
-    }
 
+    // Only update progress.completed based on first attempt
     if (isCorrect) {
       playCorrectSound();
-      if (!previousAttempts.some(r => r.successful)) {
+      // Only mark as completed if this is the first attempt and it's correct
+      if (isFirstAttempt) {
         progress.completed++;
       }
     } else {
       playIncorrectSound();
-      // If it's the first attempt and incorrect, it needs review
+      // If it's the first attempt and incorrect, show error message
       if (isFirstAttempt) {
         toast({
           variant: "destructive",
