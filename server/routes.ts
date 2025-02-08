@@ -107,9 +107,9 @@ export function registerRoutes(app: Express): Server {
     const image = sharp(file.path);
     const metadata = await image.metadata();
 
-    if (metadata.width && metadata.width > 338 || metadata.height && metadata.height > 334) {
+    if (metadata.width && metadata.width > 500 || metadata.height && metadata.height > 500) {
       await image
-        .resize(338, 334, {
+        .resize(500, 500, {
           fit: 'contain',
           background: { r: 255, g: 255, b: 255, alpha: 1 }
         })

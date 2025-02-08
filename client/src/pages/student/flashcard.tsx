@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -313,7 +312,7 @@ export default function FlashcardPage() {
                   <img
                     src={imageUrl}
                     alt={`Choice ${index + 1}`}
-                    className="w-[338px] h-[334px] object-cover rounded"
+                    className="w-[500px] h-[500px] object-cover rounded"
                   />
                 </CardContent>
                 {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
