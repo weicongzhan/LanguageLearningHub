@@ -147,7 +147,6 @@ export function registerRoutes(app: Express): Server {
       //Process images before proceeding
       await Promise.all(imageFiles.map(file => processImage(file)));
 
-
       const audioUrl = `/uploads/${audioFile.filename}`;
       const imageUrls = imageFiles.map(file => `/uploads/${file.filename}`);
       const correctImageIndex = parseInt(req.body.correctImageIndex);
@@ -266,85 +265,87 @@ export function registerRoutes(app: Express): Server {
       // Read and parse CSV file
       const fileContent = fs.readFileSync(req.file.path, 'utf-8');
 
-      const parser = parse(fileContent, {
-        columns: true,
-        skip_empty_lines: true
+      const parser = csvParser();
+      parser.on('data', async (record) => {
+          try {
+            // Validate required fields
+            if (!record.lessonId || !record.audioUrl || !record.imageChoices || !record.correctImageIndex) {
+              results.push({
+                success: false,
+                error: "Missing required fields",
+                record
+              });
+              return;
+            }
+
+            // Parse and validate data
+            const lessonId = parseInt(record.lessonId);
+            const imageChoices = JSON.parse(record.imageChoices);
+            const correctImageIndex = parseInt(record.correctImageIndex);
+
+            if (isNaN(lessonId) || !Array.isArray(imageChoices) || isNaN(correctImageIndex)) {
+              results.push({
+                success: false,
+                error: "Invalid data format",
+                record
+              });
+              return;
+            }
+
+            // Check if lesson exists
+            const [lesson] = await db
+              .select()
+              .from(lessons)
+              .where(eq(lessons.id, lessonId))
+              .limit(1);
+
+            if (!lesson) {
+              results.push({
+                success: false,
+                error: `Lesson with ID ${lessonId} not found`,
+                record
+              });
+              return;
+            }
+
+            // Create flashcard
+            const [flashcard] = await db.insert(flashcards)
+              .values({
+                lessonId,
+                audioUrl: record.audioUrl,
+                imageChoices,
+                correctImageIndex
+              })
+              .returning();
+
+            results.push({
+              success: true,
+              flashcardId: flashcard.id
+            });
+
+            imported++;
+          } catch (error) {
+            results.push({
+              success: false,
+              error: error instanceof Error ? error.message : "Unknown error",
+              record
+            });
+          }
       });
 
-      for await (const record of parser) {
-        try {
-          // Validate required fields
-          if (!record.lessonId || !record.audioUrl || !record.imageChoices || !record.correctImageIndex) {
-            results.push({
-              success: false,
-              error: "Missing required fields",
-              record
-            });
-            continue;
-          }
+      parser.on('end', () => {
+        // Clean up uploaded file
+        fs.unlinkSync(req.file.path);
 
-          // Parse and validate data
-          const lessonId = parseInt(record.lessonId);
-          const imageChoices = JSON.parse(record.imageChoices);
-          const correctImageIndex = parseInt(record.correctImageIndex);
-
-          if (isNaN(lessonId) || !Array.isArray(imageChoices) || isNaN(correctImageIndex)) {
-            results.push({
-              success: false,
-              error: "Invalid data format",
-              record
-            });
-            continue;
-          }
-
-          // Check if lesson exists
-          const [lesson] = await db
-            .select()
-            .from(lessons)
-            .where(eq(lessons.id, lessonId))
-            .limit(1);
-
-          if (!lesson) {
-            results.push({
-              success: false,
-              error: `Lesson with ID ${lessonId} not found`,
-              record
-            });
-            continue;
-          }
-
-          // Create flashcard
-          const [flashcard] = await db.insert(flashcards)
-            .values({
-              lessonId,
-              audioUrl: record.audioUrl,
-              imageChoices,
-              correctImageIndex
-            })
-            .returning();
-
-          results.push({
-            success: true,
-            flashcardId: flashcard.id
-          });
-
-          imported++;
-        } catch (error) {
-          results.push({
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-            record
-          });
-        }
-      }
-
-      // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
-
-      res.json({
-        imported,
-        results
+        res.json({
+          imported,
+          results
+        });
       });
+
+      fileContent.pipe(parser);
+
+
     } catch (error) {
       console.error('Bulk import error:', error);
       res.status(500).json({ 
@@ -375,6 +376,64 @@ export function registerRoutes(app: Express): Server {
       res.json(newLesson);
     } catch (error) {
       res.status(500).json({ error: "Failed to create lesson" });
+    }
+  });
+
+  // Add delete lesson endpoint after existing lesson routes
+  app.delete("/api/lessons/:id", requireAdmin, async (req, res) => {
+    try {
+      const lessonId = parseInt(req.params.id);
+
+      // First delete all related flashcards
+      const flashcardsToDelete = await db
+        .select()
+        .from(flashcards)
+        .where(eq(flashcards.lessonId, lessonId));
+
+      // Delete flashcard files
+      for (const flashcard of flashcardsToDelete) {
+        // Delete audio file
+        if (flashcard.audioUrl) {
+          const audioPath = path.join(process.cwd(), flashcard.audioUrl);
+          if (fs.existsSync(audioPath)) {
+            fs.unlinkSync(audioPath);
+          }
+        }
+
+        // Delete image files
+        const imageUrls = flashcard.imageChoices as string[];
+        imageUrls.forEach(url => {
+          const imagePath = path.join(process.cwd(), url);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        });
+      }
+
+      // Delete all user_lessons associated with this lesson
+      await db.delete(userLessons)
+        .where(eq(userLessons.lessonId, lessonId));
+
+      // Delete all flashcards associated with this lesson
+      await db.delete(flashcards)
+        .where(eq(flashcards.lessonId, lessonId));
+
+      // Finally delete the lesson
+      const [deletedLesson] = await db.delete(lessons)
+        .where(eq(lessons.id, lessonId))
+        .returning();
+
+      if (!deletedLesson) {
+        return res.status(404).json({ error: "Lesson not found" });
+      }
+
+      res.json({ message: "Lesson and all associated data deleted successfully" });
+    } catch (error) {
+      console.error('Delete lesson error:', error);
+      res.status(500).json({ 
+        error: "Failed to delete lesson",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -587,3 +646,6 @@ export function registerRoutes(app: Express): Server {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Change the import at the bottom of the file
+import csvParser from 'csv-parser';

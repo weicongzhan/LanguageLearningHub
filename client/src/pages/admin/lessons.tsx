@@ -170,6 +170,26 @@ export default function AdminLessons() {
     },
   });
 
+  // Add deleteLessonMutation after other mutations
+  const deleteLessonMutation = useMutation({
+    mutationFn: async (lessonId: number) => {
+      const response = await fetch(`/api/lessons/${lessonId}`, {
+        method: "DELETE",
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+      toast({ title: "课程删除成功" });
+    },
+  });
+
   const handleCreateLesson = async (data: LessonFormData) => {
     try {
       await createLessonMutation.mutateAsync(data);
@@ -231,6 +251,18 @@ export default function AdminLessons() {
       toast({
         variant: "destructive",
         title: "Error deleting flashcard",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleDeleteLesson = async (lessonId: number) => {
+    try {
+      await deleteLessonMutation.mutateAsync(lessonId);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "删除课程失败",
         description: error.message,
       });
     }
@@ -359,7 +391,20 @@ export default function AdminLessons() {
           {lessons?.map((lesson) => (
             <Card key={lesson.id}>
               <CardHeader>
-                <CardTitle>{lesson.title}</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>{lesson.title}</CardTitle>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteLesson(lesson.id)}
+                    disabled={deleteLessonMutation.isPending}
+                  >
+                    {deleteLessonMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    删除课程
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -398,18 +443,18 @@ export default function AdminLessons() {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="grid grid-cols-2 gap-2">
-                          {(flashcard.imageChoices as string[]).map((url, idx) => (
-                            <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
-                              <div className="aspect-square relative">
-                                <img 
-                                  src={url} 
-                                  alt={`Choice ${idx + 1}`} 
-                                  className="absolute inset-0 w-full h-full object-contain"
-                                />
+                            {(flashcard.imageChoices as string[]).map((url, idx) => (
+                              <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
+                                <div className="aspect-square relative">
+                                  <img
+                                    src={url}
+                                    alt={`Choice ${idx + 1}`}
+                                    className="absolute inset-0 w-full h-full object-contain"
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ))}
