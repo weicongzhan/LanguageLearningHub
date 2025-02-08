@@ -263,7 +263,7 @@ export default function FlashcardPage() {
 
       <div className="space-y-6">
         <Card>
-          <CardContent className="flex items-center justify-center py-3"> {/*Reduced padding here*/}
+          <CardContent className="flex items-center justify-center py-1">
             <Button
               variant="outline"
               size="icon"
@@ -291,7 +291,7 @@ export default function FlashcardPage() {
         </Card>
 
         {currentCard && (
-          <div className="grid grid-cols-2 gap-2"> {/*Reduced gap here*/}
+          <div className="grid grid-cols-2 gap-1">
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
               <Card
                 key={index}
@@ -308,7 +308,7 @@ export default function FlashcardPage() {
                 }`}
                 onClick={() => handleImageSelection(index)}
               >
-                <CardContent className="p-1"> {/*Reduced padding here*/}
+                <CardContent className="p-1">
                   <div className="aspect-square relative max-w-[100px] mx-auto">
                     <img
                       src={imageUrl}
@@ -327,7 +327,7 @@ export default function FlashcardPage() {
           </div>
         )}
 
-        <div className="flex justify-between mt-4"> {/*Reduced margin here*/}
+        <div className="flex justify-between mt-2">
           <Button
             variant="outline"
             onClick={handlePrevious}
