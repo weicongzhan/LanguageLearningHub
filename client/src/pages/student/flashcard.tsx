@@ -222,6 +222,11 @@ export default function FlashcardPage() {
       reviews: []
     };
 
+    // Check if this is the first attempt for this flashcard
+    const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
+    const isFirstAttempt = previousAttempts.length === 0;
+
+    // Add to review list if it's first attempt and incorrect
     progress.reviews.push({
       timestamp: new Date().toISOString(),
       flashcardId: currentCard.id,
@@ -234,16 +239,25 @@ export default function FlashcardPage() {
 
     if (isCorrect) {
       playCorrectSound();
-      if (!progress.reviews.some(r => r.flashcardId === currentCard.id)) {
+      if (!previousAttempts.some(r => r.successful)) {
         progress.completed++;
       }
     } else {
       playIncorrectSound();
-      toast({
-        variant: "destructive",
-        title: "错误!",
-        description: "请再试一次"
-      });
+      // If it's the first attempt and incorrect, it needs review
+      if (isFirstAttempt) {
+        toast({
+          variant: "destructive",
+          title: "错误!",
+          description: "此卡片已加入错题本，请继续努力！"
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "错误!",
+          description: "请再试一次"
+        });
+      }
     }
 
     updateProgressMutation.mutate({
