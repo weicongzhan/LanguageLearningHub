@@ -444,7 +444,7 @@ export default function AdminLessons() {
                         <div className="grid grid-cols-2 gap-2">
                           <div className="grid grid-cols-2 gap-2">
                             {(flashcard.imageChoices as string[]).map((url, idx) => (
-                              <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
+                              <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-4 ring-green-500' : ''}`}>
                                 <div className="aspect-square relative">
                                   <img
                                     src={url}

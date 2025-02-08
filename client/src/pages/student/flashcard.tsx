@@ -304,7 +304,7 @@ export default function FlashcardPage() {
                       : ""
                     : selectedImage === index
                       ? "ring-4 ring-primary"
-                      : "hover:ring-2 hover:ring-primary"
+                      : "hover:ring-4 hover:ring-primary" // Modified line: Changed hover:ring-2 to hover:ring-4
                 }`}
                 onClick={() => handleImageSelection(index)}
               >
