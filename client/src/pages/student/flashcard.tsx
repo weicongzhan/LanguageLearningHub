@@ -295,7 +295,7 @@ export default function FlashcardPage() {
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
               <Card
                 key={index}
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all aspect-square ${
                   selectedImage !== null && showResult
                     ? selectedImage === index
                       ? index === currentCard.correctImageIndex
@@ -308,8 +308,8 @@ export default function FlashcardPage() {
                 }`}
                 onClick={() => handleImageSelection(index)}
               >
-                <CardContent className="p-1">
-                  <div className="aspect-square relative max-w-[100px] mx-auto">
+                <CardContent className="p-0 h-full flex items-center justify-center">
+                  <div className="aspect-square w-full h-full relative">
                     <img
                       src={imageUrl}
                       alt={`Choice ${index + 1}`}
