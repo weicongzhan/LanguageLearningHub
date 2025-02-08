@@ -309,11 +309,13 @@ export default function FlashcardPage() {
                 onClick={() => handleImageSelection(index)}
               >
                 <CardContent className="p-2">
-                  <img
-                    src={imageUrl}
-                    alt={`Choice ${index + 1}`}
-                    className="w-[500px] h-[500px] object-cover rounded"
-                  />
+                  <div className="aspect-square relative">
+                    <img
+                      src={imageUrl}
+                      alt={`Choice ${index + 1}`}
+                      className="absolute inset-0 w-full h-full object-contain"
+                    />
+                  </div>
                 </CardContent>
                 {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
                   <div className="absolute top-2 right-2 px-2 py-1 rounded text-sm text-white bg-red-500">

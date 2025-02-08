@@ -397,11 +397,19 @@ export default function AdminLessons() {
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                           {(flashcard.imageChoices as string[]).map((url, idx) => (
                             <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
-                              <img src={url} alt={`Choice ${idx + 1}`} className="w-[500px] h-[500px] object-cover rounded" />
+                              <div className="aspect-square relative">
+                                <img 
+                                  src={url} 
+                                  alt={`Choice ${idx + 1}`} 
+                                  className="absolute inset-0 w-full h-full object-contain"
+                                />
+                              </div>
                             </div>
                           ))}
+                        </div>
                         </div>
                       </div>
                     ))}
