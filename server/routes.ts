@@ -219,6 +219,25 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Add endpoint to update user admin status
+  app.put("/api/users/:id/admin", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isAdmin } = req.body;
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({ isAdmin })
+        .where(eq(users.id, userId))
+        .returning();
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Failed to update admin status:', error);
+      res.status(500).json({ error: "Failed to update admin status" });
+    }
+  });
+
   // Add bulk import endpoint
   app.post("/api/flashcards/bulk-import", requireAdmin, upload.single('file'), async (req, res) => {
     if (!req.file) {

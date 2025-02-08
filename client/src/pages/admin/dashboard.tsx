@@ -70,6 +70,55 @@ export default function AdminDashboard() {
           </Card>
 
           <Card>
+
+          </Card>
+        </div>
+      )}
+
+      {/* Admin Management Section */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">管理员设置</h2>
+        {stats?.totalStudents > 0 && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              选择要设置为管理员的用户：
+            </p>
+            <div className="grid gap-4">
+              {students?.map(student => (
+                <Card key={student.id}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center space-x-4">
+                      <div>
+                        <p className="font-medium">{student.username}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={student.isAdmin ? "destructive" : "default"}
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/users/${student.id}/admin`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isAdmin: !student.isAdmin }),
+                          });
+                          if (response.ok) {
+                            queryClient.invalidateQueries({ queryKey: ["/api/students"] });
+                          }
+                        } catch (error) {
+                          console.error('Failed to update admin status:', error);
+                        }
+                      }}
+                    >
+                      {student.isAdmin ? "移除管理员" : "设为管理员"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Flashcards
