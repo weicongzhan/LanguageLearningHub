@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
 import express from 'express';
+import sharp from 'sharp'; // Import sharp library
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -101,24 +102,34 @@ export function registerRoutes(app: Express): Server {
     res.json({ flashcardId });
   });
 
+  // Image processing middleware
+  const processImage = async (file: Express.Multer.File) => {
+    const image = sharp(file.path);
+    const metadata = await image.metadata();
+
+    if (metadata.width && metadata.width > 338 || metadata.height && metadata.height > 334) {
+      await image
+        .resize(338, 334, {
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 1 }
+        })
+        .toFile(file.path + '_resized');
+
+      fs.unlinkSync(file.path);
+      fs.renameSync(file.path + '_resized', file.path);
+    }
+  };
+
+
   // Create flashcard - Step 2: Upload files
-  app.post("/api/flashcards/:flashcardId/upload", requireAdmin, async (req, res) => {
+  app.post("/api/flashcards/:flashcardId/upload", requireAdmin, upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'images', maxCount: 4 }
+  ]), async (req, res) => {
     const { flashcardId } = req.params;
     console.log('Processing file upload for flashcard:', flashcardId);
 
-    const uploadMiddleware = upload.fields([
-      { name: 'audio', maxCount: 1 },
-      { name: 'images', maxCount: 4 }
-    ]);
-
     try {
-      await new Promise((resolve, reject) => {
-        uploadMiddleware(req, res, (err) => {
-          if (err) reject(err);
-          else resolve(true);
-        });
-      });
-
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       console.log('Uploaded files:', files);
 
@@ -132,6 +143,10 @@ export function registerRoutes(app: Express): Server {
       if (imageFiles.length < 2) {
         return res.status(400).json({ error: "At least 2 images are required" });
       }
+
+      //Process images before proceeding
+      await Promise.all(imageFiles.map(file => processImage(file)));
+
 
       const audioUrl = `/uploads/${audioFile.filename}`;
       const imageUrls = imageFiles.map(file => `/uploads/${file.filename}`);
