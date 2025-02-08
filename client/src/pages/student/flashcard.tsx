@@ -253,7 +253,7 @@ export default function FlashcardPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
+    <div className="container mx-auto p-6 max-w-xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{userLesson.lesson.title}</h1>
         <p className="text-muted-foreground">
@@ -291,7 +291,7 @@ export default function FlashcardPage() {
         </Card>
 
         {currentCard && (
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-1 max-w-[300px] mx-auto">
             {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
               <Card
                 key={index}
