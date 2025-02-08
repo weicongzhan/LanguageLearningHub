@@ -445,7 +445,7 @@ export default function AdminLessons() {
                           <div className="grid grid-cols-2 gap-2">
                             {(flashcard.imageChoices as string[]).map((url, idx) => (
                               <div key={idx} className={`relative border rounded p-1 ${idx === flashcard.correctImageIndex ? 'ring-4 ring-green-500' : ''}`}>
-                                <div className="aspect-square relative">
+                                <div className="aspect-square relative max-w-[200px] mx-auto">
                                   <img
                                     src={url}
                                     alt={`Choice ${idx + 1}`}
@@ -510,7 +510,9 @@ export default function AdminLessons() {
                               <div className="grid grid-cols-2 gap-2 mt-1">
                                 {(selectedFlashcard.imageChoices as string[]).map((url, idx) => (
                                   <div key={idx} className={`relative border rounded p-1 ${idx === selectedFlashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
-                                    <img src={url} alt={`Choice ${idx + 1}`} className="w-[338px] h-[334px] object-cover rounded" />
+                                    <div className="aspect-square relative max-w-[200px] mx-auto">
+                                      <img src={url} alt={`Choice ${idx + 1}`} className="absolute inset-0 w-full h-full object-contain" />
+                                    </div>
                                   </div>
                                 ))}
                               </div>

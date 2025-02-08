@@ -304,12 +304,12 @@ export default function FlashcardPage() {
                       : ""
                     : selectedImage === index
                       ? "ring-4 ring-primary"
-                      : "hover:ring-4 hover:ring-primary" // Modified line: Changed hover:ring-2 to hover:ring-4
+                      : "hover:ring-4 hover:ring-primary"
                 }`}
                 onClick={() => handleImageSelection(index)}
               >
                 <CardContent className="p-2">
-                  <div className="aspect-square relative">
+                  <div className="aspect-square relative max-w-[200px] mx-auto">
                     <img
                       src={imageUrl}
                       alt={`Choice ${index + 1}`}
