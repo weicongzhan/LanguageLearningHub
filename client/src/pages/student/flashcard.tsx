@@ -225,15 +225,15 @@ export default function FlashcardPage() {
     const previousAttempts = progress.reviews.filter(r => r.flashcardId === currentCard.id);
     const isFirstAttempt = previousAttempts.length === 0;
 
-    // 记录当前尝试
-    progress.reviews.push({
-      timestamp: new Date().toISOString(),
-      flashcardId: currentCard.id,
-      successful: isFirstAttempt ? isCorrect : previousAttempts[0].successful // 保持第一次答题的结果
-    });
-
-    // 只在第一次尝试时更新完成状态和显示消息
+    // 如果是第一次尝试，记录结果并更新进度
     if (isFirstAttempt) {
+      // 无论后续如何，都保存第一次的结果
+      progress.reviews.push({
+        timestamp: new Date().toISOString(),
+        flashcardId: currentCard.id,
+        successful: isCorrect // 第一次答题的结果决定是否成功
+      });
+
       if (isCorrect) {
         progress.completed++;
         playCorrectSound();
@@ -246,7 +246,13 @@ export default function FlashcardPage() {
         });
       }
     } else {
-      // 后续尝试只播放声音
+      // 后续尝试不改变原有的successful状态，只添加新的记录
+      progress.reviews.push({
+        timestamp: new Date().toISOString(),
+        flashcardId: currentCard.id,
+        successful: previousAttempts[0].successful // 保持第一次答题的结果
+      });
+
       if (isCorrect) {
         playCorrectSound();
       } else {
