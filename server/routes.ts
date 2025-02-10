@@ -57,13 +57,19 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
-  // 确保uploads目录存在并配置静态文件服务
+  // 确保uploads目录和子目录存在
   const uploadsDir = path.join(process.cwd(), 'uploads');
+  const filesDir = path.join(uploadsDir, 'files');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }
-  console.log('Serving static files from:', uploadsDir);
+  if (!fs.existsSync(filesDir)) {
+    fs.mkdirSync(filesDir);
+  }
+
+  // 配置静态文件服务
   app.use('/uploads', express.static(uploadsDir));
+  app.use('/uploads/files', express.static(filesDir));
 
   setupAuth(app);
 
@@ -591,8 +597,26 @@ export function registerRoutes(app: Express): Server {
 
   app.get("/api/files", requireAdmin, async (req, res) => {
     try {
+      // 生成新的 ETag
+      const timestamp = Date.now();
+      const etag = `W/"files-${timestamp}"`;
+      
+      // 设置强制刷新的头部
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '-1',
+        'ETag': etag
+      });
+
+      // 检查客户端的 If-None-Match 头部
+      const clientEtag = req.headers['if-none-match'];
+      
+      // 总是获取最新数据
       const filesList = await db.select().from(files);
-      res.json(filesList);
+      
+      // 强制返回新数据，不返回 304
+      res.status(200).json(filesList);
     } catch (error) {
       console.error('Files fetch error:', error);
       res.status(500).json({ error: "Failed to fetch files" });
@@ -640,6 +664,138 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Assignment error:', error);
       res.status(500).json({ error: "Failed to assign file" });
+    }
+  });
+
+  // Delete file
+  app.delete("/api/files/:id", async (req, res) => {
+    try {
+      if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: "需要管理员权限"
+        });
+      }
+
+      const fileId = parseInt(req.params.id);
+      if (isNaN(fileId)) {
+        return res.status(400).json({
+          success: false,
+          error: "无效的文件ID"
+        });
+      }
+
+      console.log('开始删除文件，ID:', fileId);
+
+      // 首先查询文件是否存在
+      const [existingFile] = await db
+        .select()
+        .from(files)
+        .where(eq(files.id, fileId))
+        .limit(1);
+
+      if (!existingFile) {
+        console.log('文件不存在，ID:', fileId);
+        return res.status(404).json({
+          success: false,
+          error: "文件不存在"
+        });
+      }
+
+      console.log('找到文件记录:', JSON.stringify(existingFile, null, 2));
+
+      // 尝试删除物理文件
+      if (existingFile.url) {
+        try {
+          const fileName = existingFile.url.split('/').pop();
+          if (fileName) {
+            const possiblePaths = [
+              path.join(process.cwd(), existingFile.url),
+              path.join(process.cwd(), 'uploads', 'files', fileName),
+              path.join(process.cwd(), 'uploads', fileName)
+            ];
+
+            console.log('尝试删除物理文件，检查路径:', possiblePaths);
+            
+            let fileDeleted = false;
+            for (const filePath of possiblePaths) {
+              if (fs.existsSync(filePath)) {
+                console.log('找到物理文件:', filePath);
+                try {
+                  fs.unlinkSync(filePath);
+                  console.log('物理文件删除成功:', filePath);
+                  fileDeleted = true;
+                  break;
+                } catch (unlinkError) {
+                  console.error('删除物理文件失败:', filePath, unlinkError);
+                }
+              } else {
+                console.log('路径不存在:', filePath);
+              }
+            }
+
+            if (!fileDeleted) {
+              console.warn('未找到物理文件或删除失败');
+            }
+          }
+        } catch (fsError) {
+          console.error('处理物理文件时出错:', fsError);
+        }
+      }
+
+      // 删除数据库记录
+      console.log('开始删除数据库记录...');
+      const deleteResult = await db
+        .delete(files)
+        .where(eq(files.id, fileId))
+        .returning();
+
+      console.log('删除操作结果:', deleteResult);
+
+      if (!deleteResult || deleteResult.length === 0) {
+        console.error('数据库记录删除失败');
+        return res.status(500).json({
+          success: false,
+          error: "数据库记录删除失败"
+        });
+      }
+
+      // 验证删除
+      const [checkFile] = await db
+        .select()
+        .from(files)
+        .where(eq(files.id, fileId))
+        .limit(1);
+
+      if (checkFile) {
+        console.error('文件仍然存在于数据库中:', checkFile);
+        return res.status(500).json({
+          success: false,
+          error: "文件删除验证失败"
+        });
+      }
+
+      // 设置响应头以防止缓存
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+
+      console.log('文件删除成功完成');
+      return res.status(200).json({
+        success: true,
+        message: "文件删除成功",
+        deletedFile: deleteResult[0]
+      });
+
+    } catch (error) {
+      console.error('删除文件时发生错误:', error);
+      return res.status(500).json({
+        success: false,
+        error: "删除文件失败",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

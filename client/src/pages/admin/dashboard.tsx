@@ -1,14 +1,16 @@
-
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
 import { 
   BookOpen, 
   Users, 
   Plus,
-  Loader2
+  Loader2,
+  Search
 } from "lucide-react";
+import { useState } from "react";
 
 type Stats = {
   totalLessons: number;
@@ -17,6 +19,8 @@ type Stats = {
 };
 
 export default function AdminDashboard() {
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: stats, isLoading } = useQuery<Stats>({
     queryKey: ["/api/stats"],
   });
@@ -24,6 +28,11 @@ export default function AdminDashboard() {
   const { data: students } = useQuery<{ id: number; username: string; isAdmin: boolean }[]>({
     queryKey: ["/api/students"],
   });
+
+  // 过滤学生列表
+  const filteredStudents = students?.filter(student => 
+    student.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto p-6">
@@ -90,14 +99,31 @@ export default function AdminDashboard() {
 
       {/* Admin Management Section */}
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">管理员设置</h2>
-        {stats?.totalStudents > 0 && (
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">管理员设置</h2>
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="搜索用户..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        
+        {(stats?.totalStudents ?? 0) > 0 && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              选择要设置为管理员的用户：
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                选择要设置为管理员的用户：
+              </p>
+              <p className="text-sm text-muted-foreground">
+                找到 {filteredStudents?.length || 0} 个用户
+              </p>
+            </div>
             <div className="grid gap-4">
-              {students?.map(student => (
+              {filteredStudents?.map(student => (
                 <Card key={student.id}>
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex items-center space-x-4">
@@ -128,6 +154,11 @@ export default function AdminDashboard() {
                 </Card>
               ))}
             </div>
+            {filteredStudents?.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">没有找到匹配的用户</p>
+              </div>
+            )}
           </div>
         )}
       </div>

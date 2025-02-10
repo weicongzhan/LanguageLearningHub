@@ -23,7 +23,15 @@ export default defineConfig({
   server: {
     middlewareMode: true,
     hmr: {
-      overlay: false
+      overlay: false,
+      clientPort: 3000,
+      path: "/@vite/client",
+      timeout: 30000,
+      protocol: "ws"
+    },
+    watch: {
+      usePolling: true,
+      interval: 1000,
     },
   },
 });
