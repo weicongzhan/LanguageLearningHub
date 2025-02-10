@@ -312,121 +312,123 @@ export default function FlashcardPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">
-          <a 
-            href="/" 
-            onClick={async (e) => {
-              e.preventDefault();
-              try {
-                // 先更新进度
-                await updateProgressMutation.mutateAsync({
-                  progress: userLesson.progress as Progress,
-                  totalStudyTime: userLesson.totalStudyTime || 0
-                });
-                
-                // 使所有相关查询缓存失效
-                await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
-                await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
-                
-                // 使用 setLocation 导航回主页
-                setLocation("/");
-              } catch (error) {
-                console.error('Error updating progress:', error);
-                // 如果更新失败，也返回主页
-                setLocation("/");
-              }
-            }}
-            className="hover:text-primary transition-colors"
-          >
-            {userLesson.lesson.title}
-          </a>
-        </h1>
-        <p className="text-muted-foreground">
-          Card {currentIndex + 1} of {flashcards.length}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="flex items-center justify-center py-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={async () => {
-                if (!audioRef.current || !currentCard?.audioUrl) return;
-                
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+      <div className="container mx-auto p-6 max-w-2xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold">
+            <a 
+              href="/" 
+              onClick={async (e) => {
+                e.preventDefault();
                 try {
-                  audioRef.current.src = currentCard.audioUrl;
-                  await audioRef.current.load();
-                  await audioRef.current.play().catch(err => {
-                    console.error('Error playing audio:', err);
-                    toast({
-                      variant: "destructive",
-                      title: "播放失败",
-                      description: "无法播放音频"
-                    });
+                  await updateProgressMutation.mutateAsync({
+                    progress: userLesson.progress as Progress,
+                    totalStudyTime: userLesson.totalStudyTime || 0
                   });
-                } catch (err) {
-                  console.error('Error loading audio:', err);
+                  await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
+                  await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
+                  setLocation("/");
+                } catch (error) {
+                  console.error('Error updating progress:', error);
+                  setLocation("/");
                 }
               }}
+              className="hover:text-primary transition-colors duration-300"
             >
-              <Volume2 className="h-6 w-6" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        {currentCard && (
-          <div className="grid grid-cols-2 gap-4 max-w-[300px] mx-auto">
-            {shuffledIndices.map((originalIndex, currentIndex) => (
-              <Card
-                key={originalIndex}
-                className={`cursor-pointer transition-all aspect-square ${
-                  selectedImage !== null && showResult
-                    ? selectedImage === currentIndex
-                      ? originalIndex === currentCard.correctImageIndex
-                        ? "ring-2 ring-green-500"
-                        : "ring-2 ring-red-500"
-                      : ""
-                    : selectedImage === currentIndex
-                      ? "ring-2 ring-primary"
-                      : "hover:ring-2 hover:ring-primary"
-                }`}
-                onClick={() => handleImageSelection(currentIndex)}
-              >
-                <CardContent className="p-0 h-full flex items-center justify-center">
-                  <div className="aspect-square w-full h-full relative">
-                    <img
-                      src={currentCard.imageChoices[originalIndex]}
-                      alt={`Choice ${currentIndex + 1}`}
-                      className="absolute inset-0 w-full h-full object-contain"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+              {userLesson.lesson.title}
+            </a>
+          </h1>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-primary"></div>
+            <p className="text-lg text-muted-foreground">
+              Card {currentIndex + 1} of {flashcards.length}
+            </p>
+            <div className="h-2 w-2 rounded-full bg-primary"></div>
           </div>
-        )}
+        </div>
 
-        <div className="flex justify-between mt-2">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
+        <div className="space-y-8">
+          <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background to-muted/10">
+            <CardContent className="flex items-center justify-center p-4">
+              <Button
+                variant="outline"
+                size="icon"
+                className="w-12 h-12 rounded-full hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl bg-gradient-to-br from-primary/10 to-primary/5"
+                onClick={async () => {
+                  if (!audioRef.current || !currentCard?.audioUrl) return;
+                  try {
+                    audioRef.current.src = currentCard.audioUrl;
+                    await audioRef.current.load();
+                    await audioRef.current.play().catch(err => {
+                      console.error('Error playing audio:', err);
+                      toast({
+                        variant: "destructive",
+                        title: "播放失败",
+                        description: "无法播放音频"
+                      });
+                    });
+                  } catch (err) {
+                    console.error('Error loading audio:', err);
+                  }
+                }}
+              >
+                <Volume2 className="h-6 w-6 text-primary" />
+              </Button>
+            </CardContent>
+          </Card>
 
-          <Button
-            onClick={handleNext}
-            disabled={currentIndex === flashcards.length - 1}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
+          {currentCard && (
+            <div className="grid grid-cols-2 gap-6 max-w-[600px] mx-auto">
+              {shuffledIndices.map((originalIndex, currentIndex) => (
+                <Card
+                  key={originalIndex}
+                  className={`cursor-pointer transition-all duration-300 aspect-square hover:scale-105 group ${
+                    selectedImage !== null && showResult
+                      ? selectedImage === currentIndex
+                        ? originalIndex === currentCard.correctImageIndex
+                          ? "ring-4 ring-green-500/50 shadow-lg shadow-green-500/20 bg-green-50/50"
+                          : "ring-4 ring-red-500/50 shadow-lg shadow-red-500/20 bg-red-50/50"
+                        : "opacity-50"
+                      : selectedImage === currentIndex
+                        ? "ring-4 ring-primary/50 shadow-lg shadow-primary/20 bg-primary-50/50"
+                        : "hover:ring-4 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/10 bg-card hover:bg-primary-50/10"
+                  }`}
+                  onClick={() => handleImageSelection(currentIndex)}
+                >
+                  <CardContent className="p-2 h-full flex items-center justify-center">
+                    <div className="aspect-square w-full h-full relative rounded-xl overflow-hidden bg-white/80 group-hover:bg-white/100 transition-colors duration-300">
+                      <img
+                        src={currentCard.imageChoices[originalIndex]}
+                        alt={`Choice ${currentIndex + 1}`}
+                        className="absolute inset-0 w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-between mt-8 px-4">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed w-32"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+
+            <Button
+              onClick={handleNext}
+              disabled={currentIndex === flashcards.length - 1}
+              className="hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed w-32"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
         </div>
 
         {currentCard && (
