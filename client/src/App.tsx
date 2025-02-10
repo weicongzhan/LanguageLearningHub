@@ -1,5 +1,5 @@
-import React, { Suspense } from "react";
-import { Switch, Route, Link } from "wouter";
+import React, { Suspense, useEffect } from "react";
+import { Switch, Route, Link, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 function Router() {
   const { user, isLoading, logout } = useUser();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -33,6 +34,15 @@ function Router() {
       });
     }
   };
+
+  // 检查是否需要重定向
+  useEffect(() => {
+    const redirectTo = sessionStorage.getItem('redirectTo');
+    if (redirectTo) {
+      sessionStorage.removeItem('redirectTo');
+      setLocation(redirectTo);
+    }
+  }, [setLocation]);
 
   if (isLoading) {
     return (

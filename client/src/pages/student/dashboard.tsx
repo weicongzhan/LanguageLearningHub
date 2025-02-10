@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, BookOpen, Clock, Target, FileIcon, Music, Video, Image } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import type { UserLessonWithRelations } from "@db/schema";
+import { useEffect } from "react";
 
 const FileTypeIcon = ({ type }: { type: string }) => {
   switch (type) {
@@ -22,7 +23,21 @@ const FileTypeIcon = ({ type }: { type: string }) => {
 
 export default function StudentDashboard() {
   const { user } = useUser();
+  const queryClient = useQueryClient();
 
+  // 在组件挂载时强制刷新数据
+  useEffect(() => {
+    const refreshData = async () => {
+      // 强制重新获取数据
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
+      await queryClient.refetchQueries({ queryKey: ['/api/user-lessons'] });
+      await queryClient.refetchQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
+    };
+    refreshData();
+  }, [queryClient, user?.id]);
+
+  // 查询用户课程数据
   const { data: userLessons, isLoading } = useQuery<UserLessonWithRelations[]>({
     queryKey: [`/api/user-lessons/${user?.id}`],
     enabled: !!user,

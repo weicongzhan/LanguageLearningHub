@@ -44,7 +44,7 @@ export default function FlashcardPage() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [answeredCards, setAnsweredCards] = useState<Set<number>>(new Set());
+  const [shuffledIndices, setShuffledIndices] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const previousAudioRef = useRef<string | null>(null);
   const studyStartTimeRef = useRef<Date>(new Date());
@@ -121,6 +121,24 @@ export default function FlashcardPage() {
 
   // Get current flashcard
   const currentCard = flashcards[currentIndex];
+
+  // 新增：打乱数组顺序的函数
+  const shuffleArray = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // 在卡片切换时重新打乱选项顺序
+  useEffect(() => {
+    if (currentCard?.imageChoices) {
+      const indices = Array.from({ length: currentCard.imageChoices.length }, (_, i) => i);
+      setShuffledIndices(shuffleArray(indices));
+    }
+  }, [currentIndex, currentCard]);
 
   // Progress mutation
   const updateProgressMutation = useMutation({
@@ -199,7 +217,9 @@ export default function FlashcardPage() {
   const handleImageSelection = async (index: number) => {
     if (!userLesson?.lesson?.flashcards || !currentCard || hasAnswered) return;
 
-    const isCorrect = index === currentCard.correctImageIndex;
+    // 使用shuffledIndices将选择的索引映射回原始索引
+    const originalIndex = shuffledIndices.indexOf(currentCard.correctImageIndex);
+    const isCorrect = index === originalIndex;
     const progress: Progress = userLesson.progress as Progress || {
       total: userLesson.lesson.flashcards.length,
       completed: 0,
@@ -224,19 +244,25 @@ export default function FlashcardPage() {
       toast({
         variant: "destructive",
         title: "错误!",
-        description: "此卡片已加入错题本，请继续努力！"
+        description: "此卡片已加入错题本，请继续努力！",
+        className: "w-[250px] text-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        duration: 1000
       });
     } else {
       playCorrectSound();
       if (isReviewMode) {
         toast({
           title: "太棒了!",
-          description: "答对了！此题已从错题本中移除。请点击下一题按钮继续练习。"
+          description: "答对了！此题已从错题本中移除。请点击下一题按钮继续练习。",
+          className: "w-[250px] text-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+          duration: 1000
         });
       } else {
         toast({
           title: "正确!",
-          description: "答对了，继续保持！"
+          description: "答对了，继续保持！",
+          className: "w-[250px] text-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+          duration: 1000
         });
       }
     }
@@ -293,11 +319,24 @@ export default function FlashcardPage() {
             href="/" 
             onClick={async (e) => {
               e.preventDefault();
-              // 先使缓存失效，确保返回主页时重新获取数据
-              await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
-              await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
-              // 然后导航回主页
-              setLocation("/");
+              try {
+                // 先更新进度
+                await updateProgressMutation.mutateAsync({
+                  progress: userLesson.progress as Progress,
+                  totalStudyTime: userLesson.totalStudyTime || 0
+                });
+                
+                // 使所有相关查询缓存失效
+                await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
+                await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
+                
+                // 使用 setLocation 导航回主页
+                setLocation("/");
+              } catch (error) {
+                console.error('Error updating progress:', error);
+                // 如果更新失败，也返回主页
+                setLocation("/");
+              }
             }}
             className="hover:text-primary transition-colors"
           >
@@ -341,36 +380,31 @@ export default function FlashcardPage() {
 
         {currentCard && (
           <div className="grid grid-cols-2 gap-4 max-w-[300px] mx-auto">
-            {(currentCard.imageChoices as string[]).map((imageUrl, index) => (
+            {shuffledIndices.map((originalIndex, currentIndex) => (
               <Card
-                key={index}
+                key={originalIndex}
                 className={`cursor-pointer transition-all aspect-square ${
                   selectedImage !== null && showResult
-                    ? selectedImage === index
-                      ? index === currentCard.correctImageIndex
+                    ? selectedImage === currentIndex
+                      ? originalIndex === currentCard.correctImageIndex
                         ? "ring-2 ring-green-500"
                         : "ring-2 ring-red-500"
                       : ""
-                    : selectedImage === index
+                    : selectedImage === currentIndex
                       ? "ring-2 ring-primary"
                       : "hover:ring-2 hover:ring-primary"
                 }`}
-                onClick={() => handleImageSelection(index)}
+                onClick={() => handleImageSelection(currentIndex)}
               >
                 <CardContent className="p-0 h-full flex items-center justify-center">
                   <div className="aspect-square w-full h-full relative">
                     <img
-                      src={imageUrl}
-                      alt={`Choice ${index + 1}`}
+                      src={currentCard.imageChoices[originalIndex]}
+                      alt={`Choice ${currentIndex + 1}`}
                       className="absolute inset-0 w-full h-full object-contain"
                     />
                   </div>
                 </CardContent>
-                {showResult && selectedImage === index && index !== currentCard.correctImageIndex && (
-                  <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-xs text-white bg-red-500">
-                    错误答案
-                  </div>
-                )}
               </Card>
             ))}
           </div>
