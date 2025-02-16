@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { Loader2, Plus, Pencil, Volume2, Upload } from "lucide-react";
+import { Loader2, Plus, Pencil, Volume2, Upload, ChevronDown } from "lucide-react";
 import type { Lesson, Flashcard } from "@db/schema";
 import {
   Select,
@@ -25,7 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CSVReader } from "@/components/CSVReader";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type LessonFormData = {
   title: string;
@@ -414,51 +419,57 @@ export default function AdminLessons() {
                   Language: {lesson.language}
                 </p>
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Flashcards ({lesson.flashcards?.length || 0})</h3>
-                    {lesson.flashcards?.map((flashcard) => (
-                      <div key={flashcard.id} className="mb-4 p-4 border rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <audio src={flashcard.audioUrl} controls className="w-48" />
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedLesson(lesson);
-                                setSelectedFlashcard(flashcard);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteFlashcard(flashcard)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1">
-                          <div className="grid grid-cols-2 gap-1">
-                            {(flashcard.imageChoices as string[]).map((url, idx) => (
-                              <div key={idx} className={`relative border rounded p-0.5 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
-                                <div className="aspect-square relative max-w-[100px] mx-auto">
-                                  <img
-                                    src={url}
-                                    alt={`Choice ${idx + 1}`}
-                                    className="absolute inset-0 w-full h-full object-contain"
-                                  />
-                                </div>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value={`flashcards-${lesson.id}`}>
+                      <AccordionTrigger className="text-sm font-medium">
+                        Flashcards ({lesson.flashcards?.length || 0})
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {lesson.flashcards?.map((flashcard) => (
+                          <div key={flashcard.id} className="mb-4 p-4 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <audio src={flashcard.audioUrl} controls className="w-48" />
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedLesson(lesson);
+                                    setSelectedFlashcard(flashcard);
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteFlashcard(flashcard)}
+                                >
+                                  Delete
+                                </Button>
                               </div>
-                            ))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="grid grid-cols-2 gap-1">
+                                {(flashcard.imageChoices as string[]).map((url, idx) => (
+                                  <div key={idx} className={`relative border rounded p-0.5 ${idx === flashcard.correctImageIndex ? 'ring-2 ring-green-500' : ''}`}>
+                                    <div className="aspect-square relative max-w-[100px] mx-auto">
+                                      <img
+                                        src={url}
+                                        alt={`Choice ${idx + 1}`}
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
