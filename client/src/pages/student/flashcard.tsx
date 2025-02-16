@@ -54,11 +54,10 @@ export default function FlashcardPage() {
   const isReviewMode = searchParams.get('mode') === 'review';
 
   // Query for lesson data
-  const { data: userLesson, isLoading, error } = useQuery<UserLessonWithRelations>({
-    queryKey: [`/api/user-lessons/${user?.id}/${params?.id}`],
-    enabled: !!user && !!params?.id,
-    staleTime: Infinity, // 防止自动重新获取数据
-    cacheTime: Infinity,
+  const { data: userLessons, isLoading, error } = useQuery<UserLessonWithRelations[]>({
+    queryKey: [`/api/user-lessons/${user?.id}`, params?.id ? [params.id] : []],
+    enabled: !!user && (params?.id ? [params.id] : []).length > 0,
+    staleTime: Infinity,
   });
 
   // Handle error cases
@@ -76,7 +75,7 @@ export default function FlashcardPage() {
 
   // If no valid lesson found, redirect to dashboard
   useEffect(() => {
-    if (!isLoading && !userLesson) {
+    if (!isLoading && !userLessons) {
       console.error('No lesson found for ID:', params?.id);
       toast({
         variant: "destructive",
@@ -85,39 +84,78 @@ export default function FlashcardPage() {
       });
       setLocation("/");
     }
-  }, [isLoading, userLesson, setLocation, params?.id]);
+  }, [isLoading, userLessons, setLocation, params?.id]);
 
   // Filter flashcards based on mode
-  const allFlashcards = userLesson?.lesson?.flashcards || [];
-  const [reviewCards, setReviewCards] = useState<number[]>([]); // 添加状态来跟踪错题本中的卡片
+  const allFlashcards = userLessons?.flatMap(userLesson => 
+    (userLesson.lesson?.flashcards || []).map((flashcard: { 
+      id: number; 
+      imageChoices: unknown; 
+      audioUrl: string; 
+      correctImageIndex: number;
+    }) => ({
+      ...flashcard,
+      imageChoices: flashcard.imageChoices as string[],
+      userLessonId: userLesson.id,
+      lessonTitle: userLesson.lesson.title
+    }))
+  ) || [];
 
   // 初始化错题本卡片列表
+  const [reviewCards, setReviewCards] = useState<number[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
+
   useEffect(() => {
-    if (isReviewMode && userLesson?.lesson?.flashcards) {
+    if (isReviewMode && userLessons && isInitialLoad) {
       const wrongCards = allFlashcards
-        .filter(flashcard => {
-          if (!flashcard.imageChoices?.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
+        .filter((flashcard: {
+          id: number;
+          imageChoices: string[];
+          audioUrl: string;
+          correctImageIndex: number;
+          userLessonId: number;
+        }) => {
+          if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
             return false;
           }
+          const userLesson = userLessons.find(ul => ul.id === flashcard.userLessonId);
+          if (!userLesson) return false;
+          
           const progress = userLesson.progress as Progress;
           const reviews = progress.reviews || [];
           const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
           return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
         })
         .map(card => card.id);
+      
       setReviewCards(wrongCards);
+      setIsInitialLoad(false);
     }
-  }, [isReviewMode, userLesson?.lesson?.flashcards]);
+  }, [isReviewMode, userLessons, allFlashcards, isInitialLoad]);
 
   const flashcards = isReviewMode
-    ? allFlashcards.filter(flashcard => {
-        if (!flashcard.imageChoices?.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
+    ? allFlashcards.filter((flashcard: {
+        id: number;
+        imageChoices: string[];
+        audioUrl: string;
+        correctImageIndex: number;
+      }) => {
+        if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
           return false;
         }
-        // 只显示初始化时在错题本中的卡片
         return reviewCards.includes(flashcard.id);
       })
-    : allFlashcards;
+    : allFlashcards.filter((flashcard: {
+        userLessonId: number;
+        imageChoices: string[];
+        audioUrl: string;
+        correctImageIndex: number;
+      }) => {
+        const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+        return currentUserLesson?.lessonId === parseInt(params?.id || '0');
+      });
 
   // Get current flashcard
   const currentCard = flashcards[currentIndex];
@@ -134,16 +172,31 @@ export default function FlashcardPage() {
 
   // 在卡片切换时重新打乱选项顺序
   useEffect(() => {
-    if (currentCard?.imageChoices) {
+    if (currentCard?.imageChoices && !isTransitioning && !hasAnswered) {
       const indices = Array.from({ length: currentCard.imageChoices.length }, (_, i) => i);
-      setShuffledIndices(shuffleArray(indices));
+      // 使用 cardId 作为随机种子，确保同一张卡片的选项顺序保持一致
+      const seed = currentCard.id;
+      const seededRandom = (max: number) => {
+        const x = Math.sin(seed + 1) * 10000;
+        return Math.floor((x - Math.floor(x)) * max);
+      };
+      
+      const shuffled = [...indices];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = seededRandom(i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      
+      setShuffledIndices(shuffled);
     }
-  }, [currentIndex, currentCard]);
+  }, [currentCard?.id, isTransitioning, hasAnswered]);
 
   // Progress mutation
   const updateProgressMutation = useMutation({
     mutationFn: async (data: { progress: Progress; totalStudyTime: number }) => {
-      if (!userLesson?.id) return;
+      if (!userLessons) return;
+      const userLesson = userLessons.find(ul => ul.id === currentCard.userLessonId);
+      if (!userLesson) return;
       const response = await fetch(`/api/user-lessons/${userLesson.id}/progress`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +219,10 @@ export default function FlashcardPage() {
     },
   });
 
-  if (isLoading || !userLesson?.lesson) {
+  // 检查是否所有卡片都已完成
+  const allCardsCompleted = isReviewMode && completedCards.size === flashcards.length;
+
+  if (isLoading || !userLessons) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -177,7 +233,7 @@ export default function FlashcardPage() {
   if (flashcards.length === 0) {
     return (
       <div className="container mx-auto p-6 text-center">
-        <h1 className="text-3xl font-bold mb-4">{userLesson.lesson.title}</h1>
+        <h1 className="text-3xl font-bold mb-4">{userLessons[0].lesson.title}</h1>
         <p className="text-muted-foreground">
           {isReviewMode
             ? "No flashcards need review at this time. Great job!"
@@ -191,47 +247,53 @@ export default function FlashcardPage() {
   }
 
   const handleNext = () => {
+    if (isTransitioning || !hasAnswered) return;
+    
     if (currentIndex < flashcards.length - 1) {
+      setIsTransitioning(true);
       setSelectedImage(null);
       setShowResult(false);
       setHasAnswered(false);
-      setCurrentIndex((prev) => prev + 1);
-    } else {
+      setCurrentIndex(prev => prev + 1);
+      
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    } else if (allCardsCompleted) {
       toast({
-        title: "课程完成",
-        description: "恭喜你完成了这节课程！",
+        title: isReviewMode ? "复习完成" : "课程完成",
+        description: isReviewMode ? "恭喜你完成了错题复习！" : "恭喜你完成了这节课程！",
+        duration: 2000
       });
-      setLocation("/");
+      setTimeout(() => {
+        setLocation("/");
+      }, 2000);
     }
   };
 
   const handlePrevious = () => {
+    if (isTransitioning) return;
+    
     if (currentIndex > 0) {
+      setIsTransitioning(true);
       setSelectedImage(null);
       setShowResult(false);
       setHasAnswered(false);
       setCurrentIndex((prev) => prev - 1);
+      
+      // 添加延迟以确保动画平滑
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
   const handleImageSelection = async (index: number) => {
-    if (!userLesson?.lesson?.flashcards || !currentCard || hasAnswered) return;
+    if (!userLessons || !currentCard || hasAnswered || isTransitioning) return;
 
     // 使用shuffledIndices将选择的索引映射回原始索引
     const originalIndex = shuffledIndices.indexOf(currentCard.correctImageIndex);
     const isCorrect = index === originalIndex;
-    const progress: Progress = userLesson.progress as Progress || {
-      total: userLesson.lesson.flashcards.length,
-      completed: 0,
-      reviews: []
-    };
-
-    // 记录本次练习结果
-    progress.reviews.push({
-      timestamp: new Date().toISOString(),
-      flashcardId: currentCard.id,
-      successful: isCorrect
-    });
 
     // 立即标记已作答并显示结果
     setHasAnswered(true);
@@ -251,12 +313,29 @@ export default function FlashcardPage() {
     } else {
       playCorrectSound();
       if (isReviewMode) {
+        // 标记当前卡片为已完成
+        setCompletedCards(prev => new Set([...prev, currentCard.id]));
+        
         toast({
           title: "太棒了!",
-          description: "答对了！此题已从错题本中移除。请点击下一题按钮继续练习。",
+          description: "答对了！此题已从错题本中移除。点击下一题按钮继续。",
           className: "w-[250px] text-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-          duration: 1000
+          duration: 2000
         });
+
+        // 检查是否所有卡片都已完成
+        if (completedCards.size + 1 === flashcards.length) {
+          setTimeout(() => {
+            toast({
+              title: "复习完成",
+              description: "恭喜你完成了所有错题的复习！",
+              duration: 2000
+            });
+            setTimeout(() => {
+              setLocation("/");
+            }, 2000);
+          }, 2000);
+        }
       } else {
         toast({
           title: "正确!",
@@ -268,40 +347,39 @@ export default function FlashcardPage() {
     }
 
     try {
-      // 后台更新进度
+      // 找到当前卡片所属的课程
+      const userLesson = userLessons.find(ul => ul.id === currentCard.userLessonId);
+      if (!userLesson) return;
+
+      const progress: Progress = userLesson.progress as Progress || {
+        total: userLesson.lesson.flashcards.length,
+        completed: 0,
+        reviews: []
+      };
+
+      // 记录本次练习结果
+      progress.reviews.push({
+        timestamp: new Date().toISOString(),
+        flashcardId: currentCard.id,
+        successful: isCorrect
+      });
+
+      // 如果答对了，更新完成数
+      if (isCorrect) {
+        const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
+          r.flashcardId === currentCard.id && r.successful
+        );
+        if (!hasBeenCounted) {
+          progress.completed++;
+        }
+      }
+
+      // 更新进度
       await updateProgressMutation.mutateAsync({
         progress,
         totalStudyTime: userLesson.totalStudyTime || 0
       });
 
-      // 如果答对了，更新完成数
-      if (isCorrect) {
-        if (isReviewMode) {
-          // 更新完成数（如果还没计入的话）
-          const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
-            r.flashcardId === currentCard.id && r.successful
-          );
-          if (!hasBeenCounted) {
-            progress.completed++;
-            // 再次更新进度以保存完成数
-            await updateProgressMutation.mutateAsync({
-              progress,
-              totalStudyTime: userLesson.totalStudyTime || 0
-            });
-          }
-        } else {
-          // 如果是首次答对，增加完成数
-          const previousReviews = progress.reviews.slice(0, -1);
-          if (!previousReviews.some(r => r.flashcardId === currentCard.id && r.successful)) {
-            progress.completed++;
-            // 再次更新进度以保存完成数
-            await updateProgressMutation.mutateAsync({
-              progress,
-              totalStudyTime: userLesson.totalStudyTime || 0
-            });
-          }
-        }
-      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -322,8 +400,8 @@ export default function FlashcardPage() {
                 e.preventDefault();
                 try {
                   await updateProgressMutation.mutateAsync({
-                    progress: userLesson.progress as Progress,
-                    totalStudyTime: userLesson.totalStudyTime || 0
+                    progress: userLessons[0].progress as Progress,
+                    totalStudyTime: userLessons[0].totalStudyTime || 0
                   });
                   await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
                   await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
@@ -335,20 +413,21 @@ export default function FlashcardPage() {
               }}
               className="hover:text-primary transition-colors duration-300"
             >
-              {userLesson.lesson.title}
+              {userLessons[0].lesson.title}
             </a>
           </h1>
           <div className="mt-4 flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
               Card {currentIndex + 1} of {flashcards.length}
+              {isReviewMode && ` (已完成: ${completedCards.size}/${flashcards.length})`}
             </p>
             <div className="h-2 w-2 rounded-full bg-primary"></div>
           </div>
         </div>
 
         <div className="space-y-8">
-          <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background to-muted/10">
+          <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background to-muted/10 ${isTransitioning ? 'opacity-50' : ''}`}>
             <CardContent className="flex items-center justify-center p-4">
               <Button
                 variant="outline"
@@ -378,7 +457,7 @@ export default function FlashcardPage() {
           </Card>
 
           {currentCard && (
-            <div className="grid grid-cols-2 gap-6 max-w-[600px] mx-auto">
+            <div className={`grid grid-cols-2 gap-6 max-w-[600px] mx-auto transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : ''}`}>
               {shuffledIndices.map((originalIndex, currentIndex) => (
                 <Card
                   key={originalIndex}

@@ -5,7 +5,7 @@ import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Loader2, BookOpen, Clock, Target, FileIcon, Music, Video, Image } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import type { UserLessonWithRelations } from "@db/schema";
+import type { UserLessonWithRelations, Progress } from "@db/schema";
 import { useEffect } from "react";
 
 const FileTypeIcon = ({ type }: { type: string }) => {
@@ -43,19 +43,19 @@ export default function StudentDashboard() {
     enabled: !!user,
   });
 
-  const calculateProgress = (progress: any) => {
+  const calculateProgress = (progress: Progress) => {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
     const reviews = progress.reviews || [];
 
     // Calculate success rate
     const success = reviews.length > 0 
-      ? (reviews.filter(review => review.successful).length / reviews.length) * 100 
+      ? (reviews.filter((review: { successful: boolean }) => review.successful).length / reviews.length) * 100 
       : 0;
 
     // Calculate cards that need review (were answered incorrectly)
     const incorrectCards = new Set();
-    reviews.forEach(review => {
+    reviews.forEach((review: { successful: boolean; flashcardId: number }) => {
       if (!review.successful) {
         incorrectCards.add(review.flashcardId);
       }
@@ -66,6 +66,31 @@ export default function StudentDashboard() {
       success,
       needsReview: incorrectCards.size
     };
+  };
+
+  // 计算所有需要复习的卡片
+  const calculateTotalReviewCards = (lessons: UserLessonWithRelations[]) => {
+    const allWrongCards = new Set<number>();
+    
+    lessons.forEach(lesson => {
+      const progress = lesson.progress as Progress;
+      if (!progress || !progress.reviews) return;
+      
+      // 获取每个卡片的最后一次回答记录
+      const lastReviews = new Map<number, boolean>();
+      progress.reviews.forEach(review => {
+        lastReviews.set(review.flashcardId, review.successful);
+      });
+      
+      // 只添加最后一次回答错误的卡片
+      lastReviews.forEach((successful, flashcardId) => {
+        if (!successful) {
+          allWrongCards.add(flashcardId);
+        }
+      });
+    });
+    
+    return allWrongCards.size;
   };
 
   const formatStudyTime = (seconds: number) => {
@@ -85,7 +110,7 @@ export default function StudentDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Review Book Section */}
-        {userLessons?.some(lesson => calculateProgress(lesson.progress).needsReview > 0) && (
+        {userLessons && calculateTotalReviewCards(userLessons) > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -95,22 +120,23 @@ export default function StudentDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {userLessons.map(lesson => {
-                  const { needsReview } = calculateProgress(lesson.progress);
-                  if (needsReview > 0) {
+                {(() => {
+                  const totalWrongQuestions = calculateTotalReviewCards(userLessons);
+                  
+                  if (totalWrongQuestions > 0) {
+                    // 收集所有有错题的课程ID
+                    const lessonsWithWrongQuestions = userLessons
+                      .filter(lesson => calculateProgress(lesson.progress as Progress).needsReview > 0)
+                      .map(lesson => lesson.lessonId)
+                      .join(',');
+
                     return (
-                      <div key={lesson.id} className="space-y-4">
-                        <span>{lesson.lesson.title}</span>
+                      <div className="space-y-4">
+                        <span>总共有 {totalWrongQuestions} 道需要复习的题目</span>
                         <div className="pt-4">
-                          <Link href={`/lesson/${lesson.lessonId}?mode=review`}>
+                          <Link href={`/lesson/${lessonsWithWrongQuestions}?mode=review&combined=true`}>
                             <Button className="w-full">
-                              复习 {lesson.lesson.flashcards.filter(flashcard => {
-                                const progress = lesson.progress as Progress;
-                                const reviews = progress.reviews || [];
-                                const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-                                const lastReview = flashcardReviews[flashcardReviews.length - 1];
-                                return lastReview && !lastReview.successful;
-                              }).length} 道题
+                              开始复习 {totalWrongQuestions} 道题
                             </Button>
                           </Link>
                         </div>
@@ -118,7 +144,7 @@ export default function StudentDashboard() {
                     );
                   }
                   return null;
-                })}
+                })()}
               </div>
             </CardContent>
           </Card>
@@ -131,7 +157,7 @@ export default function StudentDashboard() {
       ) : (
         <>
           {userLessons?.map((userLesson) => {
-            const { percent, success, needsReview } = calculateProgress(userLesson.progress);
+            const { percent, success, needsReview } = calculateProgress(userLesson.progress as Progress);
             return (
               <Card key={userLesson.id}>
                 <CardHeader>
