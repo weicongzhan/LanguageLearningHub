@@ -119,94 +119,99 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Bulk upload flashcards for a lesson
-  app.post("/api/flashcards/bulk-upload/:lessonId", requireAdmin, upload.fields([
-    { name: 'audio', maxCount: 50 },
-    { name: 'images', maxCount: 50 }
-  ]), async (req, res) => {
+  app.post("/api/flashcards/bulk-upload/:lessonId", requireAdmin, upload.array('files', 100), async (req, res) => {
     try {
       const { lessonId } = req.params;
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const files = req.files as Express.Multer.File[];
 
-      const audioFiles = files.audio || [];
-      const imageFiles = files.images || [];
+      // Separate audio and image files
+      const audioFiles = files.filter(file => file.mimetype.startsWith('audio/'));
+      const imageFiles = files.filter(file => file.mimetype.startsWith('image/'));
 
-      // Get base names of audio files (without extension)
-      const audioBaseNames = audioFiles.map(file => 
-        path.basename(file.originalname, path.extname(file.originalname))
-      );
-
-      // Match images with same base names
-      const matchedPairs = audioFiles.map(audioFile => {
-        const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
-        const matchingImage = imageFiles.find(imgFile => 
-          path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
-        );
-        return { audioFile, matchingImage };
-      }).filter(pair => pair.matchingImage);
-
-      if (matchedPairs.length === 0) {
-        return res.status(400).json({ error: "No matching audio-image pairs found" });
+      if (audioFiles.length === 0 || imageFiles.length === 0) {
+          return res.status(400).json({ error: "Both audio and image files are required." });
       }
 
-      // Process each pair
+      // Get base names of audio files (without extension)
+      const audioBaseNames = audioFiles.map(file =>
+          path.basename(file.originalname, path.extname(file.originalname))
+      );
+
+      // Match images with same base names.  Improved logic to handle potential mismatch.
+      const matchedPairs = audioFiles.map(audioFile => {
+          const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
+          const matchingImage = imageFiles.find(imgFile =>
+              path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
+          );
+          return { audioFile, matchingImage };
+      });
+
+      //Process only matched pairs. Handle unmatched files as errors.
       const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
-        try {
-          // Process correct image
-          await processImage(matchingImage);
+          if (!matchingImage) {
+              return {
+                  success: false,
+                  audioName: path.basename(audioFile.originalname),
+                  error: "No matching image found for audio file."
+              };
+          }
+          try {
+              // Process correct image
+              await processImage(matchingImage);
 
-          // Get 3 random different images
-          const otherImages = imageFiles
-            .filter(img => img !== matchingImage)
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 3);
+              // Get 3 random different images
+              const otherImages = imageFiles
+                  .filter(img => img !== matchingImage)
+                  .sort(() => Math.random() - 0.5)
+                  .slice(0, 3);
 
-          // Process other images
-          await Promise.all(otherImages.map(img => processImage(img)));
+              // Process other images
+              await Promise.all(otherImages.map(img => processImage(img)));
 
-          // Upload all files to storage
-          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-          const allImages = [matchingImage, ...otherImages];
-          const imageUrls = await Promise.all(allImages.map(file => 
-            uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
-          ));
+              // Upload all files to storage
+              const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+              const allImages = [matchingImage, ...otherImages];
+              const imageUrls = await Promise.all(allImages.map(file =>
+                  uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
+              ));
 
-          // Create flashcard with random position for correct answer
-          const correctImageIndex = Math.floor(Math.random() * 4);
-          const shuffledImageUrls = [...imageUrls];
-          [shuffledImageUrls[0], shuffledImageUrls[correctImageIndex]] = 
-            [shuffledImageUrls[correctImageIndex], shuffledImageUrls[0]];
+              // Create flashcard with random position for correct answer
+              const correctImageIndex = Math.floor(Math.random() * 4);
+              const shuffledImageUrls = [...imageUrls];
+              [shuffledImageUrls[0], shuffledImageUrls[correctImageIndex]] =
+                  [shuffledImageUrls[correctImageIndex], shuffledImageUrls[0]];
 
-          const [flashcard] = await db.insert(flashcards).values({
-            lessonId: parseInt(lessonId),
-            audioUrl,
-            imageChoices: shuffledImageUrls,
-            correctImageIndex
-          }).returning();
+              const [flashcard] = await db.insert(flashcards).values({
+                  lessonId: parseInt(lessonId),
+                  audioUrl,
+                  imageChoices: shuffledImageUrls,
+                  correctImageIndex
+              }).returning();
 
-          return {
-            success: true,
-            flashcard,
-            audioName: path.basename(audioFile.originalname)
-          };
-        } catch (error) {
-          return {
-            success: false,
-            audioName: path.basename(audioFile.originalname),
-            error: error instanceof Error ? error.message : "Unknown error"
-          };
-        }
+              return {
+                  success: true,
+                  flashcard,
+                  audioName: path.basename(audioFile.originalname)
+              };
+          } catch (error) {
+              return {
+                  success: false,
+                  audioName: path.basename(audioFile.originalname),
+                  error: error instanceof Error ? error.message : "Unknown error"
+              };
+          }
       }));
 
       res.json({
-        total: matchedPairs.length,
-        successful: results.filter(r => r.success).length,
-        failed: results.filter(r => !r.success).length,
-        results
+          total: matchedPairs.length,
+          successful: results.filter(r => r.success).length,
+          failed: results.filter(r => !r.success).length,
+          results
       });
 
     } catch (error) {
       console.error('Bulk upload error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to process files",
         details: error instanceof Error ? error.message : String(error)
       });
@@ -259,7 +264,7 @@ export function registerRoutes(app: Express): Server {
       await Promise.all(imageFiles.map(file => processImage(file)));
 
       const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-      const imageUrls = await Promise.all(imageFiles.map(file => 
+      const imageUrls = await Promise.all(imageFiles.map(file =>
         uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
       ));
       const correctImageIndex = parseInt(req.body.correctImageIndex);
@@ -280,7 +285,7 @@ export function registerRoutes(app: Express): Server {
       res.json(newFlashcard);
     } catch (error) {
       console.error('Upload error:', error);
-      res.status(400).json({ 
+      res.status(400).json({
         error: error instanceof Error ? error.message : "File upload failed",
         details: error
       });
@@ -324,7 +329,7 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "Flashcard deleted successfully" });
     } catch (error) {
       console.error('Delete error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to delete flashcard",
         details: error instanceof Error ? error.message : String(error)
       });
@@ -461,7 +466,7 @@ export function registerRoutes(app: Express): Server {
 
     } catch (error) {
       console.error('Bulk import error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to process CSV file",
         details: error instanceof Error ? error.message : String(error)
       });
@@ -543,7 +548,7 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "Lesson and all associated data deleted successfully" });
     } catch (error) {
       console.error('Delete lesson error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to delete lesson",
         details: error instanceof Error ? error.message : String(error)
       });
@@ -592,7 +597,7 @@ export function registerRoutes(app: Express): Server {
     try {
       const [updated] = await db
         .update(userLessons)
-        .set({ 
+        .set({
           progress: req.body.progress,
           totalStudyTime: req.body.totalStudyTime,
           lastStudyDate: new Date()
@@ -658,7 +663,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  const fileUpload = multer({ 
+  const fileUpload = multer({
     storage: fileStorage,
     fileFilter: (req, file, cb) => {
       const allowedTypes = ['audio', 'video', 'image'];

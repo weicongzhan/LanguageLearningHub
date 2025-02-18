@@ -287,28 +287,29 @@ export default function AdminLessons() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>批量导入闪卡</DialogTitle>
+                <DialogTitle>批量上传闪卡</DialogTitle>
                 <DialogDescription>
-                  请上传CSV文件。文件应包含以下列：lessonId, audioUrl, imageChoices, correctImageIndex
+                  请选择包含音频和图片的文件夹。图片和对应的音频文件名需要相同。
+                  系统会自动为每个音频匹配对应图片，并随机选择3张其他图片作为选项。
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const file = formData.get('file') as File;
+                const files = formData.getAll('files') as File[];
 
-                if (!file) {
+                if (files.length === 0) {
                   toast({
                     variant: "destructive",
                     title: "错误",
-                    description: "请选择一个CSV文件"
+                    description: "请选择文件"
                   });
                   return;
                 }
 
                 try {
                   const formData = new FormData();
-                  formData.append('file', file);
+                  formData.append('files', ...files); // Append all files
 
                   const response = await fetch('/api/flashcards/bulk-import', {
                     method: 'POST',
@@ -337,11 +338,12 @@ export default function AdminLessons() {
                 }
               }} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>CSV文件</Label>
+                  <Label>文件夹</Label>
                   <Input
                     type="file"
-                    name="file"
-                    accept=".csv"
+                    name="files"
+                    accept=".mp3, .jpg, .jpeg, .png" // Add accepted file types
+                    multiple // Allow multiple file selection
                     required
                   />
                 </div>
