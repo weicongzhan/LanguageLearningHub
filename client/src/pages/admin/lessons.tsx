@@ -273,6 +273,45 @@ export default function AdminLessons() {
     }
   };
 
+  const handleBulkUpload = async (files: FileList, title: string, description?: string) => {
+    const formData = new FormData();
+    formData.append('title', title);
+    if (description) {
+      formData.append('description', description);
+    }
+    for (let i = 0; i < files.length; i++) {
+      formData.append('file', files[i]);
+    }
+
+    try {
+      const response = await fetch('/api/flashcards/bulk-import', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const result = await response.json();
+
+      toast({
+        title: "导入成功",
+        description: `成功导入 ${result.imported} 个闪卡`
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "导入失败",
+        description: error.message
+      });
+    }
+  };
+
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -296,62 +335,51 @@ export default function AdminLessons() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const files = formData.getAll('files[]') as File[];
+                const files = formData.get('files') as FileList;
+                const title = formData.get('title') as string;
+                const description = formData.get('description') as string;
 
-                if (files.length === 0) {
+                if (!files || !title) {
                   toast({
                     variant: "destructive",
                     title: "错误",
-                    description: "请选择文件"
+                    description: "请选择文件和课程标题"
                   });
                   return;
                 }
 
-                try {
-                  const formData = new FormData();
-                  files.forEach(file => {
-                    formData.append('file', file);
-                  });
-
-                  const response = await fetch('/api/flashcards/bulk-import', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                  });
-
-                  if (!response.ok) {
-                    throw new Error(await response.text());
-                  }
-
-                  const result = await response.json();
-
-                  toast({
-                    title: "导入成功",
-                    description: `成功导入 ${result.imported} 个闪卡`
-                  });
-
-                  queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
-                } catch (error: any) {
-                  toast({
-                    variant: "destructive",
-                    title: "导入失败",
-                    description: error.message
-                  });
-                }
+                await handleBulkUpload(files, title, description);
               }} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>文件夹</Label>
+                <div>
+                  <Label htmlFor="title">课程标题</Label>
                   <Input
-                    type="file"
-                    name="files[]"
-                    accept=".mp3, .jpg, .jpeg, .png"
-                    multiple
+                    id="title"
+                    name="title"
+                    type="text"
                     required
+                    className="mt-1"
                   />
                 </div>
-                <Button type="submit">
-                  导入
-                </Button>
+                <div>
+                  <Label htmlFor="description">课程描述（可选）</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="files">选择文件</Label>
+                  <Input
+                    id="files"
+                    name="files"
+                    type="file"
+                    multiple
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                <Button type="submit">上传</Button>
               </form>
             </DialogContent>
           </Dialog>

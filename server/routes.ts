@@ -360,10 +360,22 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Add bulk import endpoint
-  app.post("/api/flashcards/bulk-import/:lessonId", requireAdmin, upload.array('file', 100), async (req, res) => {
+  app.post("/api/flashcards/bulk-import", requireAdmin, upload.array('file', 100), async (req, res) => {
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: "No files uploaded" });
     }
+
+    const { title, description = "", language = "en" } = req.body;
+    if (!title) {
+      return res.status(400).json({ error: "Lesson title is required" });
+    }
+
+    // Create new lesson
+    const [newLesson] = await db.insert(lessons).values({
+      title,
+      description,
+      language
+    }).returning();
 
     const results: any[] = [];
     let imported = 0;
@@ -411,7 +423,7 @@ export function registerRoutes(app: Express): Server {
 
           // Create flashcard
           const [flashcard] = await db.insert(flashcards).values({
-            lessonId: parseInt(req.params.lessonId),
+            lessonId: newLesson.id,
             audioUrl,
             imageChoices: [imageUrl],
             correctImageIndex: 0
