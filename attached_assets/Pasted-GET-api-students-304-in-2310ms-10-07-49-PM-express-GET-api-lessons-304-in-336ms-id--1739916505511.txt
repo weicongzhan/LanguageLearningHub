@@ -1,0 +1,52 @@
+GET /api/students 304 in 2310ms :: []
+10:07:49 PM [express] GET /api/lessons 304 in 336ms :: [{"id":1,"title":"lesson-1","description":"nla…
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916477685-804896.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916478448-535835.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916478473-737087.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916478858-235422.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916478887-2273.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479222-415677.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479247-798391.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479635-967900.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479635-572527.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479997-511502.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916479997-650418.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480301-279234.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480326-503759.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480633-977467.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480660-673032.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480825-126796.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480825-864231.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916480992-369.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481018-500652.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481186-59814.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481215-950644.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481406-142311.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481406-887150.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916481815-142480.mp3
+10:08:01 PM [express] POST /api/flashcards/bulk-import 200 in 4239ms :: {"imported":0,"results":[{"su…
+10:08:02 PM [express] GET /api/lessons 304 in 117ms :: [{"id":1,"title":"lesson-1","description":"nla…
