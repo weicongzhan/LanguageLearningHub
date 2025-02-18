@@ -413,15 +413,29 @@ export function registerRoutes(app: Express): Server {
         };
       });
 
+      console.log('开始处理配对的音频和图片文件...');
+      console.log('匹配到的文件对:', matchedPairs.map(p => ({
+        audio: p.audioFile.originalname,
+        image: p.matchingImage?.originalname,
+        otherImages: p.otherImages.map(i => i.originalname)
+      })));
+
       // Process matched pairs
       const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage, otherImages }) => {
         if (!matchingImage) {
+          console.log('未找到匹配的图片文件:', audioFile.originalname);
           return {
             success: false,
             audioName: path.basename(audioFile.originalname),
             error: "No matching image found"
           };
         }
+
+        console.log('处理文件对:', {
+          audio: audioFile.originalname,
+          image: matchingImage.originalname,
+          otherImages: otherImages.map(i => i.originalname)
+        });
 
         try {
           // Process image
@@ -441,6 +455,13 @@ export function registerRoutes(app: Express): Server {
           const imageChoices = [...otherImageUrls];
           imageChoices.splice(correctIndex, 0, correctImageUrl);
 
+          console.log('准备创建闪卡:', {
+            lessonId: newLesson.id,
+            audioUrl,
+            imageChoices,
+            correctImageIndex: correctIndex
+          });
+
           // Create flashcard
           const [flashcard] = await db.insert(flashcards).values({
             lessonId: newLesson.id,
@@ -449,6 +470,7 @@ export function registerRoutes(app: Express): Server {
             correctImageIndex: correctIndex
           }).returning();
 
+          console.log('闪卡创建成功:', flashcard);
           imported++;
           return {
             success: true,
