@@ -442,46 +442,6 @@ export function registerRoutes(app: Express): Server {
           };
         }
       }));
-          // Process matched pairs
-      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
-        if (!matchingImage) {
-          return {
-            success: false,
-            audioName: path.basename(audioFile.originalname),
-            error: "No matching image found"
-          };
-        }
-
-        try {
-          // Process image
-          await processImage(matchingImage);
-
-          // Upload files
-          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-          const imageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
-
-          // Create flashcard
-          const [flashcard] = await db.insert(flashcards).values({
-            lessonId: parseInt(req.body.lessonId),
-            audioUrl,
-            imageChoices: [imageUrl],
-            correctImageIndex: 0
-          }).returning();
-
-          imported++;
-          return {
-            success: true,
-            flashcard,
-            audioName: path.basename(audioFile.originalname)
-          };
-        } catch (error) {
-          return {
-            success: false,
-            audioName: path.basename(audioFile.originalname),
-            error: error instanceof Error ? error.message : "Unknown error"
-          };
-        }
-      }));
 
       res.json({
         imported,
