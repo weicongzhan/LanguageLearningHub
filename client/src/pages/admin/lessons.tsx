@@ -335,11 +335,12 @@ export default function AdminLessons() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const files = formData.get('files') as FileList;
+                const fileInput = e.currentTarget.querySelector('input[type="file"]') as HTMLInputElement;
+                const files = fileInput.files;
                 const title = formData.get('title') as string;
                 const description = formData.get('description') as string;
 
-                if (!files || !title) {
+                if (!files || files.length === 0 || !title) {
                   toast({
                     variant: "destructive",
                     title: "错误",
@@ -348,7 +349,42 @@ export default function AdminLessons() {
                   return;
                 }
 
-                await handleBulkUpload(files, title, description);
+                const uploadFormData = new FormData();
+                uploadFormData.append('title', title);
+                if (description) {
+                  uploadFormData.append('description', description);
+                }
+                
+                for (let i = 0; i < files.length; i++) {
+                  uploadFormData.append('files', files[i]);
+                }
+
+                try {
+                  const response = await fetch('/api/flashcards/bulk-import', {
+                    method: 'POST',
+                    body: uploadFormData,
+                    credentials: 'include'
+                  });
+
+                  if (!response.ok) {
+                    throw new Error(await response.text());
+                  }
+
+                  const result = await response.json();
+
+                  toast({
+                    title: "导入成功",
+                    description: `成功导入 ${result.imported} 个闪卡`
+                  });
+
+                  queryClient.invalidateQueries({ queryKey: ["/api/lessons"] });
+                } catch (error: any) {
+                  toast({
+                    variant: "destructive",
+                    title: "导入失败",
+                    description: error.message
+                  });
+                }
               }} className="space-y-4">
                 <div>
                   <Label htmlFor="title">课程标题</Label>
