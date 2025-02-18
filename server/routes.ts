@@ -380,7 +380,6 @@ export function registerRoutes(app: Express): Server {
     let imported = 0;
 
     try {
-      // 处理上传的文件
       const files = req.files as Express.Multer.File[];
       const audioFiles = files.filter(file => file.mimetype.startsWith('audio/'));
       const imageFiles = files.filter(file => file.mimetype.startsWith('image/'));
@@ -389,8 +388,60 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "Both audio and image files are required" });
       }
 
-      const parser = csvParser();
-      parser.on('data', async (record) => {
+      // Get base names of audio files (without extension)
+      const audioBaseNames = audioFiles.map(file => 
+        path.basename(file.originalname, path.extname(file.originalname))
+      );
+
+      // Match images with same base names
+      const matchedPairs = audioFiles.map(audioFile => {
+        const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
+        const matchingImage = imageFiles.find(imgFile => 
+          path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
+        );
+        return { audioFile, matchingImage };
+      });
+
+      // Process matched pairs
+      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
+        if (!matchingImage) {
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: "No matching image found"
+          };
+        }
+
+        try {
+          // Process image
+          await processImage(matchingImage);
+
+          // Upload files
+          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+          const imageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
+
+          // Create flashcard
+          const [flashcard] = await db.insert(flashcards).values({
+            lessonId: parseInt(req.body.lessonId),
+            audioUrl,
+            imageChoices: [imageUrl],
+            correctImageIndex: 0
+          }).returning();
+
+          imported++;
+          return {
+            success: true,
+            flashcard,
+            audioName: path.basename(audioFile.originalname)
+          };
+        } catch (error) {
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: error instanceof Error ? error.message : "Unknown error"
+          };
+        }
+      }));
           try {
             // Validate required fields
             if (!record.lessonId || !record.audioUrl || !record.imageChoices || !record.correctImageIndex) {
