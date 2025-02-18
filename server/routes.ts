@@ -63,16 +63,17 @@ export function registerRoutes(app: Express): Server {
   // 配置静态文件服务
   app.use('/lessons', express.static(path.join(uploadsDir, 'lessons'), {
     setHeaders: (res, path) => {
-      // 对于图片文件启用缓存
-      if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-        res.setHeader('Cache-Control', 'public, max-age=86400'); // 24小时缓存
+      // 对于图片和音频文件启用缓存
+      if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.mp3')) {
+        // 7天缓存
+        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        // 允许客户端和CDN缓存
+        res.setHeader('Vary', 'Accept-Encoding');
       } else {
-        // 音频文件等其他资源不缓存
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
+        res.setHeader('Cache-Control', 'no-cache');
       }
-    }
+    },
+    maxAge: 604800000 // 7天的毫秒数
   }));
 
   if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
