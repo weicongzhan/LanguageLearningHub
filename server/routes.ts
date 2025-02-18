@@ -390,14 +390,14 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Get base names of audio files (without extension)
-      const audioBaseNames = audioFiles.map(file => 
+      const audioBaseNames = audioFiles.map(file =>
         path.basename(file.originalname, path.extname(file.originalname))
       );
 
-      // Match images with same base names
+      // Match images with same base names.  Improved logic.
       const matchedPairs = audioFiles.map(audioFile => {
         const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
-        const matchingImage = imageFiles.find(imgFile => 
+        const matchingImage = imageFiles.find(imgFile =>
           path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
         );
         // Get 3 random different images for choices
@@ -406,8 +406,8 @@ export function registerRoutes(app: Express): Server {
           .sort(() => Math.random() - 0.5)
           .slice(0, 3);
 
-        return { 
-          audioFile, 
+        return {
+          audioFile,
           matchingImage,
           otherImages
         };
@@ -910,8 +910,7 @@ export function registerRoutes(app: Express): Server {
       console.error('删除文件时发生错误:', error);
       return res.status(500).json({
         success: false,
-        error: "删除文件失败",
-        details: error instanceof Error ? error.message : String(error)
+        error: "删除文件失败",        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
