@@ -498,7 +498,6 @@ export function registerRoutes(app: Express): Server {
           };
         }
       }));
-      }));
 
       res.json({
         imported,
