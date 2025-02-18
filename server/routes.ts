@@ -441,27 +441,26 @@ export function registerRoutes(app: Express): Server {
           // Process image
           await processImage(matchingImage);
 
-          try {
-            // Upload files with absolute paths
-            const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-            const correctImageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
-            
-            // Upload other images for choices
-            const otherImageUrls = await Promise.all(otherImages.map(file =>
-              uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
-            ));
+          // Upload files with absolute paths
+          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+          const correctImageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
 
-            // Randomly insert correct image into choices
-            const correctIndex = Math.floor(Math.random() * 4);
-            const imageChoices = [...otherImageUrls];
-            imageChoices.splice(correctIndex, 0, correctImageUrl);
+          // Upload other images for choices
+          const otherImageUrls = await Promise.all(otherImages.map(file =>
+            uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
+          ));
 
-            console.log('File uploads successful:', {
-              audioUrl,
-              correctImageUrl,
-              otherImageUrls,
-              correctIndex
-            });
+          // Randomly insert correct image into choices
+          const correctIndex = Math.floor(Math.random() * 4);
+          const imageChoices = [...otherImageUrls];
+          imageChoices.splice(correctIndex, 0, correctImageUrl);
+
+          console.log('File uploads successful:', {
+            audioUrl,
+            correctImageUrl,
+            otherImageUrls,
+            correctIndex
+          });
 
           console.log('准备创建闪卡:', {
             lessonId: newLesson.id,
