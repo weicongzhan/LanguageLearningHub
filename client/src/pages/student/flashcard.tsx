@@ -393,29 +393,6 @@ export default function FlashcardPage() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <div className="container mx-auto p-6 max-w-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold">
-            <a 
-              href="/" 
-              onClick={async (e) => {
-                e.preventDefault();
-                try {
-                  await updateProgressMutation.mutateAsync({
-                    progress: userLessons[0].progress as Progress,
-                    totalStudyTime: userLessons[0].totalStudyTime || 0
-                  });
-                  await queryClient.invalidateQueries({ queryKey: ['/api/user-lessons'] });
-                  await queryClient.invalidateQueries({ queryKey: [`/api/user-lessons/${user?.id}`] });
-                  setLocation("/");
-                } catch (error) {
-                  console.error('Error updating progress:', error);
-                  setLocation("/");
-                }
-              }}
-              className="hover:text-primary transition-colors duration-300"
-            >
-              {userLessons[0].lesson.title}
-            </a>
-          </h1>
           <div className="mt-4 flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
