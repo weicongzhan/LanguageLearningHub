@@ -405,7 +405,7 @@ export function registerRoutes(app: Express): Server {
           .filter(img => path.basename(img.originalname, path.extname(img.originalname)) !== audioBaseName)
           .sort(() => Math.random() - 0.5)
           .slice(0, 3);
-        
+
         return { 
           audioFile, 
           matchingImage,
@@ -414,7 +414,7 @@ export function registerRoutes(app: Express): Server {
       });
 
       // Process matched pairs
-      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
+      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage, otherImages }) => {
         if (!matchingImage) {
           return {
             success: false,
@@ -430,7 +430,7 @@ export function registerRoutes(app: Express): Server {
           // Upload files
           const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
           const correctImageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
-          
+
           // Upload other images for choices
           const otherImageUrls = await Promise.all(otherImages.map(file =>
             uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
@@ -917,7 +917,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   const httpServer = createServer(app);
-  return httpServer;
+  returnhttpServer;
 }
 
 // Change the import at the bottom of the file
