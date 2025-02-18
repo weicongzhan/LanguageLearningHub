@@ -917,7 +917,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   const httpServer = createServer(app);
-  returnhttpServer;
+  return httpServer;
 }
 
 // Change the import at the bottom of the file
