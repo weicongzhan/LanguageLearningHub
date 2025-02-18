@@ -6,7 +6,7 @@ const storage = new Client();
 
 export async function uploadFile(localPath: string, fileName: string): Promise<string> {
   const fileContent = await fs.promises.readFile(localPath);
-  const result = await storage.put(fileName, fileContent);
+  const result = await storage.uploadFromBuffer(fileName, fileContent);
   if (!result.ok) {
     throw new Error(result.error);
   }
