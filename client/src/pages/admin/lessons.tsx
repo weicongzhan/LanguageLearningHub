@@ -310,7 +310,7 @@ export default function AdminLessons() {
                 try {
                   const formData = new FormData();
                   files.forEach(file => {
-                    formData.append('files', file);
+                    formData.append('file', file);
                   });
 
                   const response = await fetch('/api/flashcards/bulk-import', {
