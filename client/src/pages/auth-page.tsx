@@ -86,7 +86,7 @@ export default function AuthPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
-            Language Learning Platform
+            智慧树语言中心
           </CardTitle>
         </CardHeader>
         <CardContent>
