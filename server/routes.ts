@@ -465,37 +465,38 @@ export function registerRoutes(app: Express): Server {
 
             console.log('准备创建闪卡:', {
               lessonId: newLesson.id,
-            audioUrl,
-            imageChoices,
-            correctImageIndex: correctIndex
-          });
+              audioUrl,
+              imageChoices,
+              correctImageIndex: correctIndex
+            });
 
-          // Create flashcard with error handling
-          const [flashcard] = await db.insert(flashcards).values({
-            lessonId: newLesson.id,
-            audioUrl,
-            imageChoices,
-            correctImageIndex: correctIndex
-          }).returning();
+            // Create flashcard with error handling
+            const [flashcard] = await db.insert(flashcards).values({
+              lessonId: newLesson.id,
+              audioUrl,
+              imageChoices,
+              correctImageIndex: correctIndex
+            }).returning();
 
-          if (!flashcard) {
-            throw new Error('Failed to create flashcard record');
+            if (!flashcard) {
+              throw new Error('Failed to create flashcard record');
+            }
+
+            console.log('闪卡创建成功:', flashcard);
+            imported++;
+            return {
+              success: true,
+              flashcard,
+              audioName: path.basename(audioFile.originalname)
+            };
+          } catch (error) {
+            console.error('处理闪卡时出错:', error);
+            return {
+              success: false,
+              audioName: path.basename(audioFile.originalname),
+              error: error instanceof Error ? error.message : "Unknown error"
+            };
           }
-
-          console.log('闪卡创建成功:', flashcard);
-          imported++;
-          return {
-            success: true,
-            flashcard,
-            audioName: path.basename(audioFile.originalname)
-          };
-        } catch (error) {
-          console.error('处理闪卡时出错:', error);
-          return {
-            success: false,
-            audioName: path.basename(audioFile.originalname),
-            error: error instanceof Error ? error.message : "Unknown error"
-          };
         }
       }));
 
