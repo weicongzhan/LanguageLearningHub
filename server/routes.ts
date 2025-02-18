@@ -9,14 +9,15 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
 import express from 'express';
+import { uploadFile, deleteFile } from './storage';
 import sharp from 'sharp'; // Import sharp library
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = '/tmp/uploads';
     if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
     console.log('File destination:', uploadDir);
     cb(null, uploadDir);
@@ -153,8 +154,10 @@ export function registerRoutes(app: Express): Server {
       //Process images before proceeding
       await Promise.all(imageFiles.map(file => processImage(file)));
 
-      const audioUrl = `/uploads/${audioFile.filename}`;
-      const imageUrls = imageFiles.map(file => `/uploads/${file.filename}`);
+      const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+      const imageUrls = await Promise.all(imageFiles.map(file => 
+        uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
+      ));
       const correctImageIndex = parseInt(req.body.correctImageIndex);
 
       if (isNaN(correctImageIndex) || correctImageIndex < 0 || correctImageIndex >= imageFiles.length) {
