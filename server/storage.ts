@@ -21,12 +21,6 @@ export async function uploadFile(localPath: string, fileName: string): Promise<s
 
     const targetPath = path.join(UPLOAD_DIR, fileName);
     await fs.promises.copyFile(localPath, targetPath);
-
-    // 删除临时文件
-    if (fs.existsSync(localPath)) {
-      await fs.promises.unlink(localPath);
-    }
-
     return `/${fileName}`;
   } catch (error) {
     console.error('文件上传失败:', error);
