@@ -71,13 +71,24 @@ export function registerRoutes(app: Express): Server {
   // 配置静态文件服务
   app.use('/uploads', express.static(uploadsDir, {
     setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }
   }));
-  app.use('/uploads/files', express.static(path.join(uploadsDir, 'files')));
-  app.use('/uploads/images', express.static(path.join(uploadsDir, 'images')));
-  app.use('/uploads/audio', express.static(path.join(uploadsDir, 'audio')));
+
+  // 确保子目录存在
+  const imageDir = path.join(uploadsDir, 'images');
+  const audioDir = path.join(uploadsDir, 'audio');
+  const filesDir = path.join(uploadsDir, 'files');
+  
+  if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
+  if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
+  if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
+
+  app.use('/uploads/images', express.static(imageDir));
+  app.use('/uploads/audio', express.static(audioDir));
+  app.use('/uploads/files', express.static(filesDir));
 
   setupAuth(app);
 
