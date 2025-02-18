@@ -69,8 +69,13 @@ export function registerRoutes(app: Express): Server {
   }
 
   // 配置静态文件服务
-  app.use('/uploads', express.static(uploadsDir));
-  app.use('/uploads/files', express.static(filesDir));
+  app.use('/uploads', express.static(uploadsDir, {
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }));
+  app.use('/uploads/files', express.static(path.join(uploadsDir, 'files')));
   app.use('/uploads/images', express.static(path.join(uploadsDir, 'images')));
   app.use('/uploads/audio', express.static(path.join(uploadsDir, 'audio')));
 
