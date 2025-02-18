@@ -79,7 +79,7 @@ export function registerRoutes(app: Express): Server {
       res.setHeader('Expires', '0');
     }
   }));
-  
+
   if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
   if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
   if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
@@ -118,11 +118,99 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Create flashcard - Step 1: Initialize
-  app.post("/api/flashcards/init", requireAdmin, async (req, res) => {
-    const flashcardId = uuidv4();
-    console.log('Initializing flashcard creation with ID:', flashcardId);
-    res.json({ flashcardId });
+  // Bulk upload flashcards for a lesson
+  app.post("/api/flashcards/bulk-upload/:lessonId", requireAdmin, upload.fields([
+    { name: 'audio', maxCount: 50 },
+    { name: 'images', maxCount: 50 }
+  ]), async (req, res) => {
+    try {
+      const { lessonId } = req.params;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      const audioFiles = files.audio || [];
+      const imageFiles = files.images || [];
+
+      // Get base names of audio files (without extension)
+      const audioBaseNames = audioFiles.map(file => 
+        path.basename(file.originalname, path.extname(file.originalname))
+      );
+
+      // Match images with same base names
+      const matchedPairs = audioFiles.map(audioFile => {
+        const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
+        const matchingImage = imageFiles.find(imgFile => 
+          path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
+        );
+        return { audioFile, matchingImage };
+      }).filter(pair => pair.matchingImage);
+
+      if (matchedPairs.length === 0) {
+        return res.status(400).json({ error: "No matching audio-image pairs found" });
+      }
+
+      // Process each pair
+      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
+        try {
+          // Process correct image
+          await processImage(matchingImage);
+
+          // Get 3 random different images
+          const otherImages = imageFiles
+            .filter(img => img !== matchingImage)
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 3);
+
+          // Process other images
+          await Promise.all(otherImages.map(img => processImage(img)));
+
+          // Upload all files to storage
+          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+          const allImages = [matchingImage, ...otherImages];
+          const imageUrls = await Promise.all(allImages.map(file => 
+            uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
+          ));
+
+          // Create flashcard with random position for correct answer
+          const correctImageIndex = Math.floor(Math.random() * 4);
+          const shuffledImageUrls = [...imageUrls];
+          [shuffledImageUrls[0], shuffledImageUrls[correctImageIndex]] = 
+            [shuffledImageUrls[correctImageIndex], shuffledImageUrls[0]];
+
+          const [flashcard] = await db.insert(flashcards).values({
+            lessonId: parseInt(lessonId),
+            audioUrl,
+            imageChoices: shuffledImageUrls,
+            correctImageIndex
+          }).returning();
+
+          return {
+            success: true,
+            flashcard,
+            audioName: path.basename(audioFile.originalname)
+          };
+        } catch (error) {
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: error instanceof Error ? error.message : "Unknown error"
+          };
+        }
+      }));
+
+      res.json({
+        total: matchedPairs.length,
+        successful: results.filter(r => r.success).length,
+        failed: results.filter(r => !r.success).length,
+        results
+      });
+
+    } catch (error) {
+      console.error('Bulk upload error:', error);
+      res.status(500).json({ 
+        error: "Failed to process files",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
   });
 
   // Image processing middleware
@@ -619,7 +707,7 @@ export function registerRoutes(app: Express): Server {
       // 生成新的 ETag
       const timestamp = Date.now();
       const etag = `W/"files-${timestamp}"`;
-      
+
       // 设置强制刷新的头部
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate, private',
@@ -630,10 +718,10 @@ export function registerRoutes(app: Express): Server {
 
       // 检查客户端的 If-None-Match 头部
       const clientEtag = req.headers['if-none-match'];
-      
+
       // 总是获取最新数据
       const filesList = await db.select().from(files);
-      
+
       // 强制返回新数据，不返回 304
       res.status(200).json(filesList);
     } catch (error) {
@@ -735,7 +823,7 @@ export function registerRoutes(app: Express): Server {
             ];
 
             console.log('尝试删除物理文件，检查路径:', possiblePaths);
-            
+
             let fileDeleted = false;
             for (const filePath of possiblePaths) {
               if (fs.existsSync(filePath)) {
