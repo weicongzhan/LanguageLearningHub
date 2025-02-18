@@ -1,0 +1,305 @@
+p/uploads
+Generated filename: 1-1-1.png
+File destination: /tmp/uploads
+Generated filename: 1-1-1.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-2.png
+File destination: /tmp/uploads
+Generated filename: 1-1-2.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-3.png
+File destination: /tmp/uploads
+Generated filename: 1-1-3.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-4.png
+File destination: /tmp/uploads
+Generated filename: 1-1-4.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-5.png
+File destination: /tmp/uploads
+Generated filename: 1-1-5.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-6.png
+File destination: /tmp/uploads
+Generated filename: 1-1-6.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-7.png
+File destination: /tmp/uploads
+Generated filename: 1-1-7.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-1.png
+File destination: /tmp/uploads
+Generated filename: 1-2-1.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-2.png
+File destination: /tmp/uploads
+Generated filename: 1-2-2.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-3.png
+File destination: /tmp/uploads
+Generated filename: 1-2-3.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-4.png
+File destination: /tmp/uploads
+Generated filename: 1-2-4.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-5.png
+File destination: /tmp/uploads
+Generated filename: 1-2-5.mp3
+开始处理配对的音频和图片文件...
+匹配到的文件对: [
+  {
+    audio: '1-1-1.mp3',
+    image: '1-1-1.png',
+    otherImages: [ '1-1-3.png', '1-1-6.png', '1-2-5.png' ]
+  },
+  {
+    audio: '1-1-2.mp3',
+    image: '1-1-2.png',
+    otherImages: [ '1-1-1.png', '1-1-7.png', '1-2-1.png' ]
+  },
+  {
+    audio: '1-1-3.mp3',
+    image: '1-1-3.png',
+    otherImages: [ '1-1-2.png', '1-1-1.png', '1-1-6.png' ]
+  },
+  {
+    audio: '1-1-4.mp3',
+    image: '1-1-4.png',
+    otherImages: [ '1-2-1.png', '1-1-5.png', '1-2-5.png' ]
+  },
+  {
+    audio: '1-1-5.mp3',
+    image: '1-1-5.png',
+    otherImages: [ '1-1-1.png', '1-1-7.png', '1-1-4.png' ]
+  },
+  {
+    audio: '1-1-6.mp3',
+    image: '1-1-6.png',
+    otherImages: [ '1-1-4.png', '1-1-7.png', '1-1-3.png' ]
+  },
+  {
+    audio: '1-1-7.mp3',
+    image: '1-1-7.png',
+    otherImages: [ '1-2-4.png', '1-1-1.png', '1-1-6.png' ]
+  },
+  {
+    audio: '1-2-1.mp3',
+    image: '1-2-1.png',
+    otherImages: [ '1-1-6.png', '1-1-3.png', '1-2-4.png' ]
+  },
+  {
+    audio: '1-2-2.mp3',
+    image: '1-2-2.png',
+    otherImages: [ '1-2-1.png', '1-1-4.png', '1-1-5.png' ]
+  },
+  {
+    audio: '1-2-3.mp3',
+    image: '1-2-3.png',
+    otherImages: [ '1-1-4.png', '1-2-1.png', '1-1-1.png' ]
+  },
+  {
+    audio: '1-2-4.mp3',
+    image: '1-2-4.png',
+    otherImages: [ '1-2-5.png', '1-1-2.png', '1-1-4.png' ]
+  },
+  {
+    audio: '1-2-5.mp3',
+    image: '1-2-5.png',
+    otherImages: [ '1-1-1.png', '1-1-2.png', '1-1-5.png' ]
+  }
+]
+处理文件对: {
+  audio: '1-1-1.mp3',
+  image: '1-1-1.png',
+  otherImages: [ '1-1-3.png', '1-1-6.png', '1-2-5.png' ]
+}
+处理文件对: {
+  audio: '1-1-2.mp3',
+  image: '1-1-2.png',
+  otherImages: [ '1-1-1.png', '1-1-7.png', '1-2-1.png' ]
+}
+处理文件对: {
+  audio: '1-1-3.mp3',
+  image: '1-1-3.png',
+  otherImages: [ '1-1-2.png', '1-1-1.png', '1-1-6.png' ]
+}
+处理文件对: {
+  audio: '1-1-4.mp3',
+  image: '1-1-4.png',
+  otherImages: [ '1-2-1.png', '1-1-5.png', '1-2-5.png' ]
+}
+处理文件对: {
+  audio: '1-1-5.mp3',
+  image: '1-1-5.png',
+  otherImages: [ '1-1-1.png', '1-1-7.png', '1-1-4.png' ]
+}
+处理文件对: {
+  audio: '1-1-6.mp3',
+  image: '1-1-6.png',
+  otherImages: [ '1-1-4.png', '1-1-7.png', '1-1-3.png' ]
+}
+处理文件对: {
+  audio: '1-1-7.mp3',
+  image: '1-1-7.png',
+  otherImages: [ '1-2-4.png', '1-1-1.png', '1-1-6.png' ]
+}
+处理文件对: {
+  audio: '1-2-1.mp3',
+  image: '1-2-1.png',
+  otherImages: [ '1-1-6.png', '1-1-3.png', '1-2-4.png' ]
+}
+处理文件对: {
+  audio: '1-2-2.mp3',
+  image: '1-2-2.png',
+  otherImages: [ '1-2-1.png', '1-1-4.png', '1-1-5.png' ]
+}
+处理文件对: {
+  audio: '1-2-3.mp3',
+  image: '1-2-3.png',
+  otherImages: [ '1-1-4.png', '1-2-1.png', '1-1-1.png' ]
+}
+处理文件对: {
+  audio: '1-2-4.mp3',
+  image: '1-2-4.png',
+  otherImages: [ '1-2-5.png', '1-1-2.png', '1-1-4.png' ]
+}
+处理文件对: {
+  audio: '1-2-5.mp3',
+  image: '1-2-5.png',
+  otherImages: [ '1-1-1.png', '1-1-2.png', '1-1-5.png' ]
+}
+图片处理完成: /tmp/uploads/1-1-2.png
+图片处理完成: /tmp/uploads/1-1-1.png
+图片处理完成: /tmp/uploads/1-1-3.png
+图片处理完成: /tmp/uploads/1-1-4.png
+图片处理完成: /tmp/uploads/1-1-5.png
+图片处理完成: /tmp/uploads/1-1-6.png
+图片处理完成: /tmp/uploads/1-1-7.png
+图片处理完成: /tmp/uploads/1-2-2.png
+图片处理完成: /tmp/uploads/1-2-1.png
+图片处理完成: /tmp/uploads/1-2-3.png
+图片处理完成: /tmp/uploads/1-2-4.png
+图片处理完成: /tmp/uploads/1-2-5.png
+音频上传完成: /lessons/8/audio/1-1-3.mp3
+音频上传完成: /lessons/8/audio/1-1-4.mp3
+音频上传完成: /lessons/8/audio/1-1-2.mp3
+音频上传完成: /lessons/8/audio/1-1-1.mp3
+音频上传完成: /lessons/8/audio/1-1-5.mp3
+音频上传完成: /lessons/8/audio/1-2-2.mp3
+音频上传完成: /lessons/8/audio/1-1-6.mp3
+音频上传完成: /lessons/8/audio/1-2-1.mp3
+音频上传完成: /lessons/8/audio/1-2-5.mp3
+音频上传完成: /lessons/8/audio/1-1-7.mp3
+音频上传完成: /lessons/8/audio/1-2-3.mp3
+音频上传完成: /lessons/8/audio/1-2-4.mp3
+正确图片上传完成: /lessons/8/images/1-1-3.png
+正确图片上传完成: /lessons/8/images/1-1-4.png
+正确图片上传完成: /lessons/8/images/1-1-1.png
+正确图片上传完成: /lessons/8/images/1-1-2.png
+正确图片上传完成: /lessons/8/images/1-1-5.png
+正确图片上传完成: /lessons/8/images/1-2-2.png
+正确图片上传完成: /lessons/8/images/1-2-1.png
+正确图片上传完成: /lessons/8/images/1-1-6.png
+正确图片上传完成: /lessons/8/images/1-2-5.png
+正确图片上传完成: /lessons/8/images/1-1-7.png
+正确图片上传完成: /lessons/8/images/1-2-3.png
+正确图片上传完成: /lessons/8/images/1-2-4.png
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-1.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 2)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-5.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 3)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-3.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 0)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-1.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 1)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-1.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 4)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-2-1.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 8)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-6.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 7)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-4.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-1.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 11)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-2-4.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 6)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-1-4.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 9)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+处理闪卡时出错: Error: Input file is missing: /tmp/uploads/1-2-5.png
+    at Sharp.metadata (/home/runner/workspace/node_modules/sharp/lib/input.js:487:17)
+    at processImage (/home/runner/workspace/server/routes.ts:213:34)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:52)
+    at Array.map (<anonymous>)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:454:41)
+    at async Promise.all (index 10)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:424:23)
+10:58:03 PM [express] POST /api/flashcards/bulk-import 200 in 4469ms :: {"imported":0,"results":[{"su…
+10:58:03 PM [express] GET /api/lessons 200 in 121ms :: [{"id":8,"title":"ff","description":"dd","lang…
