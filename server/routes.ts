@@ -508,18 +508,10 @@ export function registerRoutes(app: Express): Server {
           }
       });
 
-      parser.on('end', () => {
-        // Clean up uploaded file
-        fs.unlinkSync(req.file.path);
-
-        res.json({
-          imported,
-          results
-        });
+      res.json({
+        imported,
+        results
       });
-
-      fileContent.pipe(parser);
-
 
     } catch (error) {
       console.error('Bulk import error:', error);
