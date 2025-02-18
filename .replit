@@ -45,4 +45,4 @@ args = "npm run dev"
 waitForPort = 5000
 
 [objectStorage]
-defaultBucketID = "replit-objstore-1c98a7f5-de07-451d-94c2-a74bc060ba6a"
+defaultBucketID = "replit-objstore-0bf920d9-fe6f-4c06-9b90-3892a12ee85a"
