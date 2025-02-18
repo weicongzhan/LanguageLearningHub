@@ -497,7 +497,6 @@ export function registerRoutes(app: Express): Server {
               error: error instanceof Error ? error.message : "Unknown error"
             };
           }
-        }
       }));
 
       res.json({
