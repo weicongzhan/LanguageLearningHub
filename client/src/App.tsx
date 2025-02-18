@@ -65,7 +65,7 @@ function Router() {
       {/* Header with logout button */}
       <header className="bg-background border-b py-4 px-6 flex justify-between items-center">
         <Link href="/" className="flex flex-col items-center">
-          <img src="/logo.png" alt="Logo" className="w-32 h-auto mb-1" />
+          <img src="/logo.png" alt="Logo" className="w-28 h-auto mb-0.5" />
           <span className="text-xl font-semibold hover:opacity-80">智慧树语言中心</span>
         </Link>
         <Button variant="outline" onClick={handleLogout}>
