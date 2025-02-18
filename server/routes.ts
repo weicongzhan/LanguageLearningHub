@@ -60,13 +60,16 @@ const upload = multer({
 export function registerRoutes(app: Express): Server {
   // 确保uploads目录和子目录存在
   const uploadsDir = path.join(process.cwd(), 'uploads');
+  const imageDir = path.join(uploadsDir, 'images');
+  const audioDir = path.join(uploadsDir, 'audio');
   const filesDir = path.join(uploadsDir, 'files');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-  }
-  if (!fs.existsSync(filesDir)) {
-    fs.mkdirSync(filesDir);
-  }
+
+  // 创建所有必需的目录
+  [uploadsDir, imageDir, audioDir, filesDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
 
   // 配置静态文件服务
   app.use('/uploads', express.static(uploadsDir, {
@@ -76,11 +79,6 @@ export function registerRoutes(app: Express): Server {
       res.setHeader('Expires', '0');
     }
   }));
-
-  // 确保子目录存在
-  const imageDir = path.join(uploadsDir, 'images');
-  const audioDir = path.join(uploadsDir, 'audio');
-  const filesDir = path.join(uploadsDir, 'files');
   
   if (!fs.existsSync(imageDir)) fs.mkdirSync(imageDir, { recursive: true });
   if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
