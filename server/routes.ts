@@ -490,12 +490,14 @@ export function registerRoutes(app: Express): Server {
             audioName: path.basename(audioFile.originalname)
           };
         } catch (error) {
+          console.error('处理闪卡时出错:', error);
           return {
             success: false,
             audioName: path.basename(audioFile.originalname),
             error: error instanceof Error ? error.message : "Unknown error"
           };
         }
+      }));
       }));
 
       res.json({
