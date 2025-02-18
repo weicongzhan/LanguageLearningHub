@@ -71,6 +71,8 @@ export function registerRoutes(app: Express): Server {
   // 配置静态文件服务
   app.use('/uploads', express.static(uploadsDir));
   app.use('/uploads/files', express.static(filesDir));
+  app.use('/uploads/images', express.static(path.join(uploadsDir, 'images')));
+  app.use('/uploads/audio', express.static(path.join(uploadsDir, 'audio')));
 
   setupAuth(app);
 
