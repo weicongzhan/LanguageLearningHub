@@ -371,8 +371,8 @@ export default function AdminLessons() {
                 <div>
                   <Label htmlFor="files">选择文件</Label>
                   <Input
-                    id="file"
-                    name="file"
+                    id="files"
+                    name="files"
                     type="file"
                     multiple
                     required
