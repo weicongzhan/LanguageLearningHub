@@ -371,7 +371,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Add bulk import endpoint
-  app.post("/api/flashcards/bulk-import", requireAdmin, upload.single('file'), async (req, res) => {
+  app.post("/api/flashcards/bulk-import", requireAdmin, upload.array('files', 100), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
