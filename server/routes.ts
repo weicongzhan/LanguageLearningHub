@@ -442,71 +442,46 @@ export function registerRoutes(app: Express): Server {
           };
         }
       }));
-          try {
-            // Validate required fields
-            if (!record.lessonId || !record.audioUrl || !record.imageChoices || !record.correctImageIndex) {
-              results.push({
-                success: false,
-                error: "Missing required fields",
-                record
-              });
-              return;
-            }
+          // Process matched pairs
+      const results = await Promise.all(matchedPairs.map(async ({ audioFile, matchingImage }) => {
+        if (!matchingImage) {
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: "No matching image found"
+          };
+        }
 
-            // Parse and validate data
-            const lessonId = parseInt(record.lessonId);
-            const imageChoices = JSON.parse(record.imageChoices);
-            const correctImageIndex = parseInt(record.correctImageIndex);
+        try {
+          // Process image
+          await processImage(matchingImage);
 
-            if (isNaN(lessonId) || !Array.isArray(imageChoices) || isNaN(correctImageIndex)) {
-              results.push({
-                success: false,
-                error: "Invalid data format",
-                record
-              });
-              return;
-            }
+          // Upload files
+          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
+          const imageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
 
-            // Check if lesson exists
-            const [lesson] = await db
-              .select()
-              .from(lessons)
-              .where(eq(lessons.id, lessonId))
-              .limit(1);
+          // Create flashcard
+          const [flashcard] = await db.insert(flashcards).values({
+            lessonId: parseInt(req.body.lessonId),
+            audioUrl,
+            imageChoices: [imageUrl],
+            correctImageIndex: 0
+          }).returning();
 
-            if (!lesson) {
-              results.push({
-                success: false,
-                error: `Lesson with ID ${lessonId} not found`,
-                record
-              });
-              return;
-            }
-
-            // Create flashcard
-            const [flashcard] = await db.insert(flashcards)
-              .values({
-                lessonId,
-                audioUrl: record.audioUrl,
-                imageChoices,
-                correctImageIndex
-              })
-              .returning();
-
-            results.push({
-              success: true,
-              flashcardId: flashcard.id
-            });
-
-            imported++;
-          } catch (error) {
-            results.push({
-              success: false,
-              error: error instanceof Error ? error.message : "Unknown error",
-              record
-            });
-          }
-      });
+          imported++;
+          return {
+            success: true,
+            flashcard,
+            audioName: path.basename(audioFile.originalname)
+          };
+        } catch (error) {
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: error instanceof Error ? error.message : "Unknown error"
+          };
+        }
+      }));
 
       res.json({
         imported,
