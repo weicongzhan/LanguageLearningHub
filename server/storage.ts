@@ -12,17 +12,38 @@ if (!fs.existsSync(TEMP_DIR)) {
 }
 
 export async function uploadFile(localPath: string, fileName: string): Promise<string> {
-  const fileContent = await fs.promises.readFile(localPath);
-  const objectKey = fileName.startsWith('/') ? fileName.slice(1) : fileName;
-  
-  // 上传到对象存储
-  await client.put(objectKey, fileContent);
-  
-  // 删除临时文件
-  await fs.promises.unlink(localPath);
-  
-  // 返回对象URL
-  return `/${objectKey}`;
+  try {
+    const fileContent = await fs.promises.readFile(localPath);
+    const objectKey = fileName.startsWith('/') ? fileName.slice(1) : fileName;
+    
+    console.log('正在上传文件:', {
+      localPath,
+      objectKey
+    });
+
+    // 上传到对象存储
+    await client.put(objectKey, fileContent);
+    
+    // 验证文件是否成功上传
+    const exists = await client.head(objectKey);
+    if (!exists) {
+      throw new Error(`File upload failed: ${objectKey}`);
+    }
+
+    console.log('文件上传成功:', objectKey);
+    
+    // 删除临时文件
+    if (fs.existsSync(localPath)) {
+      await fs.promises.unlink(localPath);
+      console.log('临时文件已删除:', localPath);
+    }
+    
+    // 返回对象URL
+    return `/${objectKey}`;
+  } catch (error) {
+    console.error('文件上传失败:', error);
+    throw error;
+  }
 }
 
 export async function deleteFile(fileName: string): Promise<void> {

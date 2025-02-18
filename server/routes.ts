@@ -438,32 +438,33 @@ export function registerRoutes(app: Express): Server {
         });
 
         try {
-          // Process image
-          await processImage(matchingImage);
+          try {
+            // Process image and wait for it to complete
+            await processImage(matchingImage);
+            console.log('图片处理完成:', matchingImage.path);
 
-          // Upload files with absolute paths
-          const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-          const correctImageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
+            // Upload audio file
+            const audioUrl = await uploadFile(audioFile.path, `audio/${path.basename(audioFile.originalname)}`);
+            console.log('音频上传完成:', audioUrl);
 
-          // Upload other images for choices
-          const otherImageUrls = await Promise.all(otherImages.map(file =>
-            uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
-          ));
+            // Upload correct image
+            const correctImageUrl = await uploadFile(matchingImage.path, `images/${path.basename(matchingImage.originalname)}`);
+            console.log('正确图片上传完成:', correctImageUrl);
 
-          // Randomly insert correct image into choices
-          const correctIndex = Math.floor(Math.random() * 4);
-          const imageChoices = [...otherImageUrls];
-          imageChoices.splice(correctIndex, 0, correctImageUrl);
+            // Process and upload other images
+            await Promise.all(otherImages.map(img => processImage(img)));
+            const otherImageUrls = await Promise.all(otherImages.map(file =>
+              uploadFile(file.path, `images/${path.basename(file.originalname)}`)
+            ));
+            console.log('其他图片上传完成:', otherImageUrls);
 
-          console.log('File uploads successful:', {
-            audioUrl,
-            correctImageUrl,
-            otherImageUrls,
-            correctIndex
-          });
+            // Randomly insert correct image into choices
+            const correctIndex = Math.floor(Math.random() * 4);
+            const imageChoices = [...otherImageUrls];
+            imageChoices.splice(correctIndex, 0, correctImageUrl);
 
-          console.log('准备创建闪卡:', {
-            lessonId: newLesson.id,
+            console.log('准备创建闪卡:', {
+              lessonId: newLesson.id,
             audioUrl,
             imageChoices,
             correctImageIndex: correctIndex
