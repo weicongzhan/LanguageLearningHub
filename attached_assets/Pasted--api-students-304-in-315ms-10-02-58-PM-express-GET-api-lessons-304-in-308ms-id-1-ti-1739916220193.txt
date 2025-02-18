@@ -1,0 +1,63 @@
+/api/students 304 in 315ms :: []
+10:02:58 PM [express] GET /api/lessons 304 in 308ms :: [{"id":1,"title":"lesson-1","description":"nla…
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916197552-923483.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198145-789387.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198167-463594.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198952-371996.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198952-780977.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198954-583720.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916198954-47797.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916199333-744529.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916199333-137327.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200082-389553.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200082-195540.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200386-38003.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200413-697955.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200721-967832.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200748-171892.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200917-398232.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916200918-611515.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201086-270559.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201113-273392.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201285-77166.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201312-921713.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201512-439332.mp3
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201512-726353.png
+File destination: /tmp/uploads
+Generated filename: undefined-file-1739916201705-854843.mp3
+Bulk import error: TypeError: Cannot read properties of undefined (reading 'path')
+    at <anonymous> (/home/runner/workspace/server/routes.ts:384:52)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at done (/home/runner/workspace/node_modules/multer/lib/make-middleware.js:45:7)
+    at indicateDone (/home/runner/workspace/node_modules/multer/lib/make-middleware.js:49:68)
+    at /home/runner/workspace/node_modules/multer/lib/make-middleware.js:155:11
+    at WriteStream.<anonymous> (/home/runner/workspace/node_modules/multer/storage/disk.js:43:9)
+    at WriteStream.emit (node:events:530:35)
+    at finish (node:internal/streams/writable:955:10)
+    at node:internal/streams/writable:936:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+10:03:21 PM [express] POST /api/flashcards/bulk-import 500 in 4419ms :: {"error":"Failed to process C…
