@@ -1,0 +1,174 @@
+ GET /api/lessons 304 in 123ms :: []
+File destination: /tmp/uploads
+Generated filename: 1-1-1.png
+File destination: /tmp/uploads
+Generated filename: 1-1-1.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-2.png
+File destination: /tmp/uploads
+Generated filename: 1-1-2.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-3.png
+File destination: /tmp/uploads
+Generated filename: 1-1-3.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-4.png
+File destination: /tmp/uploads
+Generated filename: 1-1-4.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-5.png
+File destination: /tmp/uploads
+Generated filename: 1-1-5.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-6.png
+File destination: /tmp/uploads
+Generated filename: 1-1-6.mp3
+File destination: /tmp/uploads
+Generated filename: 1-1-7.png
+File destination: /tmp/uploads
+Generated filename: 1-1-7.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-1.png
+File destination: /tmp/uploads
+Generated filename: 1-2-1.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-2.png
+File destination: /tmp/uploads
+Generated filename: 1-2-2.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-3.png
+File destination: /tmp/uploads
+Generated filename: 1-2-3.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-4.png
+File destination: /tmp/uploads
+Generated filename: 1-2-4.mp3
+File destination: /tmp/uploads
+Generated filename: 1-2-5.png
+File destination: /tmp/uploads
+Generated filename: 1-2-5.mp3
+开始处理配对的音频和图片文件...
+匹配到的文件对: [
+  {
+    audio: '1-1-1.mp3',
+    image: '1-1-1.png',
+    otherImages: [ '1-2-5.png', '1-2-3.png', '1-1-2.png' ]
+  },
+  {
+    audio: '1-1-2.mp3',
+    image: '1-1-2.png',
+    otherImages: [ '1-2-5.png', '1-1-4.png', '1-2-1.png' ]
+  },
+  {
+    audio: '1-1-3.mp3',
+    image: '1-1-3.png',
+    otherImages: [ '1-1-6.png', '1-1-7.png', '1-2-3.png' ]
+  },
+  {
+    audio: '1-1-4.mp3',
+    image: '1-1-4.png',
+    otherImages: [ '1-1-1.png', '1-1-6.png', '1-1-7.png' ]
+  },
+  {
+    audio: '1-1-5.mp3',
+    image: '1-1-5.png',
+    otherImages: [ '1-1-1.png', '1-2-3.png', '1-2-2.png' ]
+  },
+  {
+    audio: '1-1-6.mp3',
+    image: '1-1-6.png',
+    otherImages: [ '1-2-5.png', '1-1-4.png', '1-2-2.png' ]
+  },
+  {
+    audio: '1-1-7.mp3',
+    image: '1-1-7.png',
+    otherImages: [ '1-1-5.png', '1-2-1.png', '1-1-3.png' ]
+  },
+  {
+    audio: '1-2-1.mp3',
+    image: '1-2-1.png',
+    otherImages: [ '1-1-1.png', '1-1-3.png', '1-2-5.png' ]
+  },
+  {
+    audio: '1-2-2.mp3',
+    image: '1-2-2.png',
+    otherImages: [ '1-1-1.png', '1-1-4.png', '1-2-4.png' ]
+  },
+  {
+    audio: '1-2-3.mp3',
+    image: '1-2-3.png',
+    otherImages: [ '1-2-4.png', '1-2-2.png', '1-2-1.png' ]
+  },
+  {
+    audio: '1-2-4.mp3',
+    image: '1-2-4.png',
+    otherImages: [ '1-1-7.png', '1-1-4.png', '1-1-1.png' ]
+  },
+  {
+    audio: '1-2-5.mp3',
+    image: '1-2-5.png',
+    otherImages: [ '1-1-4.png', '1-1-7.png', '1-2-4.png' ]
+  }
+]
+处理文件对: {
+  audio: '1-1-1.mp3',
+  image: '1-1-1.png',
+  otherImages: [ '1-2-5.png', '1-2-3.png', '1-1-2.png' ]
+}
+处理文件对: {
+  audio: '1-1-2.mp3',
+  image: '1-1-2.png',
+  otherImages: [ '1-2-5.png', '1-1-4.png', '1-2-1.png' ]
+}
+处理文件对: {
+  audio: '1-1-3.mp3',
+  image: '1-1-3.png',
+  otherImages: [ '1-1-6.png', '1-1-7.png', '1-2-3.png' ]
+}
+处理文件对: {
+  audio: '1-1-4.mp3',
+  image: '1-1-4.png',
+  otherImages: [ '1-1-1.png', '1-1-6.png', '1-1-7.png' ]
+}
+处理文件对: {
+  audio: '1-1-5.mp3',
+  image: '1-1-5.png',
+  otherImages: [ '1-1-1.png', '1-2-3.png', '1-2-2.png' ]
+}
+处理文件对: {
+  audio: '1-1-6.mp3',
+  image: '1-1-6.png',
+  otherImages: [ '1-2-5.png', '1-1-4.png', '1-2-2.png' ]
+}
+处理文件对: {
+  audio: '1-1-7.mp3',
+  image: '1-1-7.png',
+  otherImages: [ '1-1-5.png', '1-2-1.png', '1-1-3.png' ]
+}
+处理文件对: {
+  audio: '1-2-1.mp3',
+  image: '1-2-1.png',
+  otherImages: [ '1-1-1.png', '1-1-3.png', '1-2-5.png' ]
+}
+处理文件对: {
+  audio: '1-2-2.mp3',
+  image: '1-2-2.png',
+  otherImages: [ '1-1-1.png', '1-1-4.png', '1-2-4.png' ]
+}
+处理文件对: {
+  audio: '1-2-3.mp3',
+  image: '1-2-3.png',
+  otherImages: [ '1-2-4.png', '1-2-2.png', '1-2-1.png' ]
+}
+处理文件对: {
+  audio: '1-2-4.mp3',
+  image: '1-2-4.png',
+  otherImages: [ '1-1-7.png', '1-1-4.png', '1-1-1.png' ]
+}
+处理文件对: {
+  audio: '1-2-5.mp3',
+  image: '1-2-5.png',
+  otherImages: [ '1-1-4.png', '1-1-7.png', '1-2-4.png' ]
+}
+10:41:52 PM [express] POST /api/flashcards/bulk-import 200 in 7963ms :: {"imported":0,"results":[{"su…
+10:41:52 PM [express] GET /api/lessons 200 in 121ms :: [{"id":6,"title":"gh","description":"ssss","la…
