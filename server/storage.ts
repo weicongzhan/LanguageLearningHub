@@ -6,11 +6,20 @@ const storage = new Client();
 
 export async function uploadFile(localPath: string, fileName: string): Promise<string> {
   const fileContent = await fs.promises.readFile(localPath);
-  await storage.upload(fileName, fileContent);
-  const url = await storage.getSignedUrl(fileName);
-  return url;
+  const result = await storage.uploadFromBuffer(fileName, fileContent);
+  if (!result.ok) {
+    throw new Error(result.error);
+  }
+  const urlResult = await storage.getSignedUrl(fileName);
+  if (!urlResult.ok) {
+    throw new Error(urlResult.error);
+  }
+  return urlResult.value;
 }
 
 export async function deleteFile(fileName: string): Promise<void> {
-  await storage.delete(fileName);
+  const result = await storage.delete(fileName);
+  if (!result.ok) {
+    throw new Error(result.error);
+  }
 }
