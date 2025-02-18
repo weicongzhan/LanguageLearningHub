@@ -438,65 +438,64 @@ export function registerRoutes(app: Express): Server {
         });
 
         try {
-          try {
-            // Process image and wait for it to complete
-            await processImage(matchingImage);
-            console.log('图片处理完成:', matchingImage.path);
+          // Process image and wait for it to complete
+          await processImage(matchingImage);
+          console.log('图片处理完成:', matchingImage.path);
 
-            // Upload audio file
-            const audioUrl = await uploadFile(audioFile.path, `audio/${path.basename(audioFile.originalname)}`);
-            console.log('音频上传完成:', audioUrl);
+          // Upload audio file
+          const audioUrl = await uploadFile(audioFile.path, `lessons/${newLesson.id}/audio/${path.basename(audioFile.originalname)}`);
+          console.log('音频上传完成:', audioUrl);
 
-            // Upload correct image
-            const correctImageUrl = await uploadFile(matchingImage.path, `images/${path.basename(matchingImage.originalname)}`);
-            console.log('正确图片上传完成:', correctImageUrl);
+          // Upload correct image
+          const correctImageUrl = await uploadFile(matchingImage.path, `lessons/${newLesson.id}/images/${path.basename(matchingImage.originalname)}`);
+          console.log('正确图片上传完成:', correctImageUrl);
 
-            // Process and upload other images
-            await Promise.all(otherImages.map(img => processImage(img)));
-            const otherImageUrls = await Promise.all(otherImages.map(file =>
-              uploadFile(file.path, `images/${path.basename(file.originalname)}`)
-            ));
-            console.log('其他图片上传完成:', otherImageUrls);
+          // Process and upload other images
+          await Promise.all(otherImages.map(img => processImage(img)));
+          const otherImageUrls = await Promise.all(otherImages.map(file =>
+            uploadFile(file.path, `lessons/${newLesson.id}/images/${path.basename(file.originalname)}`)
+          ));
+          console.log('其他图片上传完成:', otherImageUrls);
 
-            // Randomly insert correct image into choices
-            const correctIndex = Math.floor(Math.random() * 4);
-            const imageChoices = [...otherImageUrls];
-            imageChoices.splice(correctIndex, 0, correctImageUrl);
+          // Randomly insert correct image into choices
+          const correctIndex = Math.floor(Math.random() * 4);
+          const imageChoices = [...otherImageUrls];
+          imageChoices.splice(correctIndex, 0, correctImageUrl);
 
-            console.log('准备创建闪卡:', {
-              lessonId: newLesson.id,
-              audioUrl,
-              imageChoices,
-              correctImageIndex: correctIndex
-            });
+          console.log('准备创建闪卡:', {
+            lessonId: newLesson.id,
+            audioUrl,
+            imageChoices,
+            correctImageIndex: correctIndex
+          });
 
-            // Create flashcard with error handling
-            const [flashcard] = await db.insert(flashcards).values({
-              lessonId: newLesson.id,
-              audioUrl,
-              imageChoices,
-              correctImageIndex: correctIndex
-            }).returning();
+          // Create flashcard with error handling
+          const [flashcard] = await db.insert(flashcards).values({
+            lessonId: newLesson.id,
+            audioUrl,
+            imageChoices,
+            correctImageIndex: correctIndex
+          }).returning();
 
-            if (!flashcard) {
-              throw new Error('Failed to create flashcard record');
-            }
-
-            console.log('闪卡创建成功:', flashcard);
-            imported++;
-            return {
-              success: true,
-              flashcard,
-              audioName: path.basename(audioFile.originalname)
-            };
-          } catch (error) {
-            console.error('处理闪卡时出错:', error);
-            return {
-              success: false,
-              audioName: path.basename(audioFile.originalname),
-              error: error instanceof Error ? error.message : "Unknown error"
-            };
+          if (!flashcard) {
+            throw new Error('Failed to create flashcard record');
           }
+
+          console.log('闪卡创建成功:', flashcard);
+          imported++;
+          return {
+            success: true,
+            flashcard,
+            audioName: path.basename(audioFile.originalname)
+          };
+        } catch (error) {
+          console.error('处理闪卡时出错:', error);
+          return {
+            success: false,
+            audioName: path.basename(audioFile.originalname),
+            error: error instanceof Error ? error.message : "Unknown error"
+          };
+        }
       }));
 
       res.json({
