@@ -62,10 +62,16 @@ export function registerRoutes(app: Express): Server {
 
   // 配置静态文件服务
   app.use('/lessons', express.static(path.join(uploadsDir, 'lessons'), {
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+    setHeaders: (res, path) => {
+      // 对于图片文件启用缓存
+      if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // 24小时缓存
+      } else {
+        // 音频文件等其他资源不缓存
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
     }
   }));
 
