@@ -335,7 +335,7 @@ export default function AdminLessons() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const files = formData.get('files') as FileList;
+                const files = formData.get('file') as FileList;
                 const title = formData.get('title') as string;
                 const description = formData.get('description') as string;
 
@@ -371,8 +371,8 @@ export default function AdminLessons() {
                 <div>
                   <Label htmlFor="files">选择文件</Label>
                   <Input
-                    id="files"
-                    name="files"
+                    id="file"
+                    name="file"
                     type="file"
                     multiple
                     required
