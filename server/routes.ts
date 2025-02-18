@@ -23,19 +23,12 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const flashcardId = req.params.flashcardId;
+    // 保留原始文件名，只添加时间戳防止重名
+    const timestamp = Date.now();
+    const originalName = path.basename(file.originalname, path.extname(file.originalname));
     const ext = path.extname(file.originalname);
-    let filename: string;
-
-    if (file.fieldname === 'audio') {
-      filename = `${flashcardId}-${file.fieldname}${ext}`;
-    } else {
-      // For images, add index to make each filename unique
-      const timestamp = Date.now();
-      const randomId = Math.floor(Math.random() * 1000000);
-      filename = `${flashcardId}-${file.fieldname}-${timestamp}-${randomId}${ext}`;
-    }
-
+    const filename = `${originalName}-${timestamp}${ext}`;
+    
     console.log('Generated filename:', filename);
     cb(null, filename);
   }
