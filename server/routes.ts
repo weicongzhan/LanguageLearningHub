@@ -372,16 +372,22 @@ export function registerRoutes(app: Express): Server {
 
   // Add bulk import endpoint
   app.post("/api/flashcards/bulk-import", requireAdmin, upload.array('file', 100), async (req, res) => {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No file uploaded" });
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
     }
 
     const results: any[] = [];
     let imported = 0;
 
     try {
-      // Read and parse CSV file
-      const fileContent = fs.readFileSync(req.file.path, 'utf-8');
+      // 处理上传的文件
+      const files = req.files as Express.Multer.File[];
+      const audioFiles = files.filter(file => file.mimetype.startsWith('audio/'));
+      const imageFiles = files.filter(file => file.mimetype.startsWith('image/'));
+
+      if (audioFiles.length === 0 || imageFiles.length === 0) {
+        return res.status(400).json({ error: "Both audio and image files are required" });
+      }
 
       const parser = csvParser();
       parser.on('data', async (record) => {
