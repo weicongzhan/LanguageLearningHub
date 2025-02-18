@@ -400,7 +400,17 @@ export function registerRoutes(app: Express): Server {
         const matchingImage = imageFiles.find(imgFile => 
           path.basename(imgFile.originalname, path.extname(imgFile.originalname)) === audioBaseName
         );
-        return { audioFile, matchingImage };
+        // Get 3 random different images for choices
+        const otherImages = imageFiles
+          .filter(img => path.basename(img.originalname, path.extname(img.originalname)) !== audioBaseName)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        
+        return { 
+          audioFile, 
+          matchingImage,
+          otherImages
+        };
       });
 
       // Process matched pairs
@@ -419,14 +429,24 @@ export function registerRoutes(app: Express): Server {
 
           // Upload files
           const audioUrl = await uploadFile(audioFile.path, `audio/${uuidv4()}${path.extname(audioFile.originalname)}`);
-          const imageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
+          const correctImageUrl = await uploadFile(matchingImage.path, `images/${uuidv4()}${path.extname(matchingImage.originalname)}`);
+          
+          // Upload other images for choices
+          const otherImageUrls = await Promise.all(otherImages.map(file =>
+            uploadFile(file.path, `images/${uuidv4()}${path.extname(file.originalname)}`)
+          ));
+
+          // Randomly insert correct image into choices
+          const correctIndex = Math.floor(Math.random() * 4);
+          const imageChoices = [...otherImageUrls];
+          imageChoices.splice(correctIndex, 0, correctImageUrl);
 
           // Create flashcard
           const [flashcard] = await db.insert(flashcards).values({
             lessonId: newLesson.id,
             audioUrl,
-            imageChoices: [imageUrl],
-            correctImageIndex: 0
+            imageChoices,
+            correctImageIndex: correctIndex
           }).returning();
 
           imported++;
