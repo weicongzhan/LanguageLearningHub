@@ -296,7 +296,7 @@ export default function AdminLessons() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const files = formData.getAll('files') as File[];
+                const files = formData.getAll('files[]') as File[];
 
                 if (files.length === 0) {
                   toast({
@@ -309,7 +309,9 @@ export default function AdminLessons() {
 
                 try {
                   const formData = new FormData();
-                  formData.append('files', ...files); // Append all files
+                  files.forEach(file => {
+                    formData.append('files', file);
+                  });
 
                   const response = await fetch('/api/flashcards/bulk-import', {
                     method: 'POST',
@@ -341,9 +343,9 @@ export default function AdminLessons() {
                   <Label>文件夹</Label>
                   <Input
                     type="file"
-                    name="files"
-                    accept=".mp3, .jpg, .jpeg, .png" // Add accepted file types
-                    multiple // Allow multiple file selection
+                    name="files[]"
+                    accept=".mp3, .jpg, .jpeg, .png"
+                    multiple
                     required
                   />
                 </div>
