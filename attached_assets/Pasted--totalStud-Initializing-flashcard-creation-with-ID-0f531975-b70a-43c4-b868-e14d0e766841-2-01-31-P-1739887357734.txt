@@ -1,0 +1,74 @@
+,"totalStud…
+Initializing flashcard creation with ID: 0f531975-b70a-43c4-b868-e14d0e766841
+2:01:31 PM [express] POST /api/flashcards/init 200 in 277ms :: {"flashcardId":"0f531975-b70a-43c4-b8…
+File destination: /tmp/uploads
+Generated filename: 0f531975-b70a-43c4-b868-e14d0e766841-audio.mp3
+File destination: /tmp/uploads
+Generated filename: 0f531975-b70a-43c4-b868-e14d0e766841-images-1739887291675-691039.png
+File destination: /tmp/uploads
+Generated filename: 0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292178-513319.png
+File destination: /tmp/uploads
+Generated filename: 0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292377-577347.png
+File destination: /tmp/uploads
+Generated filename: 0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292485-126065.png
+Processing file upload for flashcard: 0f531975-b70a-43c4-b868-e14d0e766841
+Uploaded files: [Object: null prototype] {
+  audio: [
+    {
+      fieldname: 'audio',
+      originalname: 'word_1.mp3',
+      encoding: '7bit',
+      mimetype: 'audio/mpeg',
+      destination: '/tmp/uploads',
+      filename: '0f531975-b70a-43c4-b868-e14d0e766841-audio.mp3',
+      path: '/tmp/uploads/0f531975-b70a-43c4-b868-e14d0e766841-audio.mp3',
+      size: 20972
+    }
+  ],
+  images: [
+    {
+      fieldname: 'images',
+      originalname: '1-1-1.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      destination: '/tmp/uploads',
+      filename: '0f531975-b70a-43c4-b868-e14d0e766841-images-1739887291675-691039.png',
+      path: '/tmp/uploads/0f531975-b70a-43c4-b868-e14d0e766841-images-1739887291675-691039.png',
+      size: 229474
+    },
+    {
+      fieldname: 'images',
+      originalname: '1-1-2.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      destination: '/tmp/uploads',
+      filename: '0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292178-513319.png',
+      path: '/tmp/uploads/0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292178-513319.png',
+      size: 227844
+    },
+    {
+      fieldname: 'images',
+      originalname: '1-1-3.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      destination: '/tmp/uploads',
+      filename: '0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292377-577347.png',
+      path: '/tmp/uploads/0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292377-577347.png',
+      size: 201813
+    },
+    {
+      fieldname: 'images',
+      originalname: '1-1-4.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      destination: '/tmp/uploads',
+      filename: '0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292485-126065.png',
+      path: '/tmp/uploads/0f531975-b70a-43c4-b868-e14d0e766841-images-1739887292485-126065.png',
+      size: 233099
+    }
+  ]
+}
+Upload error: TypeError: storage.upload is not a function
+    at uploadFile (/home/runner/workspace/server/storage.ts:9:17)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:157:24)
+2:01:32 PM [express] POST /api/flashcards/0f531975-b70a-43c4-b868-e14d0e766841/upload 400 in 1384ms …
