@@ -23,12 +23,8 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // 保留原始文件名，只添加时间戳防止重名
-    const timestamp = Date.now();
-    const originalName = path.basename(file.originalname, path.extname(file.originalname));
-    const ext = path.extname(file.originalname);
-    const filename = `${originalName}-${timestamp}${ext}`;
-    
+    // 只保留原始文件名,不添加时间戳
+    const filename = file.originalname;
     console.log('Generated filename:', filename);
     cb(null, filename);
   }
