@@ -97,38 +97,46 @@ export default function FlashcardPage() {
     );
   }
 
-  // Filter flashcards based on mode
-  const allFlashcards = userLessons?.flatMap(userLesson => 
-    (userLesson.lesson?.flashcards || []).map((flashcard: { 
-      id: number; 
-      imageChoices: unknown; 
-      audioUrl: string; 
-      correctImageIndex: number;
-    }) => ({
-      ...flashcard,
-      imageChoices: flashcard.imageChoices as string[],
-      userLessonId: userLesson.id,
-      lessonTitle: userLesson.lesson.title
-    }))
-  ) || [];
+  // Prepare flashcards
+  const [flashcards, setFlashcards] = useState<any[]>([]);
+  
+  useEffect(() => {
+    if (!userLessons) return;
+    
+    const allFlashcards = userLessons.flatMap(userLesson => 
+      (userLesson.lesson?.flashcards || []).map((flashcard: { 
+        id: number; 
+        imageChoices: unknown; 
+        audioUrl: string; 
+        correctImageIndex: number;
+      }) => ({
+        ...flashcard,
+        imageChoices: flashcard.imageChoices as string[],
+        userLessonId: userLesson.id,
+        lessonTitle: userLesson.lesson.title
+      }))
+    );
 
-  const flashcards = isReviewMode
-    ? allFlashcards.filter((flashcard: any) => {
-        if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
-          return false;
-        }
-        const userLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
-        if (!userLesson) return false;
+    const filteredFlashcards = isReviewMode
+      ? allFlashcards.filter((flashcard: any) => {
+          if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
+            return false;
+          }
+          const userLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+          if (!userLesson) return false;
 
-        const progress = userLesson.progress as Progress;
-        const reviews = progress.reviews || [];
-        const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-        return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
-      })
-    : allFlashcards.filter((flashcard: any) => {
-        const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
-        return currentUserLesson?.lessonId === parseInt(params?.id || '0');
-      });
+          const progress = userLesson.progress as Progress;
+          const reviews = progress.reviews || [];
+          const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+          return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
+        })
+      : allFlashcards.filter((flashcard: any) => {
+          const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+          return currentUserLesson?.lessonId === parseInt(params?.id || '0');
+        });
+        
+    setFlashcards(filteredFlashcards);
+  }, [userLessons, isReviewMode, params?.id]);
 
   useEffect(() => {
     if (flashcards.length > 0) {
