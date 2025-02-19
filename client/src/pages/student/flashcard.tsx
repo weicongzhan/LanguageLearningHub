@@ -342,7 +342,7 @@ export default function FlashcardPage() {
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-muted-foreground">
-              {userLessons?.find(ul => ul.lessonId === parseInt(params?.id || '0'))?.lesson.title || 'Lesson'} - Card {currentIndex + 1} of {flashcards.length}
+              {Array.isArray(userLessons) && userLessons.find(ul => ul.lessonId === parseInt(params?.id || '0'))?.lesson.title || 'Lesson'} - Card {currentIndex + 1} of {flashcards.length}
               {isReviewMode && ` (已完成: ${completedCards.size}/${flashcards.length})`}
             </p>
             <div className="h-2 w-2 rounded-full bg-primary"></div>
