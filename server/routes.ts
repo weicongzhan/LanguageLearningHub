@@ -15,8 +15,7 @@ import sharp from 'sharp'; // Import sharp library
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const lessonId = req.params.lessonId || req.body.lessonId;
-    const uploadDir = path.join(process.cwd(), 'uploads', 'lessons', lessonId);
+    const uploadDir = path.join(process.cwd(), 'uploads', 'files');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
