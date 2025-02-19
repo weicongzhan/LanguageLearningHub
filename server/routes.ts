@@ -118,10 +118,10 @@ export function registerRoutes(app: Express): Server {
     try {
       const { lessonId } = req.params;
       const uploadedFiles = req.files as Express.Multer.File[];
-      
+
       // 处理所有上传的文件
       const files = await handleFileUpload(uploadedFiles);
-      
+
       if (!files.length) {
         return res.status(400).json({ error: "所有文件处理失败" });
       }
@@ -168,7 +168,7 @@ export function registerRoutes(app: Express): Server {
               // Decode file names and create a map for tracking used images
               const usedImages = new Set();
               const decodeFileName = (name: string) => decodeURIComponent(name);
-              
+
               const matchingBaseNameDecoded = decodeFileName(matchingBaseName);
               usedImages.add(matchingBaseNameDecoded);
 
@@ -181,7 +181,7 @@ export function registerRoutes(app: Express): Server {
               // Randomly select 3 different images
               const otherImages = [];
               const shuffledImages = [...availableImages].sort(() => Math.random() - 0.5);
-              
+
               for (const img of shuffledImages) {
                 const imgBaseName = decodeFileName(path.basename(img.originalname, path.extname(img.originalname)));
                 if (!usedImages.has(imgBaseName)) {
@@ -261,7 +261,7 @@ export function registerRoutes(app: Express): Server {
       try {
         const image = sharp(file.path);
         const metadata = await image.metadata();
-        
+
         if (!metadata) {
           throw new Error('无法读取图片元数据');
         }
@@ -297,12 +297,12 @@ export function registerRoutes(app: Express): Server {
 
       } catch (error) {
         console.error(`图片处理错误 (尝试 ${attempt}/${maxRetries}):`, error);
-        
+
         if (attempt === maxRetries) {
           console.error(`图片处理最终失败: ${file.originalname}`);
           return false;
         }
-        
+
         // 等待短暂时间后重试
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -740,12 +740,19 @@ export function registerRoutes(app: Express): Server {
       }
 
       const userLessonsList = await query;
+
       // 确保返回数组格式
-      const responseData = Array.isArray(userLessonsList) ? userLessonsList : Object.values(userLessonsList).filter(item => 
-        typeof item === 'object' && item !== null && 'id' in item
-      );
+      const responseData = Array.isArray(userLessonsList) 
+        ? userLessonsList 
+        : Object.values(userLessonsList).filter(item => 
+            typeof item === 'object' && 
+            item !== null && 
+            'id' in item
+          );
+
       res.json(lessonId ? responseData[0] : responseData);
     } catch (error) {
+      console.error('Error fetching user lessons:', error);
       res.status(500).json({ error: "Failed to fetch user lessons" });
     }
   });
