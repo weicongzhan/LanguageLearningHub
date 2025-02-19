@@ -118,7 +118,14 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/flashcards/bulk-upload/:lessonId", requireAdmin, upload.array('files', 100), async (req, res) => {
     try {
       const { lessonId } = req.params;
-      const files = req.files as Express.Multer.File[];
+      const uploadedFiles = req.files as Express.Multer.File[];
+      
+      // 处理所有上传的文件
+      const files = await handleFileUpload(uploadedFiles);
+      
+      if (!files.length) {
+        return res.status(400).json({ error: "所有文件处理失败" });
+      }
 
       // Separate audio and image files
       const audioFiles = files.filter(file => file.mimetype.startsWith('audio/'));
@@ -249,38 +256,74 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Image processing middleware
-  const processImage = async (file: Express.Multer.File) => {
-    try {
-      const image = sharp(file.path);
-      const metadata = await image.metadata();
+  // Image processing middleware with retry mechanism
+  const processImage = async (file: Express.Multer.File, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const image = sharp(file.path);
+        const metadata = await image.metadata();
+        
+        if (!metadata) {
+          throw new Error('无法读取图片元数据');
+        }
 
-      if (metadata.width && metadata.width > 500 || metadata.height && metadata.height > 500) {
-        const resizedImagePath = file.path + '_resized';
-        await image
-          .resize(500, 500, {
-            fit: 'contain',
-            background: { r: 255, g: 255, b: 255, alpha: 1 }
-          })
-          .toFile(resizedImagePath);
+        if (metadata.width && metadata.width > 500 || metadata.height && metadata.height > 500) {
+          const resizedImagePath = file.path + '_resized';
+          await image
+            .resize(500, 500, {
+              fit: 'contain',
+              background: { r: 255, g: 255, b: 255, alpha: 1 }
+            })
+            .toFile(resizedImagePath);
 
-        // 确保文件存在后再进行操作
-        if (fs.existsSync(resizedImagePath)) {
+          if (!fs.existsSync(resizedImagePath)) {
+            throw new Error('调整大小后的图片文件不存在');
+          }
+
           if (fs.existsSync(file.path)) {
             fs.unlinkSync(file.path);
           }
           fs.renameSync(resizedImagePath, file.path);
         }
+
+        // 验证处理后的图片
+        const verifyImage = sharp(file.path);
+        const verifyMetadata = await verifyImage.metadata();
+        if (!verifyMetadata) {
+          throw new Error('处理后的图片验证失败');
+        }
+
+        console.log(`图片处理成功: ${file.originalname}`);
+        return true;
+
+      } catch (error) {
+        console.error(`图片处理错误 (尝试 ${attempt}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries) {
+          console.error(`图片处理最终失败: ${file.originalname}`);
+          return false;
+        }
+        
+        // 等待短暂时间后重试
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      
-      // 验证文件是否可读
-      await sharp(file.path).metadata();
-      
-    } catch (error) {
-      console.error('图片处理错误:', error);
-      // 如果处理失败，保留原始文件
-      return;
     }
+    return false;
+  };
+
+  // 修改上传函数中的处理逻辑
+  const handleFileUpload = async (files: Express.Multer.File[]) => {
+    const results = await Promise.all(files.map(async file => {
+      const success = await processImage(file);
+      if (!success) {
+        console.error(`文件处理失败: ${file.originalname}`);
+        return null;
+      }
+      return file;
+    }));
+
+    // 过滤掉处理失败的文件
+    return results.filter(result => result !== null);
   };
 
 
