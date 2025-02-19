@@ -679,6 +679,17 @@ export function registerRoutes(app: Express): Server {
       await db.delete(flashcards)
         .where(eq(flashcards.lessonId, lessonId));
 
+      // Delete the lesson folder if it exists
+      const lessonDir = path.join(process.cwd(), 'uploads', 'lessons', lessonId.toString());
+      if (fs.existsSync(lessonDir)) {
+        try {
+          fs.rmSync(lessonDir, { recursive: true, force: true });
+          console.log(`Lesson folder deleted: ${lessonDir}`);
+        } catch (error) {
+          console.error(`Failed to delete lesson folder: ${lessonDir}`, error);
+        }
+      }
+
       // Finally delete the lesson
       const [deletedLesson] = await db.delete(lessons)
         .where(eq(lessons.id, lessonId))
@@ -688,7 +699,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ error: "Lesson not found" });
       }
 
-      res.json({ message: "Lesson and all associated data deleted successfully" });
+      res.json({ message: "Lesson, associated data and files deleted successfully" });
     } catch (error) {
       console.error('Delete lesson error:', error);
       res.status(500).json({
