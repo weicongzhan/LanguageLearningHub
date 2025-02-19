@@ -62,10 +62,31 @@ export default function FlashcardPage() {
   });
 
   useEffect(() => {
-    if (!userLessons || userLessons.length === 0) {
+    if (!params?.id) {
+      setLocation("/");
+      return;
+    }
+    
+    if (userLessons && Array.isArray(userLessons) && userLessons.length === 0) {
       setLocation("/");
     }
-  }, [userLessons, setLocation]);
+  }, [userLessons, params?.id, setLocation]);
+
+  if (!params?.id || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error loading lesson</div>
+      </div>
+    );
+  }
 
   // Handle error cases
   useEffect(() => {
