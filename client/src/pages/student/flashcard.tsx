@@ -297,8 +297,15 @@ export default function FlashcardPage() {
     }
 
     try {
-      const userLesson = userLessons.find(ul => ul.id === currentCard.userLessonId);
-      if (!userLesson) return;
+      const userLesson = Array.isArray(userLessons) && userLessons.find(ul => ul.id === currentCard.userLessonId);
+      if (!userLesson) {
+        toast({
+          variant: "destructive",
+          title: "保存失败",
+          description: "找不到对应的课程进度"
+        });
+        return;
+      }
 
       const progress: Progress = userLesson.progress as Progress || {
         total: userLesson.lesson.flashcards.length,
