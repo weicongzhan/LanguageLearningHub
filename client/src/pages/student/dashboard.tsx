@@ -195,8 +195,15 @@ export default function StudentDashboard() {
 
                     {/* Study and Review Buttons */}
                     <div className="space-y-2">
-                      <Link href={`/lesson/${userLesson.lessonId}`}>
-                        <Button className="w-full">继续学习</Button>
+                      <Link href={`/lesson/${userLesson.lessonId}`} onClick={(e) => {
+                        if (!userLesson || !userLesson.lessonId) {
+                          e.preventDefault();
+                          return;
+                        }
+                      }}>
+                        <Button className="w-full" disabled={!userLesson || !userLesson.lessonId}>
+                          继续学习
+                        </Button>
                       </Link>
 
 
