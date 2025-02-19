@@ -55,11 +55,24 @@ export default function FlashcardPage() {
   const isReviewMode = searchParams.get('mode') === 'review';
 
   // Query for lesson data
-  const { data: userLessons, isLoading, error } = useQuery<UserLessonWithRelations[]>({
+  const { data: userLessonsData, isLoading, error } = useQuery<UserLessonWithRelations[]>({
     queryKey: [`/api/user-lessons/${user?.id}`, params?.id ? [params.id] : []],
     enabled: !!user && (params?.id ? [params.id] : []).length > 0,
     staleTime: Infinity,
+    select: (data) => {
+      // 确保返回的是数组格式
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      return Object.values(data).filter(item => 
+        typeof item === 'object' && 
+        item !== null && 
+        'id' in item
+      );
+    }
   });
+
+  // 使用处理后的数据
+  const userLessons = userLessonsData || [];
 
   useEffect(() => {
     if (!params?.id) {
