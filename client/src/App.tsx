@@ -64,10 +64,10 @@ function Router() {
     <div>
       {/* Header with logout button */}
       <header className="bg-background border-b py-4 px-6 flex justify-between items-center">
-        <div className="flex flex-col items-center">
+        <Link href="/" className="flex flex-col items-center">
           <img src="/logo.png" alt="Logo" className="w-28 h-auto mb-0.5" />
-          <span className="text-xl font-semibold">智慧树语言中心</span>
-        </div>
+          <span className="text-xl font-semibold hover:opacity-80">智慧树语言中心</span>
+        </Link>
         <Button variant="outline" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" />
           退出账户
@@ -86,9 +86,13 @@ function Router() {
               </>
             ) : (
               <>
-                <Route path="*" component={StudentDashboard} />
+                <Route path="/" component={StudentDashboard} />
+                <Route path="/lesson/:id" component={Flashcard} />
+                <Route path="/lesson/:id/review" component={Flashcard} />
+                <Route path="/files" component={React.lazy(() => import('@/pages/student/files'))} />
               </>
             )}
+            <Route path="*" component={NotFound} />
           </Switch>
         </Suspense>
       </main>
