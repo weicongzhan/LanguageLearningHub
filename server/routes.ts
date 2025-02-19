@@ -157,16 +157,27 @@ export function registerRoutes(app: Express): Server {
 
               // Get 3 random different images
               // 获取所有其他的图片选项
-              const availableOtherImages = imageFiles.filter(img => {
+              const matchingBaseName = path.basename(matchingImage.originalname, path.extname(matchingImage.originalname));
+
+              // Filter out images with the same base name as the correct image and already used images
+              const availableImages = imageFiles.filter(img => {
                 const imgBaseName = path.basename(img.originalname, path.extname(img.originalname));
-                const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
-                return imgBaseName !== audioBaseName;
+                return imgBaseName !== matchingBaseName;
               });
-              
-              // 随机选择3个其他图片
-              const otherImages = availableOtherImages
+
+              // Randomly select 3 different images
+              const otherImages = availableImages
                   .sort(() => Math.random() - 0.5)
                   .slice(0, 3);
+
+              if (otherImages.length < 3) {
+                console.log('Warning: Not enough different images for choices');
+                return {
+                  success: false,
+                  audioName: path.basename(audioFile.originalname),
+                  error: "Not enough different images for choices"
+                };
+              }
 
               // Process other images
               await Promise.all(otherImages.map(img => processImage(img)));
@@ -877,7 +888,7 @@ export function registerRoutes(app: Express): Server {
             const possiblePaths = [
               path.join(process.cwd(), existingFile.url),
               path.join(process.cwd(), 'uploads', 'files', fileName),
-              path.join(process.cwd(), 'uploads', fileName)
+              path.join(process.cwd(), ''uploads', fileName)
             ];
 
             console.log('尝试删除物理文件，检查路径:', possiblePaths);
