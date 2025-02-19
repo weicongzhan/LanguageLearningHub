@@ -337,8 +337,8 @@ export default function FlashcardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto pt-8 px-6 max-w-2xl">
-        <div className="mb-8 text-center">
+      <div className="container mx-auto pt-2 px-6 max-w-2xl">
+        <div className="mb-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-muted-foreground">
@@ -349,7 +349,7 @@ export default function FlashcardPage() {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
           <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background to-muted/10 ${isTransitioning ? 'opacity-50' : ''}`}>
             <CardContent className="flex items-center justify-center p-2">
               <Button
@@ -380,7 +380,7 @@ export default function FlashcardPage() {
           </Card>
 
           {currentCard && (
-            <div className={`grid grid-cols-2 gap-6 max-w-[600px] mx-auto transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : ''}`}>
+            <div className={`grid grid-cols-2 gap-4 max-w-[600px] mx-auto transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : ''}`}>
               {shuffledIndices.map((originalIndex, currentIndex) => (
                 <Card
                   key={originalIndex}
