@@ -251,19 +251,35 @@ export function registerRoutes(app: Express): Server {
 
   // Image processing middleware
   const processImage = async (file: Express.Multer.File) => {
-    const image = sharp(file.path);
-    const metadata = await image.metadata();
+    try {
+      const image = sharp(file.path);
+      const metadata = await image.metadata();
 
-    if (metadata.width && metadata.width > 500 || metadata.height && metadata.height > 500) {
-      await image
-        .resize(500, 500, {
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 1 }
-        })
-        .toFile(file.path + '_resized');
+      if (metadata.width && metadata.width > 500 || metadata.height && metadata.height > 500) {
+        const resizedImagePath = file.path + '_resized';
+        await image
+          .resize(500, 500, {
+            fit: 'contain',
+            background: { r: 255, g: 255, b: 255, alpha: 1 }
+          })
+          .toFile(resizedImagePath);
 
-      fs.unlinkSync(file.path);
-      fs.renameSync(file.path + '_resized', file.path);
+        // 确保文件存在后再进行操作
+        if (fs.existsSync(resizedImagePath)) {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+          fs.renameSync(resizedImagePath, file.path);
+        }
+      }
+      
+      // 验证文件是否可读
+      await sharp(file.path).metadata();
+      
+    } catch (error) {
+      console.error('图片处理错误:', error);
+      // 如果处理失败，保留原始文件
+      return;
     }
   };
 
