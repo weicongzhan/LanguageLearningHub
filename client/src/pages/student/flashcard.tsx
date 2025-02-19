@@ -297,8 +297,22 @@ export default function FlashcardPage() {
     }
 
     try {
-      const userLesson = userLessons?.find?.(ul => ul.id === currentCard.userLessonId);
+      if (!userLessons || !Array.isArray(userLessons)) {
+        console.error('userLessons 数据无效:', userLessons);
+        toast({
+          variant: "destructive",
+          title: "数据加载失败",
+          description: "课程数据加载失败，请刷新页面重试"
+        });
+        return;
+      }
+
+      const userLesson = userLessons.find(ul => ul.id === currentCard.userLessonId);
       if (!userLesson) {
+        console.error('找不到对应课程:', {
+          userLessonId: currentCard.userLessonId,
+          availableLessons: userLessons.map(ul => ul.id)
+        });
         toast({
           variant: "destructive",
           title: "保存失败",
