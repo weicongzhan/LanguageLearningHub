@@ -366,19 +366,20 @@ export default function FlashcardPage() {
       });
 
       // 更新完成进度
-      if (currentIndex > progress.lastPosition) {
-        progress.lastPosition = currentIndex;
-        progress.completed = currentIndex + 1;
-      }
-
-      if (isCorrect) {
-        const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
-          r.flashcardId === currentCard.id && r.successful
-        );
-        if (!hasBeenCounted) {
-          progress.completed++;
+      // 更新进度
+      progress.lastPosition = Math.max(currentIndex, progress.lastPosition || 0);
+      
+      // 计算已完成的唯一卡片数量
+      const uniqueCompletedCards = new Set();
+      progress.reviews.forEach(review => {
+        if (review.successful) {
+          uniqueCompletedCards.add(review.flashcardId);
         }
-      }
+      });
+      
+      // 更新完成数量
+      progress.completed = uniqueCompletedCards.size;
+      progress.total = flashcards.length;
 
       await updateProgressMutation.mutateAsync({
         progress,

@@ -58,8 +58,17 @@ export default function StudentDashboard() {
         uniqueCompleted.add(review.flashcardId);
       }
     });
+    
+    // 确保 total 是有效值
+    const total = progress.total || userLesson?.lesson?.flashcards?.length || 0;
     // 计算完成百分比
-    const percent = progress.total > 0 ? (uniqueCompleted.size / progress.total) * 100 : 0;
+    const percent = total > 0 ? (uniqueCompleted.size / total) * 100 : 0;
+    
+    console.log('Progress calculation:', {
+      uniqueCompleted: uniqueCompleted.size,
+      total,
+      percent
+    });
     
     // Calculate success rate from answered cards
     const success = reviews.length > 0 
