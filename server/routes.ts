@@ -156,8 +156,15 @@ export function registerRoutes(app: Express): Server {
               await processImage(matchingImage);
 
               // Get 3 random different images
-              const otherImages = imageFiles
-                  .filter(img => img !== matchingImage)
+              // 获取所有其他的图片选项
+              const availableOtherImages = imageFiles.filter(img => {
+                const imgBaseName = path.basename(img.originalname, path.extname(img.originalname));
+                const audioBaseName = path.basename(audioFile.originalname, path.extname(audioFile.originalname));
+                return imgBaseName !== audioBaseName;
+              });
+              
+              // 随机选择3个其他图片
+              const otherImages = availableOtherImages
                   .sort(() => Math.random() - 0.5)
                   .slice(0, 3);
 
