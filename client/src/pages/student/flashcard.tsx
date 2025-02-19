@@ -396,7 +396,7 @@ export default function FlashcardPage() {
           <div className="mt-4 flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
-              Card Lesson {userLessons[0].lessonId} - Card {currentIndex + 1} of {flashcards.length}
+              {userLessons[0].lesson.title} - Card {currentIndex + 1} of {flashcards.length}
               {isReviewMode && ` (已完成: ${completedCards.size}/${flashcards.length})`}
             </p>
             <div className="h-2 w-2 rounded-full bg-primary"></div>
