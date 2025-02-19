@@ -89,8 +89,12 @@ export default function FlashcardPage() {
 
     if (error) return;
 
-    // 确保 userLessons 是数组
-    const userLessonsArray = Array.isArray(userLessons) ? userLessons : Object.values(userLessons);
+    // 将 userLessons 转换为数组
+    const userLessonsArray = Array.isArray(userLessons) 
+      ? userLessons 
+      : Object.values(userLessons).filter(item => 
+          typeof item === 'object' && item !== null && 'id' in item
+        );
     
     const allFlashcards = userLessonsArray.flatMap(userLesson => 
       (userLesson.lesson?.flashcards || []).map((flashcard: { 
