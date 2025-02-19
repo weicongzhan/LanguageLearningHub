@@ -97,13 +97,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-        variant: "destructive",
-        title: "错误",
-        description: "无法访问该课程，请确认课程已分配给您",
-      });
-      setLocation("/");
-    }
-  }, [error, setLocation]);
 
   // Filter flashcards based on mode
   const allFlashcards = userLessons?.flatMap(userLesson => 
