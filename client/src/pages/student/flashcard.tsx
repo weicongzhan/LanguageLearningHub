@@ -110,12 +110,16 @@ export default function FlashcardPage() {
       }))
     );
 
+    const userLessonsArray2 = Object.values(userLessons || {}).filter(item => 
+      typeof item === 'object' && item !== null && 'id' in item
+    );
+
     const filteredFlashcards = isReviewMode
       ? allFlashcards.filter((flashcard: any) => {
           if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
             return false;
           }
-          const userLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+          const userLesson = userLessonsArray2.find(ul => ul.id === flashcard.userLessonId);
           if (!userLesson) return false;
 
           const progress = userLesson.progress as Progress;
@@ -124,7 +128,7 @@ export default function FlashcardPage() {
           return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
         })
       : allFlashcards.filter((flashcard: any) => {
-          const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+          const currentUserLesson = userLessonsArray2.find(ul => ul.id === flashcard.userLessonId);
           return currentUserLesson?.lessonId === parseInt(params?.id || '0');
         });
 
