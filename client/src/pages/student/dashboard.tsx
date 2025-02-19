@@ -51,10 +51,8 @@ export default function StudentDashboard() {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     
     const reviews = progress.reviews || [];
-    // Get the current position (last card viewed)
-    const lastPosition = progress.lastPosition || 0;
-    // Calculate percent based on current position
-    const percent = progress.total > 0 ? ((lastPosition + 1) / progress.total) * 100 : 0;
+    // Calculate percent based on completed cards
+    const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
     
     // Calculate success rate from answered cards
     const success = reviews.length > 0 

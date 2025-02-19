@@ -355,7 +355,8 @@ export default function FlashcardPage() {
       const progress: Progress = userLesson.progress as Progress || {
         total: userLesson.lesson.flashcards.length,
         completed: 0,
-        reviews: []
+        reviews: [],
+        lastPosition: 0
       };
 
       progress.reviews.push({
@@ -364,8 +365,11 @@ export default function FlashcardPage() {
         successful: isCorrect
       });
 
-      // 保存当前位置
-      progress.lastPosition = currentIndex;
+      // 更新完成进度
+      if (currentIndex > progress.lastPosition) {
+        progress.lastPosition = currentIndex;
+        progress.completed = currentIndex + 1;
+      }
 
       if (isCorrect) {
         const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
