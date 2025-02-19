@@ -83,7 +83,7 @@ export default function FlashcardPage() {
   }, [userLessons, params?.id, setLocation, error]);
 
   useEffect(() => {
-    if (!userLessons || !params?.id) return;
+    if (!userLessons || !Array.isArray(userLessons) || !params?.id) return;
 
     if (isLoading) return;
 
