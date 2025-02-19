@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -75,7 +76,7 @@ export default function FlashcardPage() {
         title: "错误",
         description: "无法访问该课程，请确认课程已分配给您",
       });
-      setLocation("/"); // Redirect to dashboard on error
+      setLocation("/");
     }
   }, [error, setLocation]);
 
@@ -107,7 +108,7 @@ export default function FlashcardPage() {
     }))
   ) || [];
 
-  // 初始化错题本卡片列表
+  // Initialize review cards list
   const [reviewCards, setReviewCards] = useState<number[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -116,13 +117,7 @@ export default function FlashcardPage() {
   useEffect(() => {
     if (isReviewMode && userLessons && isInitialLoad) {
       const wrongCards = allFlashcards
-        .filter((flashcard: {
-          id: number;
-          imageChoices: string[];
-          audioUrl: string;
-          correctImageIndex: number;
-          userLessonId: number;
-        }) => {
+        .filter((flashcard: any) => {
           if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
             return false;
           }
@@ -142,23 +137,13 @@ export default function FlashcardPage() {
   }, [isReviewMode, userLessons, allFlashcards, isInitialLoad]);
 
   const flashcards = isReviewMode
-    ? allFlashcards.filter((flashcard: {
-        id: number;
-        imageChoices: string[];
-        audioUrl: string;
-        correctImageIndex: number;
-      }) => {
+    ? allFlashcards.filter((flashcard: any) => {
         if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
           return false;
         }
         return reviewCards.includes(flashcard.id);
       })
-    : allFlashcards.filter((flashcard: {
-        userLessonId: number;
-        imageChoices: string[];
-        audioUrl: string;
-        correctImageIndex: number;
-      }) => {
+    : allFlashcards.filter((flashcard: any) => {
         const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
         return currentUserLesson?.lessonId === parseInt(params?.id || '0');
       });
@@ -166,7 +151,7 @@ export default function FlashcardPage() {
   // Get current flashcard
   const currentCard = flashcards[currentIndex];
 
-  // 新增：打乱数组顺序的函数
+  // Shuffle array function
   const shuffleArray = (array: any[]) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -176,11 +161,9 @@ export default function FlashcardPage() {
     return shuffled;
   };
 
-  // 在卡片切换时重新打乱选项顺序
   useEffect(() => {
     if (currentCard?.imageChoices && !isTransitioning && !hasAnswered) {
       const indices = Array.from({ length: currentCard.imageChoices.length }, (_, i) => i);
-      // 使用 cardId 作为随机种子，确保同一张卡片的选项顺序保持一致
       const seed = currentCard.id;
       const seededRandom = (max: number) => {
         const x = Math.sin(seed + 1) * 10000;
@@ -213,9 +196,8 @@ export default function FlashcardPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      // 手动更新缓存中的数据，而不是重新获取
       queryClient.setQueryData(
-        [`/api/user-lessons/${user?.id}/${params?.id}`],
+        [`/api/user-lessons/${user?.id}`, params?.id ? [params.id] : []],
         (oldData: any) => ({
           ...oldData,
           progress: data.progress,
@@ -225,7 +207,7 @@ export default function FlashcardPage() {
     },
   });
 
-  // 检查是否所有卡片都已完成
+  // Check if all cards are completed
   const allCardsCompleted = isReviewMode && completedCards.size === flashcards.length;
 
   if (isLoading || !userLessons) {
@@ -287,7 +269,6 @@ export default function FlashcardPage() {
       setHasAnswered(false);
       setCurrentIndex((prev) => prev - 1);
 
-      // 添加延迟以确保动画平滑
       setTimeout(() => {
         setIsTransitioning(false);
       }, 300);
@@ -297,16 +278,13 @@ export default function FlashcardPage() {
   const handleImageSelection = async (index: number) => {
     if (!userLessons || !currentCard || hasAnswered || isTransitioning) return;
 
-    // 使用shuffledIndices将选择的索引映射回原始索引
     const originalIndex = shuffledIndices.indexOf(currentCard.correctImageIndex);
     const isCorrect = index === originalIndex;
 
-    // 立即标记已作答并显示结果
     setHasAnswered(true);
     setSelectedImage(index);
     setShowResult(true);
 
-    // 立即播放音效并显示提示
     if (!isCorrect) {
       playIncorrectSound();
       toast({
@@ -319,7 +297,6 @@ export default function FlashcardPage() {
     } else {
       playCorrectSound();
       if (isReviewMode) {
-        // 标记当前卡片为已完成
         setCompletedCards(prev => new Set([...prev, currentCard.id]));
 
         toast({
@@ -329,7 +306,6 @@ export default function FlashcardPage() {
           duration: 2000
         });
 
-        // 检查是否所有卡片都已完成
         if (completedCards.size + 1 === flashcards.length) {
           setTimeout(() => {
             toast({
@@ -353,7 +329,6 @@ export default function FlashcardPage() {
     }
 
     try {
-      // 找到当前卡片所属的课程
       const userLesson = userLessons.find(ul => ul.id === currentCard.userLessonId);
       if (!userLesson) return;
 
@@ -363,14 +338,12 @@ export default function FlashcardPage() {
         reviews: []
       };
 
-      // 记录本次练习结果
       progress.reviews.push({
         timestamp: new Date().toISOString(),
         flashcardId: currentCard.id,
         successful: isCorrect
       });
 
-      // 如果答对了，更新完成数
       if (isCorrect) {
         const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
           r.flashcardId === currentCard.id && r.successful
@@ -380,7 +353,6 @@ export default function FlashcardPage() {
         }
       }
 
-      // 更新进度
       await updateProgressMutation.mutateAsync({
         progress,
         totalStudyTime: userLesson.totalStudyTime || 0
@@ -397,8 +369,8 @@ export default function FlashcardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto pt-0 px-6 max-w-2xl">
-        <div className="mb-0 text-center">
+      <div className="container mx-auto pt-8 px-6 max-w-2xl">
+        <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-muted-foreground">
@@ -484,7 +456,7 @@ export default function FlashcardPage() {
 
             <Button
               onClick={handleNext}
-              disabled={currentIndex === flashcards.length - 1}
+              disabled={!hasAnswered || (currentIndex === flashcards.length - 1 && !allCardsCompleted)}
               className="hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed w-32"
             >
               Next
