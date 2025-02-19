@@ -195,11 +195,7 @@ export default function StudentDashboard() {
 
                     {/* Study and Review Buttons */}
                     <div className="space-y-2">
-                      <Link href={`/lesson/${userLesson.lessonId}`} onClick={(e) => {
-                        // Force a hard navigation
-                        window.location.href = `/lesson/${userLesson.lessonId}`;
-                        e.preventDefault();
-                      }}>
+                      <Link href={`/lesson/${userLesson.lessonId}`}>
                         <Button className="w-full">继续学习</Button>
                       </Link>
 
