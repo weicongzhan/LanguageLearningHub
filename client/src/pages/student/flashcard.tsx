@@ -70,10 +70,7 @@ export default function FlashcardPage() {
     if (userLessons && Array.isArray(userLessons) && userLessons.length === 0) {
       setLocation("/");
     }
-  }, [userLessons, params?.id, setLocation]);
 
-  // Handle error cases
-  useEffect(() => {
     if (error) {
       console.error('Lesson access error:', error);
       toast({
@@ -83,7 +80,7 @@ export default function FlashcardPage() {
       });
       setLocation("/");
     }
-  }, [error, setLocation]);
+  }, [userLessons, params?.id, setLocation, error]);
 
   if (!params?.id || isLoading) {
     return (
@@ -100,9 +97,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-    if (error) {
-      console.error('Lesson access error:', error);
-      toast({
         variant: "destructive",
         title: "错误",
         description: "无法访问该课程，请确认课程已分配给您",
