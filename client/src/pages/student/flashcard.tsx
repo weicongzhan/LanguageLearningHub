@@ -60,6 +60,16 @@ export default function FlashcardPage() {
     staleTime: Infinity,
   });
 
+  const { data: userLessons } = useQuery({
+    queryKey: [`/api/user-lessons/${user?.id}`],
+  });
+
+  useEffect(() => {
+    if (!userLessons || userLessons.length === 0) {
+      setLocation("/");
+    }
+  }, [userLessons, setLocation]);
+
   // Handle error cases
   useEffect(() => {
     if (error) {

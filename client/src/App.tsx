@@ -88,20 +88,7 @@ function Router() {
               <>
                 <Route path="/" component={StudentDashboard} />
                 <Route path="/lessons" component={StudentDashboard} />
-                <Route path="/lesson/:id">
-                  {(params) => {
-                    const { data: userLessons } = useQuery({
-                      queryKey: [`/api/user-lessons/${user?.id}`],
-                    });
-                    
-                    if (!userLessons || userLessons.length === 0) {
-                      window.location.href = '/';
-                      return null;
-                    }
-                    
-                    return <Flashcard params={params} />;
-                  }}
-                </Route>
+                <Route path="/lesson/:id" component={Flashcard} />
                 <Route path="/lesson/:id/review" component={Flashcard} />
                 <Route path="/files" component={React.lazy(() => import('@/pages/student/files'))} />
               </>
