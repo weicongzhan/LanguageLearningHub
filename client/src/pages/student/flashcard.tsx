@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,7 +65,7 @@ export default function FlashcardPage() {
       setLocation("/");
       return;
     }
-    
+
     if (userLessons && Array.isArray(userLessons) && userLessons.length === 0) {
       setLocation("/");
     }
@@ -131,24 +130,25 @@ export default function FlashcardPage() {
         return currentUserLesson?.lessonId === parseInt(params?.id || '0');
       });
 
-  // Get current flashcard
   useEffect(() => {
-    const card = flashcards[currentIndex];
-    if (card?.imageChoices && !isTransitioning && !hasAnswered) {
-      const indices = Array.from({ length: card.imageChoices.length }, (_, i) => i);
-      const seed = card.id;
-      const seededRandom = (max: number) => {
-        const x = Math.sin(seed + 1) * 10000;
-        return Math.floor((x - Math.floor(x)) * max);
-      };
+    if (flashcards.length > 0) {
+      const card = flashcards[currentIndex];
+      if (card?.imageChoices && !isTransitioning && !hasAnswered) {
+        const indices = Array.from({ length: card.imageChoices.length }, (_, i) => i);
+        const seed = card.id;
+        const seededRandom = (max: number) => {
+          const x = Math.sin(seed + 1) * 10000;
+          return Math.floor((x - Math.floor(x)) * max);
+        };
 
-      const shuffled = [...indices];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = seededRandom(i + 1);
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        const shuffled = [...indices];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = seededRandom(i + 1);
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        setShuffledIndices(shuffled);
       }
-
-      setShuffledIndices(shuffled);
     }
   }, [flashcards, currentIndex, isTransitioning, hasAnswered]);
 
