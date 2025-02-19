@@ -391,8 +391,8 @@ export default function FlashcardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto pt-1 px-6 max-w-2xl">
-        <div className="mb-1 text-center">
+      <div className="container mx-auto pt-0.5 px-6 max-w-2xl">
+        <div className="mb-0.5 text-center">
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
@@ -405,7 +405,7 @@ export default function FlashcardPage() {
 
         <div className="space-y-8">
           <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background to-muted/10 ${isTransitioning ? 'opacity-50' : ''}`}>
-            <CardContent className="flex items-center justify-center p-4">
+            <CardContent className="flex items-center justify-center p-2">
               <Button
                 variant="outline"
                 size="icon"
