@@ -83,13 +83,16 @@ export default function FlashcardPage() {
   }, [userLessons, params?.id, setLocation, error]);
 
   useEffect(() => {
-    if (!userLessons || !Array.isArray(userLessons) || !params?.id) return;
+    if (!userLessons || !params?.id) return;
 
     if (isLoading) return;
 
     if (error) return;
 
-    const allFlashcards = userLessons.flatMap(userLesson => 
+    // 确保 userLessons 是数组
+    const userLessonsArray = Array.isArray(userLessons) ? userLessons : Object.values(userLessons);
+    
+    const allFlashcards = userLessonsArray.flatMap(userLesson => 
       (userLesson.lesson?.flashcards || []).map((flashcard: { 
         id: number; 
         imageChoices: unknown; 
