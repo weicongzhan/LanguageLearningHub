@@ -41,6 +41,10 @@ export default function StudentDashboard() {
   const { data: userLessons, isLoading } = useQuery<UserLessonWithRelations[]>({
     queryKey: [`/api/user-lessons/${user?.id}`],
     enabled: !!user,
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const calculateProgress = (progress: Progress) => {
