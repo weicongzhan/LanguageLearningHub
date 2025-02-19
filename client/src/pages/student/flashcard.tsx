@@ -391,9 +391,9 @@ export default function FlashcardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto p-6 max-w-2xl">
-        <div className="mb-8 text-center">
-          <div className="mt-4 flex items-center justify-center gap-2">
+      <div className="container mx-auto pt-4 px-6 max-w-2xl">
+        <div className="mb-4 text-center">
+          <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
               {userLessons[0].lesson.title} - Card {currentIndex + 1} of {flashcards.length}
