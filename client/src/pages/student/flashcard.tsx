@@ -132,12 +132,11 @@ export default function FlashcardPage() {
       });
 
   // Get current flashcard
-  const currentCard = flashcards[currentIndex];
-
   useEffect(() => {
-    if (currentCard?.imageChoices && !isTransitioning && !hasAnswered) {
-      const indices = Array.from({ length: currentCard.imageChoices.length }, (_, i) => i);
-      const seed = currentCard.id;
+    const card = flashcards[currentIndex];
+    if (card?.imageChoices && !isTransitioning && !hasAnswered) {
+      const indices = Array.from({ length: card.imageChoices.length }, (_, i) => i);
+      const seed = card.id;
       const seededRandom = (max: number) => {
         const x = Math.sin(seed + 1) * 10000;
         return Math.floor((x - Math.floor(x)) * max);
@@ -151,7 +150,9 @@ export default function FlashcardPage() {
 
       setShuffledIndices(shuffled);
     }
-  }, [currentCard?.id, isTransitioning, hasAnswered]);
+  }, [flashcards, currentIndex, isTransitioning, hasAnswered]);
+
+  const currentCard = flashcards[currentIndex];
 
   // Progress mutation
   const updateProgressMutation = useMutation({
