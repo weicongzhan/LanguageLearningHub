@@ -151,16 +151,6 @@ export default function FlashcardPage() {
   // Get current flashcard
   const currentCard = flashcards[currentIndex];
 
-  // Shuffle array function
-  const shuffleArray = (array: any[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
   useEffect(() => {
     if (currentCard?.imageChoices && !isTransitioning && !hasAnswered) {
       const indices = Array.from({ length: currentCard.imageChoices.length }, (_, i) => i);
