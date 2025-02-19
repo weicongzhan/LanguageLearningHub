@@ -128,14 +128,14 @@ export default function FlashcardPage() {
           }
           const userLesson = userLessons.find(ul => ul.id === flashcard.userLessonId);
           if (!userLesson) return false;
-          
+
           const progress = userLesson.progress as Progress;
           const reviews = progress.reviews || [];
           const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
           return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
         })
         .map(card => card.id);
-      
+
       setReviewCards(wrongCards);
       setIsInitialLoad(false);
     }
@@ -186,13 +186,13 @@ export default function FlashcardPage() {
         const x = Math.sin(seed + 1) * 10000;
         return Math.floor((x - Math.floor(x)) * max);
       };
-      
+
       const shuffled = [...indices];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = seededRandom(i + 1);
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      
+
       setShuffledIndices(shuffled);
     }
   }, [currentCard?.id, isTransitioning, hasAnswered]);
@@ -254,14 +254,14 @@ export default function FlashcardPage() {
 
   const handleNext = () => {
     if (isTransitioning || !hasAnswered) return;
-    
+
     if (currentIndex < flashcards.length - 1) {
       setIsTransitioning(true);
       setSelectedImage(null);
       setShowResult(false);
       setHasAnswered(false);
       setCurrentIndex(prev => prev + 1);
-      
+
       setTimeout(() => {
         setIsTransitioning(false);
       }, 300);
@@ -279,14 +279,14 @@ export default function FlashcardPage() {
 
   const handlePrevious = () => {
     if (isTransitioning) return;
-    
+
     if (currentIndex > 0) {
       setIsTransitioning(true);
       setSelectedImage(null);
       setShowResult(false);
       setHasAnswered(false);
       setCurrentIndex((prev) => prev - 1);
-      
+
       // 添加延迟以确保动画平滑
       setTimeout(() => {
         setIsTransitioning(false);
@@ -321,7 +321,7 @@ export default function FlashcardPage() {
       if (isReviewMode) {
         // 标记当前卡片为已完成
         setCompletedCards(prev => new Set([...prev, currentCard.id]));
-        
+
         toast({
           title: "太棒了!",
           description: "答对了！此题已从错题本中移除。点击下一题按钮继续。",
@@ -401,8 +401,8 @@ export default function FlashcardPage() {
         <div className="mb-0 text-center">
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
-            <p className="text-lg text-muted-foreground">
-              {userLessons[0].lesson.title} - Card {currentIndex + 1} of {flashcards.length}
+            <p className="text-muted-foreground">
+              {userLessons?.find(ul => ul.lessonId === parseInt(params?.id || '0'))?.lesson.title || 'Lesson'} - Card {currentIndex + 1} of {flashcards.length}
               {isReviewMode && ` (已完成: ${completedCards.size}/${flashcards.length})`}
             </p>
             <div className="h-2 w-2 rounded-full bg-primary"></div>
