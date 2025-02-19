@@ -740,7 +740,11 @@ export function registerRoutes(app: Express): Server {
       }
 
       const userLessonsList = await query;
-      res.json(lessonId ? userLessonsList[0] : userLessonsList);
+      // 确保返回数组格式
+      const responseData = Array.isArray(userLessonsList) ? userLessonsList : Object.values(userLessonsList).filter(item => 
+        typeof item === 'object' && item !== null && 'id' in item
+      );
+      res.json(lessonId ? responseData[0] : responseData);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user lessons" });
     }
