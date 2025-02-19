@@ -92,6 +92,13 @@ export default function FlashcardPage() {
         description: "无法访问该课程，请确认课程已分配给您",
       });
       setLocation("/");
+      return;
+    }
+
+    // 获取保存的进度
+    const userLesson = userLessons?.find(ul => ul.lessonId === parseInt(params.id));
+    if (userLesson?.progress?.lastPosition) {
+      setCurrentIndex(userLesson.progress.lastPosition);
     }
   }, [userLessons, params?.id, setLocation, error]);
 
@@ -356,6 +363,9 @@ export default function FlashcardPage() {
         flashcardId: currentCard.id,
         successful: isCorrect
       });
+
+      // 保存当前位置
+      progress.lastPosition = currentIndex;
 
       if (isCorrect) {
         const hasBeenCounted = progress.reviews.slice(0, -1).some(r => 
