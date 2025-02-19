@@ -199,11 +199,14 @@ export default function StudentDashboard() {
 
                     {/* Study and Review Buttons */}
                     <div className="space-y-2">
-                      <Link href={`/lesson/${userLesson.lessonId}`}>
-                        <Button className="w-full">
-                          继续学习
-                        </Button>
-                      </Link>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => {
+                          window.location.href = `/lesson/${userLesson.lessonId}`;
+                        }}
+                      >
+                        继续学习
+                      </Button>
 
 
                     </div>
