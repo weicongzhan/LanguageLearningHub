@@ -888,7 +888,7 @@ export function registerRoutes(app: Express): Server {
             const possiblePaths = [
               path.join(process.cwd(), existingFile.url),
               path.join(process.cwd(), 'uploads', 'files', fileName),
-              path.join(process.cwd(), ''uploads', fileName)
+              path.join(process.cwd(), 'uploads', fileName)
             ];
 
             console.log('尝试删除物理文件，检查路径:', possiblePaths);
