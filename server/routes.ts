@@ -311,19 +311,22 @@ export function registerRoutes(app: Express): Server {
     return false;
   };
 
-  // 修改上传函数中的处理逻辑
+  // 修改上传函数中的处理逻辑 - 保留所有文件
   const handleFileUpload = async (files: Express.Multer.File[]) => {
     const results = await Promise.all(files.map(async file => {
-      const success = await processImage(file);
-      if (!success) {
-        console.error(`文件处理失败: ${file.originalname}`);
-        return null;
+      try {
+        const success = await processImage(file);
+        if (!success) {
+          console.warn(`图片处理失败，但仍保留文件: ${file.originalname}`);
+        }
+      } catch (error) {
+        console.error(`处理文件时出错: ${file.originalname}`, error);
       }
       return file;
     }));
 
-    // 过滤掉处理失败的文件
-    return results.filter(result => result !== null);
+    // 返回所有文件，不进行过滤
+    return results;
   };
 
 
