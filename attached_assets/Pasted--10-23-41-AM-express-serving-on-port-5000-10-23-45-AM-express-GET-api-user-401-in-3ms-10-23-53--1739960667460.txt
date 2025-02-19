@@ -1,0 +1,38 @@
+
+10:23:41 AM [express] serving on port 5000
+10:23:45 AM [express] GET /api/user 401 in 3ms
+10:23:53 AM [express] POST /api/login 200 in 315ms :: {"message":"Login successful","user":{"id":1,"u…
+10:23:53 AM [express] GET /api/user 304 in 61ms :: {"id":1,"username":"weicongzhan","password":"18b62…
+10:23:54 AM [express] GET /api/students 304 in 305ms :: [{"id":2,"username":"wuxingxing","password":"…
+10:23:54 AM [express] GET /api/stats 304 in 423ms :: {"totalLessons":0,"totalFlashcards":0,"totalStud…
+10:23:59 AM [express] GET /api/lessons 304 in 121ms :: []
+node:internal/errors:541
+      throw error;
+      ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
+    at Object.join (node:path:1251:7)
+    at DiskStorage.destination (/home/runner/workspace/server/routes.ts:19:28)
+    at DiskStorage._handleFile (/home/runner/workspace/node_modules/multer/storage/disk.js:31:8)
+    at /home/runner/workspace/node_modules/multer/lib/make-middleware.js:137:17
+    at fileFilter (/home/runner/workspace/server/routes.ts:41:3)
+    at wrappedFileFilter (/home/runner/workspace/node_modules/multer/index.js:44:7)
+    at Multipart.<anonymous> (/home/runner/workspace/node_modules/multer/lib/make-middleware.js:107:7)
+    at Multipart.emit (node:events:518:28)
+    at HeaderParser.cb (/home/runner/workspace/node_modules/busboy/lib/types/multipart.js:358:14)
+    at HeaderParser.push (/home/runner/workspace/node_modules/busboy/lib/types/multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (/home/runner/workspace/node_modules/busboy/lib/types/multipart.js:394:37)
+    at feed (/home/runner/workspace/node_modules/streamsearch/lib/sbmh.js:248:10)
+    at SBMH.push (/home/runner/workspace/node_modules/streamsearch/lib/sbmh.js:104:16)
+    at Multipart._write (/home/runner/workspace/node_modules/busboy/lib/types/multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Writable.write (node:internal/streams/writable:510:10)
+    at IncomingMessage.ondata (node:internal/streams/readable:1009:22)
+    at IncomingMessage.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at HTTPParser.parserOnBody (node:_http_common:130:24) {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
