@@ -97,12 +97,11 @@ export default function FlashcardPage() {
     );
   }
 
-  // Prepare flashcards
   const [flashcards, setFlashcards] = useState<any[]>([]);
-  
+
   useEffect(() => {
     if (!userLessons) return;
-    
+
     const allFlashcards = userLessons.flatMap(userLesson => 
       (userLesson.lesson?.flashcards || []).map((flashcard: { 
         id: number; 
@@ -134,7 +133,7 @@ export default function FlashcardPage() {
           const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
           return currentUserLesson?.lessonId === parseInt(params?.id || '0');
         });
-        
+
     setFlashcards(filteredFlashcards);
   }, [userLessons, isReviewMode, params?.id]);
 
