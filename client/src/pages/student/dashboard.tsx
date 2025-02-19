@@ -57,12 +57,6 @@ export default function StudentDashboard() {
     // 计算完成百分比
     const percent = total > 0 ? ((lastPosition + 1) / total) * 100 : 0;
     
-    console.log('Progress calculation:', {
-      uniqueCompleted: uniqueCompleted.size,
-      total,
-      percent
-    });
-    
     // Calculate success rate from answered cards
     const success = reviews.length > 0 
       ? (reviews.filter((review: { successful: boolean }) => review.successful).length / reviews.length) * 100 
