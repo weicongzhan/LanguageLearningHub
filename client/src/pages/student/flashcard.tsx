@@ -82,24 +82,12 @@ export default function FlashcardPage() {
     }
   }, [userLessons, params?.id, setLocation, error]);
 
-  if (!params?.id || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">Error loading lesson</div>
-      </div>
-    );
-  }
-
   useEffect(() => {
-    if (!userLessons) return;
+    if (!userLessons || !params?.id) return;
+
+    if (isLoading) return;
+
+    if (error) return;
 
     const allFlashcards = userLessons.flatMap(userLesson => 
       (userLesson.lesson?.flashcards || []).map((flashcard: { 
