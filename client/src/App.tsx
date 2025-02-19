@@ -83,14 +83,15 @@ function Router() {
                 <Route path="/" component={AdminDashboard} />
                 <Route path="/lessons" component={AdminLessons} />
                 <Route path="/files" component={React.lazy(() => import('@/pages/admin/files'))} />
-                <Route path="*" component={AdminDashboard} />
+                <Route path="/dashboard" component={AdminDashboard} />
               </>
             ) : (
               <>
+                <Route path="/" component={StudentDashboard} />
                 <Route path="/lesson/:id" component={Flashcard} />
                 <Route path="/lesson/:id/review" component={Flashcard} />
                 <Route path="/files" component={React.lazy(() => import('@/pages/student/files'))} />
-                <Route path="*" component={StudentDashboard} />
+                <Route path="/dashboard" component={StudentDashboard} />
               </>
             )}
           </Switch>
