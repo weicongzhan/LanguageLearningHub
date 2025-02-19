@@ -87,6 +87,7 @@ function Router() {
             ) : (
               <>
                 <Route path="/" component={StudentDashboard} />
+                <Route path="/lessons" component={StudentDashboard} />
                 <Route path="/lesson/:id">
                   {(params) => {
                     const { data: userLessons } = useQuery({
@@ -105,7 +106,7 @@ function Router() {
                 <Route path="/files" component={React.lazy(() => import('@/pages/student/files'))} />
               </>
             )}
-            <Route path="*" component={NotFound} />
+            <Route path="*" component={StudentDashboard} />
           </Switch>
         </Suspense>
       </main>
