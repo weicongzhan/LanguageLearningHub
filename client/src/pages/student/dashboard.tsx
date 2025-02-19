@@ -51,8 +51,15 @@ export default function StudentDashboard() {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     
     const reviews = progress.reviews || [];
-    // Calculate percent based on completed cards
-    const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+    // 获取已完成的卡片数量
+    const uniqueCompleted = new Set();
+    (progress.reviews || []).forEach(review => {
+      if (review.successful) {
+        uniqueCompleted.add(review.flashcardId);
+      }
+    });
+    // 计算完成百分比
+    const percent = progress.total > 0 ? (uniqueCompleted.size / progress.total) * 100 : 0;
     
     // Calculate success rate from answered cards
     const success = reviews.length > 0 
