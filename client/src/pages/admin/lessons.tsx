@@ -688,33 +688,33 @@ export default function AdminLessons() {
                         }
                       }} className="space-y-4">
                         <div className="space-y-4">
-                          <div>
-                            <Label>搜索学生</Label>
-                            <Input 
-                              type="text" 
-                              placeholder="输入学生用户名..."
-                              onChange={(e) => {
-                                const searchTerm = e.target.value.toLowerCase();
-                                const filtered = studentsData?.filter(student => 
-                                  student.username.toLowerCase().includes(searchTerm)
-                                ) || [];
-                                setStudents(filtered);
-                              }}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label>选择学生</Label>
+                          <div className="space-y-2">
+                            <Label>搜索并选择学生</Label>
                             <Select name="studentId" required>
                               <SelectTrigger>
-                                <SelectValue placeholder="选择一个学生" />
+                                <SelectValue placeholder="输入搜索或选择学生" />
                               </SelectTrigger>
                               <SelectContent>
-                                {students?.map((student) => (
-                                  <SelectItem key={student.id} value={student.id.toString()}>
-                                    {student.username}
-                                  </SelectItem>
-                                ))}
+                                <div className="p-2">
+                                  <Input 
+                                    type="text" 
+                                    placeholder="搜索学生..."
+                                    onChange={(e) => {
+                                      const searchTerm = e.target.value.toLowerCase();
+                                      const filtered = studentsData?.filter(student => 
+                                        student.username.toLowerCase().includes(searchTerm)
+                                      ) || [];
+                                      setStudents(filtered);
+                                    }}
+                                  />
+                                </div>
+                                <div className="max-h-[200px] overflow-auto">
+                                  {students?.map((student) => (
+                                    <SelectItem key={student.id} value={student.id.toString()}>
+                                      {student.username}
+                                    </SelectItem>
+                                  ))}
+                                </div>
                               </SelectContent>
                             </Select>
                           </div>
