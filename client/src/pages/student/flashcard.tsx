@@ -45,9 +45,10 @@ export default function FlashcardPage() {
   const [showResult, setShowResult] = useState(false);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [shuffledIndices, setShuffledIndices] = useState<number[]>([]);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [flashcards, setFlashcards] = useState<any[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Get the mode from URL search params
   const searchParams = new URLSearchParams(window.location.search);
@@ -80,8 +81,6 @@ export default function FlashcardPage() {
       setLocation("/");
     }
   }, [userLessons, params?.id, setLocation, error]);
-
-  const [flashcards, setFlashcards] = useState<any[]>([]);
 
   if (!params?.id || isLoading) {
     return (
