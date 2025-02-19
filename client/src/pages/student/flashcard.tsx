@@ -81,6 +81,8 @@ export default function FlashcardPage() {
     }
   }, [userLessons, params?.id, setLocation, error]);
 
+  const [flashcards, setFlashcards] = useState<any[]>([]);
+
   if (!params?.id || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -96,8 +98,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-
-  const [flashcards, setFlashcards] = useState<any[]>([]);
 
   useEffect(() => {
     if (!userLessons) return;
