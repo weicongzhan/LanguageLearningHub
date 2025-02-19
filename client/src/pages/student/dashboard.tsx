@@ -49,10 +49,14 @@ export default function StudentDashboard() {
 
   const calculateProgress = (progress: Progress) => {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
-    const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+    
     const reviews = progress.reviews || [];
-
-    // Calculate success rate
+    // Calculate total cards answered
+    const totalAnswered = reviews.length;
+    // Calculate percent based on answered cards
+    const percent = totalAnswered > 0 ? (totalAnswered / progress.total) * 100 : 0;
+    
+    // Calculate success rate from answered cards
     const success = reviews.length > 0 
       ? (reviews.filter((review: { successful: boolean }) => review.successful).length / reviews.length) * 100 
       : 0;
