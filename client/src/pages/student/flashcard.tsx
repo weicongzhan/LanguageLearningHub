@@ -47,8 +47,8 @@ export default function FlashcardPage() {
   const [hasAnswered, setHasAnswered] = useState(false);
   const [shuffledIndices, setShuffledIndices] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const previousAudioRef = useRef<string | null>(null);
-  const studyStartTimeRef = useRef<Date>(new Date());
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
 
   // Get the mode from URL search params
   const searchParams = new URLSearchParams(window.location.search);
@@ -80,19 +80,6 @@ export default function FlashcardPage() {
     }
   }, [error, setLocation]);
 
-  // If no valid lesson found, redirect to dashboard
-  useEffect(() => {
-    if (!isLoading && !userLessons) {
-      console.error('No lesson found for ID:', params?.id);
-      toast({
-        variant: "destructive",
-        title: "错误",
-        description: "未找到课程",
-      });
-      setLocation("/");
-    }
-  }, [isLoading, userLessons, setLocation, params?.id]);
-
   // Filter flashcards based on mode
   const allFlashcards = userLessons?.flatMap(userLesson => 
     (userLesson.lesson?.flashcards || []).map((flashcard: { 
@@ -108,40 +95,18 @@ export default function FlashcardPage() {
     }))
   ) || [];
 
-  // Initialize review cards list
-  const [reviewCards, setReviewCards] = useState<number[]>([]);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    if (isReviewMode && userLessons && isInitialLoad) {
-      const wrongCards = allFlashcards
-        .filter((flashcard: any) => {
-          if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
-            return false;
-          }
-          const userLesson = userLessons.find(ul => ul.id === flashcard.userLessonId);
-          if (!userLesson) return false;
-
-          const progress = userLesson.progress as Progress;
-          const reviews = progress.reviews || [];
-          const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
-          return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
-        })
-        .map(card => card.id);
-
-      setReviewCards(wrongCards);
-      setIsInitialLoad(false);
-    }
-  }, [isReviewMode, userLessons, allFlashcards, isInitialLoad]);
-
   const flashcards = isReviewMode
     ? allFlashcards.filter((flashcard: any) => {
         if (!flashcard.imageChoices.length || !flashcard.audioUrl || flashcard.correctImageIndex === undefined) {
           return false;
         }
-        return reviewCards.includes(flashcard.id);
+        const userLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
+        if (!userLesson) return false;
+
+        const progress = userLesson.progress as Progress;
+        const reviews = progress.reviews || [];
+        const flashcardReviews = reviews.filter(review => review.flashcardId === flashcard.id);
+        return flashcardReviews.length > 0 && !flashcardReviews[flashcardReviews.length - 1].successful;
       })
     : allFlashcards.filter((flashcard: any) => {
         const currentUserLesson = userLessons?.find(ul => ul.id === flashcard.userLessonId);
