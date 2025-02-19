@@ -72,6 +72,19 @@ export default function FlashcardPage() {
     }
   }, [userLessons, params?.id, setLocation]);
 
+  // Handle error cases
+  useEffect(() => {
+    if (error) {
+      console.error('Lesson access error:', error);
+      toast({
+        variant: "destructive",
+        title: "错误",
+        description: "无法访问该课程，请确认课程已分配给您",
+      });
+      setLocation("/");
+    }
+  }, [error, setLocation]);
+
   if (!params?.id || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -87,9 +100,6 @@ export default function FlashcardPage() {
       </div>
     );
   }
-
-  // Handle error cases
-  useEffect(() => {
     if (error) {
       console.error('Lesson access error:', error);
       toast({
