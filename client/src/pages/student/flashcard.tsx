@@ -391,8 +391,8 @@ export default function FlashcardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto pt-0.5 px-6 max-w-2xl">
-        <div className="mb-0.5 text-center">
+      <div className="container mx-auto pt-0 px-6 max-w-2xl">
+        <div className="mb-0 text-center">
           <div className="flex items-center justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary"></div>
             <p className="text-lg text-muted-foreground">
@@ -409,7 +409,7 @@ export default function FlashcardPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="w-12 h-12 rounded-full hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl bg-gradient-to-br from-primary/10 to-primary/5"
+                className="w-8 h-8 rounded-full hover:scale-110 transition-all duration-300 shadow-md hover:shadow-xl bg-gradient-to-br from-primary/10 to-primary/5"
                 onClick={async () => {
                   if (!audioRef.current || !currentCard?.audioUrl) return;
                   try {
@@ -428,7 +428,7 @@ export default function FlashcardPage() {
                   }
                 }}
               >
-                <Volume2 className="h-6 w-6 text-primary" />
+                <Volume2 className="h-4 w-4 text-primary" />
               </Button>
             </CardContent>
           </Card>
