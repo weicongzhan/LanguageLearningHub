@@ -51,18 +51,11 @@ export default function StudentDashboard() {
     if (!progress) return { percent: 0, success: 0, needsReview: 0 };
     
     const reviews = progress.reviews || [];
-    // 获取已完成的卡片数量
-    const uniqueCompleted = new Set();
-    (progress.reviews || []).forEach(review => {
-      if (review.successful) {
-        uniqueCompleted.add(review.flashcardId);
-      }
-    });
-    
-    // 确保 total 是有效值
-    const total = progress.total || userLesson?.lesson?.flashcards?.length || 0;
+    const total = progress.total || 0;
+    // 使用最后学习位置计算进度
+    const lastPosition = progress.lastPosition || 0;
     // 计算完成百分比
-    const percent = total > 0 ? (uniqueCompleted.size / total) * 100 : 0;
+    const percent = total > 0 ? ((lastPosition + 1) / total) * 100 : 0;
     
     console.log('Progress calculation:', {
       uniqueCompleted: uniqueCompleted.size,
