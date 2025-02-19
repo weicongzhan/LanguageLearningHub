@@ -1,0 +1,171 @@
+[vite] connecting...
+[vite] connected.
+Current user: 
+Object {id: 2, username: "wuxingxing", password: "12bf982c49c20c84a7c4dc46d8277d79cc4358eca638d0842f81e10c27e784c49590ba83031ddff85f3ee15bd3df9743bce…", isAdmin: false, createdAt: "2025-02-18T23:07:45.238Z"}
+Current user: 
+Object {id: 2, username: "wuxingxing", password: "12bf982c49c20c84a7c4dc46d8277d79cc4358eca638d0842f81e10c27e784c49590ba83031ddff85f3ee15bd3df9743bce…", isAdmin: false, createdAt: "2025-02-18T23:07:45.238Z"}
+Warning: React has detected a change in the order of Hooks called by FlashcardPage. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useContext                 useContext
+2. useContext                 useContext
+3. useSyncExternalStore       useSyncExternalStore
+4. useRef                     useRef
+5. useInsertionEffect         useInsertionEffect
+6. useContext                 useContext
+7. useSyncExternalStore       useSyncExternalStore
+8. useRef                     useRef
+9. useInsertionEffect         useInsertionEffect
+10. useContext                useContext
+11. useContext                useContext
+12. useContext                useContext
+13. useContext                useContext
+14. useEffect                 useEffect
+15. useState                  useState
+16. useCallback               useCallback
+17. useSyncExternalStore      useSyncExternalStore
+18. useEffect                 useEffect
+19. useContext                useContext
+20. useState                  useState
+21. useEffect                 useEffect
+22. useCallback               useCallback
+23. useSyncExternalStore      useSyncExternalStore
+24. useCallback               useCallback
+25. useContext                useContext
+26. useState                  useState
+27. useEffect                 useEffect
+28. useCallback               useCallback
+29. useSyncExternalStore      useSyncExternalStore
+30. useCallback               useCallback
+31. useContext                useContext
+32. useState                  useState
+33. useEffect                 useEffect
+34. useCallback               useCallback
+35. useSyncExternalStore      useSyncExternalStore
+36. useCallback               useCallback
+37. useState                  useState
+38. useEffect                 useEffect
+39. useContext                useContext
+40. useState                  useState
+41. useState                  useState
+42. useState                  useState
+43. useState                  useState
+44. useState                  useState
+45. useState                  useState
+46. useState                  useState
+47. useState                  useState
+48. useRef                    useRef
+49. useContext                useContext
+50. useContext                useContext
+51. useContext                useContext
+52. useEffect                 useEffect
+53. useState                  useState
+54. useCallback               useCallback
+55. useSyncExternalStore      useSyncExternalStore
+56. useEffect                 useEffect
+57. useEffect                 useEffect
+58. undefined                 useEffect
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    at FlashcardPage (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/pages/student/flashcard.tsx:47:22)
+    at Route (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:323:16)
+    at Switch (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:379:17)
+    at Suspense
+    at main
+    at div
+    at Router (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/App.tsx?v=5_YDiSGetHk5rM8sF4c8p:34:39)
+    at QueryClientProvider (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=8f920edd:2805:3)
+    at App
+
+Previous render Next render
+------------------------------------------------------
+1. useContext useContext
+2. useContext useContext
+3. useSyncExternalStore useSyncExternalStore
+4. useRef useRef
+5. useInsertionEffect useInsertionEffect
+6. useContext useContext
+7. useSyncExternalStore useSyncExternalStore
+8. useRef useRef
+9. useInsertionEffect useInsertionEffect
+10. useContext useContext
+11. useContext useContext
+12. useContext useContext
+13. useContext useContext
+14. useEffect useEffect
+15. useState useState
+16. useCallback useCallback
+17. useSyncExternalStore useSyncExternalStore
+18. useEffect useEffect
+19. useContext useContext
+20. useState useState
+21. useEffect useEffect
+22. useCallback useCallback
+23. useSyncExternalStore useSyncExternalStore
+24. useCallback useCallback
+25. useContext useContext
+26. useState useState
+27. useEffect useEffect
+28. useCallback useCallback
+29. useSyncExternalStore useSyncExternalStore
+30. useCallback useCallback
+31. useContext useContext
+32. useState useState
+33. useEffect useEffect
+34. useCallback useCallback
+35. useSyncExternalStore useSyncExternalStore
+36. useCallback useCallback
+37. useState useState
+38. useEffect useEffect
+39. useContext useContext
+40. useState useState
+41. useState useState
+42. useState useState
+43. useState useState
+44. useState useState
+45. useState useState
+46. useState useState
+47. useState useState
+48. useRef useRef
+49. useContext useContext
+50. useContext useContext
+51. useContext useContext
+52. useEffect useEffect
+53. useState useState
+54. useCallback useCallback
+55. useSyncExternalStore useSyncExternalStore
+56. useEffect useEffect
+57. useEffect useEffect
+58. undefined useEffect
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+at FlashcardPage (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/pages/student/flashcard.tsx:47:22)
+at Route (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:323:16)
+at Switch (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:379:17)
+at Suspense
+at main
+at div
+at Router (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/App.tsx?v=5_YDiSGetHk5rM8sF4c8p:34:39)
+at QueryClientProvider (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=8f920edd:2805:3)
+at App
+at t.value (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Rendered more hooks than during the previous render.
+Rendered more hooks than during the previous render.
+The above error occurred in the <FlashcardPage> component:
+
+    at FlashcardPage (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/pages/student/flashcard.tsx:47:22)
+    at Route (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:323:16)
+    at Switch (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8f920edd:379:17)
+    at Suspense
+    at main
+    at div
+    at Router (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/src/App.tsx?v=5_YDiSGetHk5rM8sF4c8p:34:39)
+    at QueryClientProvider (https://c0096643-fedc-4c59-a804-6d11a84b55e2-00-29m21v9epzbez.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=8f920edd:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
