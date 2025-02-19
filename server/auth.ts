@@ -118,8 +118,7 @@ export function setupAuth(app: Express) {
         .values({
           username,
           password: hashedPassword,
-          isAdmin: false,
-          createdAt: new Date()
+          isAdmin: false
         })
         .returning();
 
