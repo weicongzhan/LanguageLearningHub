@@ -15,7 +15,8 @@ import sharp from 'sharp'; // Import sharp library
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const lessonId = req.params.lessonId || req.body.lessonId;
+    const uploadDir = path.join(process.cwd(), 'uploads', 'lessons', lessonId);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -23,7 +24,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // 只保留原始文件名,不添加时间戳
     const filename = file.originalname;
     console.log('Generated filename:', filename);
     cb(null, filename);
