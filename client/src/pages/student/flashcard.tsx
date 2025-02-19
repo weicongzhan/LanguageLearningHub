@@ -297,12 +297,12 @@ export default function FlashcardPage() {
     }
 
     try {
-      const userLesson = Array.isArray(userLessons) && userLessons.find(ul => ul.id === currentCard.userLessonId);
+      const userLesson = userLessons?.find?.(ul => ul.id === currentCard.userLessonId);
       if (!userLesson) {
         toast({
           variant: "destructive",
           title: "保存失败",
-          description: "找不到对应的课程进度"
+          description: "找不到对应的课程进度，请刷新页面重试"
         });
         return;
       }
