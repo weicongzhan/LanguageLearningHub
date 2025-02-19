@@ -159,19 +159,36 @@ export function registerRoutes(app: Express): Server {
               // 获取所有其他的图片选项
               const matchingBaseName = path.basename(matchingImage.originalname, path.extname(matchingImage.originalname));
 
-              // Filter out images with the same base name as the correct image and already used images
+              // Decode file names and create a map for tracking used images
+              const usedImages = new Set();
+              const decodeFileName = (name: string) => decodeURIComponent(name);
+              
+              const matchingBaseNameDecoded = decodeFileName(matchingBaseName);
+              usedImages.add(matchingBaseNameDecoded);
+
+              // Filter out already used images and the matching image
               const availableImages = imageFiles.filter(img => {
-                const imgBaseName = path.basename(img.originalname, path.extname(img.originalname));
-                return imgBaseName !== matchingBaseName;
+                const imgBaseName = decodeFileName(path.basename(img.originalname, path.extname(img.originalname)));
+                return !usedImages.has(imgBaseName);
               });
 
               // Randomly select 3 different images
-              const otherImages = availableImages
-                  .sort(() => Math.random() - 0.5)
-                  .slice(0, 3);
+              const otherImages = [];
+              const shuffledImages = [...availableImages].sort(() => Math.random() - 0.5);
+              
+              for (const img of shuffledImages) {
+                const imgBaseName = decodeFileName(path.basename(img.originalname, path.extname(img.originalname)));
+                if (!usedImages.has(imgBaseName)) {
+                  otherImages.push(img);
+                  usedImages.add(imgBaseName);
+                  if (otherImages.length === 3) break;
+                }
+              }
 
               if (otherImages.length < 3) {
                 console.log('Warning: Not enough different images for choices');
+                console.log('Available images:', availableImages.length);
+                console.log('Used images:', Array.from(usedImages));
                 return {
                   success: false,
                   audioName: path.basename(audioFile.originalname),
