@@ -354,7 +354,7 @@ export default function AdminLessons() {
                 if (description) {
                   uploadFormData.append('description', description);
                 }
-                
+
                 for (let i = 0; i < files.length; i++) {
                   uploadFormData.append('files', files[i]);
                 }
@@ -687,20 +687,37 @@ export default function AdminLessons() {
                           });
                         }
                       }} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Select Student</Label>
-                          <Select name="studentId" required>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a student" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {students?.map((student) => (
-                                <SelectItem key={student.id} value={student.id.toString()}>
-                                  {student.username}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <div className="space-y-4">
+                          <div>
+                            <Label>搜索学生</Label>
+                            <Input 
+                              type="text" 
+                              placeholder="输入学生用户名..."
+                              onChange={(e) => {
+                                const searchTerm = e.target.value.toLowerCase();
+                                const filtered = studentsData?.filter(student => 
+                                  student.username.toLowerCase().includes(searchTerm)
+                                ) || [];
+                                setStudents(filtered);
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label>选择学生</Label>
+                            <Select name="studentId" required>
+                              <SelectTrigger>
+                                <SelectValue placeholder="选择一个学生" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {students?.map((student) => (
+                                  <SelectItem key={student.id} value={student.id.toString()}>
+                                    {student.username}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <Button type="submit">
                           Assign Lesson
